@@ -40,6 +40,9 @@ tag-batch-*.csv
 # vercel
 .vercel
 
+# supabase CLI local link cache
+supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
