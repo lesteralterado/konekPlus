@@ -102,6 +102,22 @@ export async function addTagByCode(
   return { error: null };
 }
 
+export async function toggleTagEnabled(formData: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const tagId = String(formData.get("tag_id") ?? "");
+  if (!tagId) return;
+  const enabled = formData.get("enabled") === "true";
+
+  await supabase.rpc("set_tag_enabled", { p_tag_id: tagId, p_enabled: enabled });
+
+  revalidatePath("/dashboard");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

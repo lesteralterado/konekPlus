@@ -16,6 +16,7 @@ export type Profile = {
 export type Tag = {
   tag_id: string;
   claimed: boolean;
+  enabled: boolean;
   profile_id: string | null;
   claimed_at: string | null;
   created_at: string;
@@ -58,7 +59,7 @@ export type Database = {
       };
       tag_status: {
         Args: { p_tag_id: string };
-        Returns: boolean | null;
+        Returns: "unclaimed" | "disabled" | "active" | null;
       };
       get_tag_profile: {
         Args: { p_tag_id: string };
@@ -66,6 +67,10 @@ export type Database = {
       };
       claim_tag: {
         Args: { p_tag_id: string };
+        Returns: boolean;
+      };
+      set_tag_enabled: {
+        Args: { p_tag_id: string; p_enabled: boolean };
         Returns: boolean;
       };
     };

@@ -19,6 +19,20 @@ function InvalidCard() {
   );
 }
 
+function CardUnavailable() {
+  return (
+    <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+      <h1 className="text-2xl font-semibold text-slate-800">
+        This card isn&apos;t available right now
+      </h1>
+      <p className="max-w-sm text-slate-500">
+        Its owner has turned this card off. If you think that&apos;s a
+        mistake, reach out to whoever gave it to you.
+      </p>
+    </main>
+  );
+}
+
 export default async function TagPage({
   params,
 }: {
@@ -27,27 +41,30 @@ export default async function TagPage({
   const { tag_id } = await params;
   const supabase = await createClient();
 
-  const { data: claimed } = await supabase.rpc("tag_status", {
+  const { data: status } = await supabase.rpc("tag_status", {
     p_tag_id: tag_id,
   });
 
-  if (claimed === null || claimed === undefined) {
-    return <InvalidCard />;
-  }
-
-  if (!claimed) {
-    return (
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
-        <ClaimForm tagId={tag_id} />
-      </main>
-    );
+  switch (status) {
+    case null:
+    case undefined:
+      return <InvalidCard />;
+    case "unclaimed":
+      return (
+        <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
+          <ClaimForm tagId={tag_id} />
+        </main>
+      );
+    case "disabled":
+      return <CardUnavailable />;
   }
 
   const { data: profileId } = await supabase.rpc("get_tag_profile", {
     p_tag_id: tag_id,
   });
   if (!profileId) {
-    // Lost a race with someone else's claim between the two reads above.
+    // Lost a race between the two reads above — someone else claimed it,
+    // or the owner disabled it, in between.
     return <InvalidCard />;
   }
 

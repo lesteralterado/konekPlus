@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { EnabledToggle } from "../../tags/enabled-toggle";
 import { ResetButton } from "../../tags/reset-button";
 import { ArrowLeftIcon, CreditCardIcon } from "../../icons";
 
@@ -19,7 +20,7 @@ export default async function AdminCustomerDetailPage({
     supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("tags")
-      .select("tag_id, claimed_at, created_at")
+      .select("tag_id, claimed_at, created_at, enabled")
       .eq("profile_id", id)
       .order("created_at", { ascending: true }),
   ]);
@@ -133,10 +134,18 @@ export default async function AdminCustomerDetailPage({
                     <p className="text-xs text-slate-400">
                       Linked{" "}
                       {tag.claimed_at ? new Date(tag.claimed_at).toLocaleDateString() : "—"}
+                      {!tag.enabled && (
+                        <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-700">
+                          Disabled
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>
-                <ResetButton tagId={tag.tag_id} />
+                <div className="flex items-center gap-1">
+                  <EnabledToggle tagId={tag.tag_id} enabled={tag.enabled} />
+                  <ResetButton tagId={tag.tag_id} />
+                </div>
               </li>
             ))}
           </ul>

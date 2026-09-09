@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { EnabledToggle } from "./enabled-toggle";
 import { ProvisionForm } from "./provision-form";
 import { ResetButton } from "./reset-button";
 import { SearchIcon } from "../icons";
@@ -21,7 +22,7 @@ export default async function AdminTagsPage({
 
   let tagsQuery = supabase
     .from("tags")
-    .select("tag_id, claimed, profile_id, claimed_at, created_at", { count: "exact" })
+    .select("tag_id, claimed, enabled, profile_id, claimed_at, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
   if (q) tagsQuery = tagsQuery.ilike("tag_id", `%${q}%`);
@@ -102,6 +103,7 @@ export default async function AdminTagsPage({
               <tr className="text-xs uppercase tracking-wide text-slate-400">
                 <th className="pb-2 pr-4 font-medium">Code</th>
                 <th className="pb-2 pr-4 font-medium">Status</th>
+                <th className="pb-2 pr-4 font-medium">Visibility</th>
                 <th className="pb-2 pr-4 font-medium">Owner</th>
                 <th className="pb-2 pr-4 font-medium">Claimed</th>
                 <th className="pb-2 font-medium"></th>
@@ -131,6 +133,21 @@ export default async function AdminTagsPage({
                         {tag.claimed ? "Claimed" : "Unclaimed"}
                       </span>
                     </td>
+                    <td className="py-3 pr-4">
+                      {tag.claimed ? (
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                            tag.enabled
+                              ? "bg-brand-50 text-brand-700"
+                              : "bg-amber-50 text-amber-700"
+                          }`}
+                        >
+                          {tag.enabled ? "Enabled" : "Disabled"}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">—</span>
+                      )}
+                    </td>
                     <td className="py-3 pr-4 text-slate-600">
                       {owner ? (
                         <Link
@@ -147,14 +164,19 @@ export default async function AdminTagsPage({
                       {tag.claimed_at ? new Date(tag.claimed_at).toLocaleDateString() : "—"}
                     </td>
                     <td className="py-3 text-right">
-                      {tag.claimed && <ResetButton tagId={tag.tag_id} />}
+                      {tag.claimed && (
+                        <div className="flex items-center justify-end gap-1">
+                          <EnabledToggle tagId={tag.tag_id} enabled={tag.enabled} />
+                          <ResetButton tagId={tag.tag_id} />
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
               })}
               {(tags ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400">
+                  <td colSpan={6} className="py-8 text-center text-slate-400">
                     No tags found.
                   </td>
                 </tr>

@@ -23,6 +23,27 @@ export async function resetTag(tagId: string) {
   revalidatePath(`/t/${tagId}`);
 }
 
+// Lets an admin flip a claimed tag's visibility on the owner's behalf —
+// support cases where a customer wants their card hidden but can't do it
+// themselves. Uses the regular RLS-scoped client: the "Admins can reset any
+// tag" UPDATE policy from 0005_admin_rls.sql already permits admins to
+// update any column on `tags`, not just claimed/profile_id/claimed_at, so
+// no new RLS policy or RPC is needed for this.
+export async function setTagEnabled(tagId: string, enabled: boolean) {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tags")
+    .update({ enabled })
+    .eq("tag_id", tagId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/tags");
+  revalidatePath("/admin/customers");
+  revalidatePath(`/t/${tagId}`);
+}
+
 export type ProvisionState = { error: string | null; codes: string[] };
 
 export async function provisionBatch(
