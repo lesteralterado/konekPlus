@@ -35,7 +35,7 @@ export function PublicProfile({
         </div>
 
         <div className="flex flex-col items-center px-6 pb-8 text-center">
-          <div className="-mt-14 h-28 w-28 overflow-hidden rounded-full bg-brand-100 shadow-lg ring-4 ring-white">
+          <div className="relative -mt-14 h-28 w-28 overflow-hidden rounded-full bg-brand-100 shadow-lg ring-4 ring-white">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
