@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ClaimForm } from "./claim-form";
 import { PublicProfile } from "./public-profile";
@@ -81,6 +82,12 @@ export default async function TagPage({
     data: { user },
   } = await supabase.auth.getUser();
   const isOwner = user?.id === profile.user_id;
+
+  // Only count real visitors tapping the card, not the owner previewing
+  // their own — scheduled via after() so it never delays the response.
+  if (!isOwner) {
+    after(() => supabase.rpc("record_tag_view", { p_tag_id: tag_id }));
+  }
 
   return <PublicProfile profile={profile} tagId={tag_id} isOwner={isOwner} />;
 }

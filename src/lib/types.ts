@@ -73,6 +73,18 @@ export type Database = {
         Args: { p_tag_id: string; p_enabled: boolean };
         Returns: boolean;
       };
+      claimed_tag_count: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      record_tag_view: {
+        Args: { p_tag_id: string };
+        Returns: undefined;
+      };
+      recent_tag_view_count: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
     };
   };
 };

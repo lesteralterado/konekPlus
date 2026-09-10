@@ -1,5 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
+import { createPublicClient } from "@/lib/supabase/public";
+
+// Refresh the "cards claimed" stat every 5 minutes rather than on every
+// request, so the homepage stays statically served.
+export const revalidate = 300;
 
 function TapIcon({ className }: { className?: string }) {
   return (
@@ -120,94 +125,96 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
-const floatingCards = [
-  {
-    tilt: "-rotate-[6deg] translate-y-2 md:-rotate-[12deg] md:translate-y-4",
-    z: "z-10",
-    content: (
-      <div className="flex h-full flex-col gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
-            A
+function buildFloatingCards(claimedCount: number) {
+  return [
+    {
+      tilt: "-rotate-[6deg] translate-y-2 md:-rotate-[12deg] md:translate-y-4",
+      z: "z-10",
+      content: (
+        <div className="flex h-full flex-col gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-xs font-semibold text-brand-700">
+              A
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-800">Alex Ade</p>
+              <p className="text-[10px] text-slate-400">Studio Lead</p>
+            </div>
+          </div>
+          <div className="h-px bg-slate-100" />
+          <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand-900 px-2.5 py-1 text-[10px] font-medium text-white">
+            Save to contacts
+          </span>
+        </div>
+      ),
+    },
+    {
+      tilt: "-rotate-[3deg] translate-y-1 md:-rotate-[5deg] md:translate-y-1",
+      z: "z-20",
+      content: (
+        <div className="flex h-full flex-col items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-700">
+            <TapIcon className="h-[18px] w-[18px]" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-800">Alex Ade</p>
-            <p className="text-[10px] text-slate-400">Studio Lead</p>
+            <p className="text-xs font-semibold text-slate-800">Tap to connect</p>
+            <p className="text-[10px] text-slate-400">Works with any phone</p>
           </div>
         </div>
-        <div className="h-px bg-slate-100" />
-        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand-900 px-2.5 py-1 text-[10px] font-medium text-white">
-          Save to contacts
-        </span>
-      </div>
-    ),
-  },
-  {
-    tilt: "-rotate-[3deg] translate-y-1 md:-rotate-[5deg] md:translate-y-1",
-    z: "z-20",
-    content: (
-      <div className="flex h-full flex-col items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-700">
-          <TapIcon className="h-[18px] w-[18px]" />
+      ),
+    },
+    {
+      tilt: "-translate-y-1 md:-translate-y-3",
+      z: "z-30",
+      content: (
+        <div className="flex h-full flex-col justify-between gap-3">
+          <div className="flex items-center justify-center gap-1.5">
+            <CardChipIcon className="h-3 w-[18px] text-slate-300" />
+            <CardChipIcon className="h-3 w-[18px] text-slate-400" />
+            <CardChipIcon className="h-3 w-[18px] text-brand-600" />
+          </div>
+          <div className="flex justify-center text-slate-300">
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
+              <path d="M12 4v13M7 13l5 5 5-5" />
+            </svg>
+          </div>
+          <div className="flex items-center justify-center gap-1.5 text-brand-700">
+            <UserIcon className="h-4 w-4" />
+            <p className="text-[10px] font-semibold text-slate-800">1 profile</p>
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-semibold text-slate-800">Tap to connect</p>
-          <p className="text-[10px] text-slate-400">Works with any phone</p>
+      ),
+    },
+    {
+      tilt: "rotate-[4deg] translate-y-1 md:rotate-[7deg] md:translate-y-2",
+      z: "z-20",
+      dark: true,
+      content: (
+        <div className="flex h-full flex-col justify-between">
+          <p className="text-2xl font-bold text-white">{claimedCount}</p>
+          <p className="text-[10px] leading-snug text-white/50">
+            cards linked so far
+          </p>
         </div>
-      </div>
-    ),
-  },
-  {
-    tilt: "-translate-y-1 md:-translate-y-3",
-    z: "z-30",
-    content: (
-      <div className="flex h-full flex-col justify-between gap-3">
-        <div className="flex items-center justify-center gap-1.5">
-          <CardChipIcon className="h-3 w-[18px] text-slate-300" />
-          <CardChipIcon className="h-3 w-[18px] text-slate-400" />
-          <CardChipIcon className="h-3 w-[18px] text-brand-600" />
+      ),
+    },
+    {
+      tilt: "rotate-[7deg] translate-y-2 md:rotate-[13deg] md:translate-y-5",
+      z: "z-10",
+      content: (
+        <div className="flex h-full flex-col items-start gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-500/15 text-accent-500">
+            <RefreshIcon className="h-[18px] w-[18px]" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-800">Edit once</p>
+            <p className="text-[10px] text-slate-400">Every card updates instantly</p>
+          </div>
         </div>
-        <div className="flex justify-center text-slate-300">
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-            <path d="M12 4v13M7 13l5 5 5-5" />
-          </svg>
-        </div>
-        <div className="flex items-center justify-center gap-1.5 text-brand-700">
-          <UserIcon className="h-4 w-4" />
-          <p className="text-[10px] font-semibold text-slate-800">1 profile</p>
-        </div>
-      </div>
-    ),
-  },
-  {
-    tilt: "rotate-[4deg] translate-y-1 md:rotate-[7deg] md:translate-y-2",
-    z: "z-20",
-    dark: true,
-    content: (
-      <div className="flex h-full flex-col justify-between">
-        <p className="text-2xl font-bold text-white">XX+</p>
-        <p className="text-[10px] leading-snug text-white/50">
-          cards linked so far <span className="italic">(placeholder)</span>
-        </p>
-      </div>
-    ),
-  },
-  {
-    tilt: "rotate-[7deg] translate-y-2 md:rotate-[13deg] md:translate-y-5",
-    z: "z-10",
-    content: (
-      <div className="flex h-full flex-col items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-500/15 text-accent-500">
-          <RefreshIcon className="h-[18px] w-[18px]" />
-        </div>
-        <div>
-          <p className="text-xs font-semibold text-slate-800">Edit once</p>
-          <p className="text-[10px] text-slate-400">Every card updates instantly</p>
-        </div>
-      </div>
-    ),
-  },
-];
+      ),
+    },
+  ];
+}
 
 const faqs = [
   {
@@ -232,8 +239,47 @@ const faqs = [
   },
 ];
 
-export default function Home() {
+const productGallery: {
+  title: string;
+  description: string;
+  src: string;
+}[] = [
+  {
+    title: "The full kit",
+    description: "Your Konek+ card, arriving ready to tap on day one.",
+    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025285/ChatGPT_Image_Sep_10_2026_02_59_11_PM_dhpx6b.png",
+  },
+  {
+    title: "Every angle",
+    description: "A closer look at the card from all sides.",
+    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025282/ChatGPT_Image_Sep_10_2026_03_00_56_PM_u31ljz.png",
+  },
+  {
+    title: "Thoughtful packaging",
+    description: "Presentation that feels as premium as the card itself.",
+    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025270/ChatGPT_Image_Sep_10_2026_02_57_04_PM_hwvubn.png",
+  },
+  {
+    title: "What's inside",
+    description: "The NFC chip and antenna that make the tap work.",
+    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025560/ChatGPT_Image_Sep_10_2026_03_31_50_PM_xcvlyr.png",
+  },
+];
+
+export default async function Home() {
+  const supabase = createPublicClient();
+  const [{ data: claimedData }, { data: recentViewData }] = await Promise.all([
+    supabase.rpc("claimed_tag_count"),
+    supabase.rpc("recent_tag_view_count"),
+  ]);
+  const claimedCount = claimedData ?? 0;
+  const recentViewCount = recentViewData ?? 0;
+  const floatingCards = buildFloatingCards(claimedCount);
+
+  const year = new Date().getFullYear();
+
   return (
+    <>
     <main className="flex-1">
       {/* ============ HERO ============ */}
       <section className="relative overflow-hidden bg-brand-900">
@@ -414,9 +460,7 @@ export default function Home() {
               <TapIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-3xl font-bold text-white">
-                XX+ <span className="text-sm font-normal text-white/40">(placeholder)</span>
-              </p>
+              <p className="text-3xl font-bold text-white">{claimedCount}</p>
               <p className="mt-1 text-sm text-white/50">
                 Physical cards claimed and linked to a profile so far.
               </p>
@@ -424,9 +468,7 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col justify-between gap-6 rounded-3xl bg-slate-50 p-6">
-            <p className="text-3xl font-bold text-brand-900">
-              XX% <span className="text-sm font-normal text-slate-400">(placeholder)</span>
-            </p>
+            <p className="text-3xl font-bold text-brand-900">100%</p>
             <p className="text-sm text-slate-500">
               Of profile edits sync to every linked card instantly — no
               re-tapping required.
@@ -434,11 +476,9 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col justify-between gap-6 rounded-3xl bg-accent-500 p-6">
-            <p className="text-3xl font-bold text-brand-900">
-              XX+ <span className="text-sm font-normal text-brand-900/50">(placeholder)</span>
-            </p>
+            <p className="text-3xl font-bold text-brand-900">{recentViewCount}</p>
             <p className="text-sm text-brand-900/70">
-              Profile taps served every month.
+              Profile taps served in the last 30 days.
             </p>
           </div>
 
@@ -453,6 +493,51 @@ export default function Home() {
                 Every card you own.
               </span>
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ PRODUCT GALLERY ============ */}
+      <section className="bg-slate-50 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="text-center">
+            <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
+              • The card kit
+            </span>
+            <h2 className="mt-4 text-3xl font-semibold text-balance text-brand-900 sm:text-4xl">
+              Every detail, made to be tapped.
+            </h2>
+          </div>
+
+          <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {productGallery.map((item) => (
+              <div
+                key={item.title}
+                className="overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
+              >
+                <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
+                  {item.src ? (
+                    <Image
+                      src={item.src}
+                      alt={item.title}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-200 text-xs font-medium uppercase tracking-wide text-slate-300">
+                      Image coming soon
+                    </div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="font-semibold text-brand-900">{item.title}</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {item.description}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -518,6 +603,78 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ============ FINAL CTA ============ */}
+      <section className="bg-slate-50 py-20 sm:py-28">
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="flex flex-col items-center gap-6 rounded-[2.5rem] bg-brand-900 px-6 py-14 text-center sm:px-16">
+            <h2 className="max-w-lg text-3xl font-semibold text-balance text-white sm:text-4xl">
+              One card. Every version of you,{" "}
+              <span className="text-accent-500">always current.</span>
+            </h2>
+            <p className="max-w-md text-balance text-white/60">
+              Set up your profile once — every Konek+ card you own shares
+              it, updated the instant you change it.
+            </p>
+            <Link
+              href="/login"
+              className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent-500 py-2.5 pl-5 pr-2.5 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
+            >
+              Sign in to your dashboard
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
+                <ArrowUpRightIcon className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          </div>
+        </div>
+      </section>
     </main>
+
+    {/* ============ FOOTER ============ */}
+    <footer className="bg-white">
+      <div className="mx-auto max-w-6xl px-6 py-14">
+        <div className="flex flex-col justify-between gap-10 sm:flex-row">
+          <div className="max-w-xs">
+            <div className="flex items-center gap-2 text-brand-900">
+              <Image
+                src="https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png"
+                alt="Konek+ logo"
+                width={28}
+                height={28}
+                unoptimized
+                className="h-7 w-7 object-contain"
+              />
+              <span className="text-lg font-semibold tracking-tight">Konek+</span>
+            </div>
+            <p className="mt-3 text-sm text-slate-500">
+              One profile behind every card you own — tap to share, edit
+              once to keep it current.
+            </p>
+          </div>
+
+          <nav className="flex gap-10 text-sm">
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Product
+              </span>
+              <a href="#how-it-works" className="text-slate-600 transition hover:text-brand-700">
+                How it works
+              </a>
+              <a href="#about" className="text-slate-600 transition hover:text-brand-700">
+                About
+              </a>
+              <Link href="/login" className="text-slate-600 transition hover:text-brand-700">
+                Sign in
+              </Link>
+            </div>
+          </nav>
+        </div>
+
+        <div className="mt-12 border-t border-slate-100 pt-6 text-center text-xs text-slate-400 sm:text-left">
+          © {year} Konek+. All rights reserved.
+        </div>
+      </div>
+    </footer>
+    </>
   );
 }
