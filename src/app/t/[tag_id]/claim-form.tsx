@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import {
   type ClaimState,
   linkExistingAndClaim,
@@ -84,9 +85,8 @@ export function ClaimForm({ tagId }: { tagId: string }) {
             required
             className={inputClass}
           />
-          <input
+          <PasswordInput
             name="password"
-            type="password"
             placeholder="Password (min. 8 characters)"
             required
             minLength={8}
@@ -113,9 +113,8 @@ export function ClaimForm({ tagId }: { tagId: string }) {
             required
             className={inputClass}
           />
-          <input
+          <PasswordInput
             name="password"
-            type="password"
             placeholder="Password"
             required
             className={inputClass}

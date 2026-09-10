@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { PasswordInput } from "@/components/password-input";
 import { type LoginState, login } from "./actions";
 
 const initialLoginState: LoginState = { error: null };
@@ -24,9 +25,8 @@ export function LoginForm({ next }: { next: string }) {
         required
         className={inputClass}
       />
-      <input
+      <PasswordInput
         name="password"
-        type="password"
         placeholder="Password"
         required
         className={inputClass}
