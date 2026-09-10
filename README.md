@@ -1,5 +1,7 @@
 # Konek+
 
+[![Konek+ preview](https://res.cloudinary.com/dhxi75eld/image/upload/v1789060850/KonekPlus_rm1wht.png)](https://konek-plus.vercel.app)
+
 NFC digital business card app. Tap an unclaimed card to set up a profile;
 every tap after that shows the public profile. One profile can own many
 cards — edit once, every card stays current. See the architecture brief in
