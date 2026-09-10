@@ -2,6 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import {
+  buildFacebookUrl,
+  buildInstagramUrl,
+  buildLinkedInUrl,
+  buildTikTokUrl,
+  buildWebsiteUrl,
+  buildWhatsAppUrl,
+} from "@/lib/socials";
 import { createClient } from "@/lib/supabase/server";
 
 export type ProfileFormState = { error: string | null; success: boolean };
@@ -21,16 +29,44 @@ export async function updateProfile(
   const company = String(formData.get("company") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
-  const linkedin = String(formData.get("social_linkedin") ?? "").trim();
-  const instagram = String(formData.get("social_instagram") ?? "").trim();
-  const website = String(formData.get("social_website") ?? "").trim();
 
   if (!fullName) return { error: "Full name is required.", success: false };
 
-  const socials: Record<string, string> = {};
-  if (linkedin) socials.linkedin = linkedin;
-  if (instagram) socials.instagram = instagram;
-  if (website) socials.website = website;
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("socials")
+    .eq("user_id", user.id)
+    .single();
+
+  const socials: Record<string, string> = { ...(existing?.socials ?? {}) };
+  const setOrDelete = (key: string, value: string) => {
+    if (value) socials[key] = value;
+    else delete socials[key];
+  };
+  setOrDelete(
+    "linkedin",
+    buildLinkedInUrl(String(formData.get("social_linkedin") ?? "")),
+  );
+  setOrDelete(
+    "instagram",
+    buildInstagramUrl(String(formData.get("social_instagram") ?? "")),
+  );
+  setOrDelete(
+    "facebook",
+    buildFacebookUrl(String(formData.get("social_facebook") ?? "")),
+  );
+  setOrDelete(
+    "tiktok",
+    buildTikTokUrl(String(formData.get("social_tiktok") ?? "")),
+  );
+  setOrDelete(
+    "whatsapp",
+    buildWhatsAppUrl(String(formData.get("social_whatsapp") ?? "")),
+  );
+  setOrDelete(
+    "website",
+    buildWebsiteUrl(String(formData.get("social_website") ?? "")),
+  );
 
   let avatarUrl: string | undefined;
   const avatarFile = formData.get("avatar");
@@ -122,4 +158,29 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/login");
+}
+
+export async function disconnectSocial(provider: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("socials")
+    .eq("user_id", user.id)
+    .single();
+
+  const socials = { ...(existing?.socials ?? {}) };
+  delete socials[provider];
+
+  await supabase
+    .from("profiles")
+    .update({ socials, updated_at: new Date().toISOString() })
+    .eq("user_id", user.id);
+
+  revalidatePath("/dashboard");
+  revalidatePath("/t/[tag_id]", "page");
 }

@@ -117,3 +117,50 @@ export function CreditCardIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function LinkedInIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <line x1="7.5" y1="10.5" x2="7.5" y2="17" />
+      <circle cx="7.5" cy="6.8" r="0.4" fill="currentColor" />
+      <path d="M11.5 17v-4a2.5 2.5 0 0 1 5 0v4" />
+    </Svg>
+  );
+}
+
+export function FacebookIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M14 8.5h-1.5a2 2 0 0 0-2 2V12H9v2.5h1.5V19h2.5v-4.5H15l.4-2.5h-2.4v-1.2a.7.7 0 0 1 .7-.7H15z" />
+    </Svg>
+  );
+}
+
+export function TikTokIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M14 4v10.5a3.5 3.5 0 1 1-3-3.46" />
+      <path d="M14 4c0 2.5 2 4.5 4.5 4.5" />
+    </Svg>
+  );
+}
+
+export function WhatsAppIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      <path d="M8.5 10.5c.3 2.7 2.3 4.7 5 5" />
+    </Svg>
+  );
+}
+
+export function YouTubeIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="2" y="5" width="20" height="14" rx="4" />
+      <path d="M10 9v6l5-3z" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}

@@ -1,17 +1,22 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
+import { extractHandle, extractWhatsAppNumber } from "@/lib/socials";
 import type { Profile } from "@/lib/types";
-import { type ProfileFormState, updateProfile } from "./actions";
+import { disconnectSocial, type ProfileFormState, updateProfile } from "./actions";
 import {
+  FacebookIcon,
   GlobeIcon,
   InstagramIcon,
-  LinkIcon,
+  LinkedInIcon,
   MailIcon,
   PencilIcon,
   PhoneIcon,
+  TikTokIcon,
+  WhatsAppIcon,
+  YouTubeIcon,
 } from "./icons";
 
 const initialProfileState: ProfileFormState = { error: null, success: false };
@@ -25,12 +30,56 @@ const iconChipClass =
 const cardClass =
   "rounded-4xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6";
 
-export function ProfileForm({ profile }: { profile: Profile }) {
+function SocialField({
+  icon,
+  label,
+  name,
+  prefix,
+  placeholder,
+  defaultValue,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  name: string;
+  prefix?: string;
+  placeholder: string;
+  defaultValue: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+      <span className={iconChipClass}>{icon}</span>
+      <div className="min-w-0 flex-1 text-left">
+        <label className={rowLabelClass}>{label}</label>
+        <div className="flex items-center gap-1">
+          {prefix && (
+            <span className="shrink-0 text-sm text-slate-400">{prefix}</span>
+          )}
+          <input
+            name={name}
+            defaultValue={defaultValue}
+            placeholder={placeholder}
+            className={rowValueClass}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProfileForm({
+  profile,
+  feedback,
+}: {
+  profile: Profile;
+  feedback?: { type: "success" | "error"; message: string } | null;
+}) {
   const [state, formAction, pending] = useActionState(
     updateProfile,
     initialProfileState,
   );
   const [preview, setPreview] = useState<string | null>(profile.avatar_url);
+  const [isDisconnecting, startDisconnect] = useTransition();
+  const youtubeUrl = profile.socials?.youtube ?? "";
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -139,54 +188,118 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <div className={cardClass}>
-        <h3 className="mb-4 text-sm font-semibold text-brand-900">Socials</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="flex flex-col items-center gap-2 rounded-3xl bg-brand-50/60 p-3 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
-              <LinkIcon className="h-4 w-4" />
+        <h3 className="mb-1 text-sm font-semibold text-brand-900">Socials</h3>
+        <p className="mb-3 text-xs text-slate-400">
+          Just your username — we&apos;ll build the link.
+        </p>
+        <div className="flex flex-col divide-y divide-slate-100">
+          <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <span className={iconChipClass}>
+              <YouTubeIcon />
             </span>
-            <label className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              LinkedIn
-            </label>
-            <input
-              name="social_linkedin"
-              placeholder="Add link"
-              defaultValue={profile.socials?.linkedin ?? ""}
-              className="w-full border-0 bg-transparent p-0 text-center text-[11px] text-slate-600 placeholder:text-slate-400 focus:outline-none"
-            />
+            <div className="min-w-0 flex-1 text-left">
+              <label className={rowLabelClass}>YouTube</label>
+              {youtubeUrl ? (
+                <div className="flex items-center gap-2">
+                  <span className="truncate text-sm font-medium text-slate-800">
+                    Connected
+                  </span>
+                  <button
+                    type="button"
+                    disabled={isDisconnecting}
+                    onClick={() =>
+                      startDisconnect(() => disconnectSocial("youtube"))
+                    }
+                    className="text-xs font-medium text-slate-400 underline decoration-dotted hover:text-red-600 disabled:opacity-60"
+                  >
+                    {isDisconnecting ? "Removing…" : "Disconnect"}
+                  </button>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-400">Not connected</p>
+              )}
+            </div>
+            {!youtubeUrl && (
+              <a
+                href="/api/connect/youtube"
+                className="shrink-0 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-700"
+              >
+                Connect
+              </a>
+            )}
           </div>
-          <div className="flex flex-col items-center gap-2 rounded-3xl bg-brand-50/60 p-3 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
-              <InstagramIcon className="h-4 w-4" />
-            </span>
-            <label className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              Instagram
-            </label>
-            <input
-              name="social_instagram"
-              placeholder="Add link"
-              defaultValue={profile.socials?.instagram ?? ""}
-              className="w-full border-0 bg-transparent p-0 text-center text-[11px] text-slate-600 placeholder:text-slate-400 focus:outline-none"
-            />
-          </div>
-          <div className="flex flex-col items-center gap-2 rounded-3xl bg-brand-50/60 p-3 text-center">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-brand-700 shadow-sm">
-              <GlobeIcon className="h-4 w-4" />
-            </span>
-            <label className="text-[11px] font-medium uppercase tracking-wide text-slate-400">
-              Website
-            </label>
-            <input
-              name="social_website"
-              placeholder="Add link"
-              defaultValue={profile.socials?.website ?? ""}
-              className="w-full border-0 bg-transparent p-0 text-center text-[11px] text-slate-600 placeholder:text-slate-400 focus:outline-none"
-            />
-          </div>
+          <SocialField
+            icon={<LinkedInIcon />}
+            label="LinkedIn"
+            name="social_linkedin"
+            prefix="linkedin.com/in/"
+            placeholder="your-name"
+            defaultValue={extractHandle(
+              "linkedin",
+              profile.socials?.linkedin ?? "",
+            )}
+          />
+          <SocialField
+            icon={<InstagramIcon />}
+            label="Instagram"
+            name="social_instagram"
+            prefix="@"
+            placeholder="username"
+            defaultValue={extractHandle(
+              "instagram",
+              profile.socials?.instagram ?? "",
+            )}
+          />
+          <SocialField
+            icon={<FacebookIcon />}
+            label="Facebook"
+            name="social_facebook"
+            prefix="facebook.com/"
+            placeholder="username"
+            defaultValue={extractHandle(
+              "facebook",
+              profile.socials?.facebook ?? "",
+            )}
+          />
+          <SocialField
+            icon={<TikTokIcon />}
+            label="TikTok"
+            name="social_tiktok"
+            prefix="@"
+            placeholder="username"
+            defaultValue={extractHandle(
+              "tiktok",
+              profile.socials?.tiktok ?? "",
+            )}
+          />
+          <SocialField
+            icon={<WhatsAppIcon />}
+            label="WhatsApp"
+            name="social_whatsapp"
+            prefix="+"
+            placeholder="63 912 345 6789"
+            defaultValue={extractWhatsAppNumber(
+              profile.socials?.whatsapp ?? "",
+            )}
+          />
+          <SocialField
+            icon={<GlobeIcon />}
+            label="Website"
+            name="social_website"
+            placeholder="yourname.com"
+            defaultValue={profile.socials?.website ?? ""}
+          />
         </div>
       </div>
 
       <div className="flex flex-col items-center gap-3">
+        {feedback && (
+          <p
+            className={`text-sm ${feedback.type === "error" ? "text-red-600" : "text-brand-700"}`}
+          >
+            {feedback.message}
+          </p>
+        )}
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
         {state.success && (
           <p className="text-sm text-brand-700">

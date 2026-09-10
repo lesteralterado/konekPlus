@@ -8,7 +8,34 @@ import { ChevronRightIcon, CreditCardIcon, LogOutIcon } from "./icons";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+const SOCIAL_ERROR_MESSAGES: Record<string, string> = {
+  youtube_not_configured:
+    "YouTube connection isn't set up yet — contact support.",
+  youtube_state_mismatch: "That connection attempt expired — please try again.",
+  youtube_token_exchange_failed:
+    "Couldn't connect your YouTube channel — please try again.",
+  youtube_channel_lookup_failed:
+    "Couldn't connect your YouTube channel — please try again.",
+  youtube_no_channel: "That Google account doesn't have a YouTube channel.",
+};
+
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ social_connected?: string; social_error?: string }>;
+}) {
+  const { social_connected, social_error } = await searchParams;
+  const feedback = social_connected
+    ? { type: "success" as const, message: "YouTube connected!" }
+    : social_error
+      ? {
+          type: "error" as const,
+          message:
+            SOCIAL_ERROR_MESSAGES[social_error] ??
+            "Couldn't complete that connection — please try again.",
+        }
+      : null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -50,7 +77,7 @@ export default async function DashboardPage() {
           No profile yet — tap one of your Konek+ cards to set it up.
         </p>
       ) : (
-        <ProfileForm profile={profile} />
+        <ProfileForm profile={profile} feedback={feedback} />
       )}
 
       <section className="mt-6 rounded-4xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-8">

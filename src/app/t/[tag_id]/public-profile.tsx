@@ -1,7 +1,46 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  FacebookIcon,
+  GlobeIcon,
+  InstagramIcon,
+  LinkedInIcon,
+  TikTokIcon,
+  WhatsAppIcon,
+  YouTubeIcon,
+} from "@/app/dashboard/icons";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
 import type { Profile } from "@/lib/types";
+
+const SOCIAL_ORDER = [
+  "linkedin",
+  "instagram",
+  "facebook",
+  "tiktok",
+  "whatsapp",
+  "youtube",
+  "website",
+] as const;
+
+const SOCIAL_ICONS: Record<string, typeof GlobeIcon> = {
+  linkedin: LinkedInIcon,
+  instagram: InstagramIcon,
+  facebook: FacebookIcon,
+  tiktok: TikTokIcon,
+  whatsapp: WhatsAppIcon,
+  youtube: YouTubeIcon,
+  website: GlobeIcon,
+};
+
+const SOCIAL_LABELS: Record<string, string> = {
+  linkedin: "LinkedIn",
+  instagram: "Instagram",
+  facebook: "Facebook",
+  tiktok: "TikTok",
+  whatsapp: "WhatsApp",
+  youtube: "YouTube",
+  website: "Website",
+};
 
 export function PublicProfile({
   profile,
@@ -12,9 +51,13 @@ export function PublicProfile({
   tagId: string;
   isOwner: boolean;
 }) {
-  const socials = Object.entries(profile.socials ?? {}).filter(
-    ([, url]) => url,
-  );
+  const allSocials = profile.socials ?? {};
+  const socials = [
+    ...SOCIAL_ORDER.map((key) => [key, allSocials[key]] as const),
+    ...Object.entries(allSocials).filter(
+      ([key]) => !(SOCIAL_ORDER as readonly string[]).includes(key),
+    ),
+  ].filter(([, url]) => url);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
@@ -85,18 +128,24 @@ export function PublicProfile({
           </div>
 
           {socials.length > 0 && (
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {socials.map(([label, url]) => (
-                <a
-                  key={label}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold capitalize text-slate-600 transition hover:bg-slate-200"
-                >
-                  {label}
-                </a>
-              ))}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              {socials.map(([key, url]) => {
+                const Icon = SOCIAL_ICONS[key] ?? GlobeIcon;
+                const label = SOCIAL_LABELS[key] ?? key;
+                return (
+                  <a
+                    key={key}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    title={label}
+                    className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 hover:text-brand-700"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                );
+              })}
             </div>
           )}
         </div>
