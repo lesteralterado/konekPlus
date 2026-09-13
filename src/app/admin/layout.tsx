@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/admin-auth";
 import { signOut } from "@/app/dashboard/actions";
-import { ArrowLeftIcon, GridIcon, CreditCardIcon, LogOutIcon, UsersIcon } from "./icons";
+import {
+  ArrowLeftIcon,
+  GridIcon,
+  CreditCardIcon,
+  KeyIcon,
+  LogOutIcon,
+  UsersIcon,
+} from "./icons";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: GridIcon },
   { href: "/admin/tags", label: "Tags", icon: CreditCardIcon },
+  { href: "/admin/keychains", label: "Keychains", icon: KeyIcon },
   { href: "/admin/customers", label: "Customers", icon: UsersIcon },
 ];
 

@@ -105,3 +105,21 @@ export function ArrowLeftIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function KeyIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <circle cx="8" cy="8" r="4.5" />
+      <path d="M11.2 11.2 20 20" />
+      <path d="M15.5 15.5 20 15.5 20 20" />
+    </Svg>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <polyline points="20 6 9 17 4 12" />
+    </Svg>
+  );
+}
