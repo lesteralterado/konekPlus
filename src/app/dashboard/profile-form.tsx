@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
 import { extractHandle, extractWhatsAppNumber } from "@/lib/socials";
 import type { Profile } from "@/lib/types";
 import { disconnectSocial, type ProfileFormState, updateProfile } from "./actions";
+import { AvatarCropper } from "./avatar-cropper";
 import {
   FacebookIcon,
   GlobeIcon,
@@ -78,11 +79,37 @@ export function ProfileForm({
     initialProfileState,
   );
   const [preview, setPreview] = useState<string | null>(profile.avatar_url);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isDisconnecting, startDisconnect] = useTransition();
   const youtubeUrl = profile.socials?.youtube ?? "";
 
+  function handleCropped(blob: Blob) {
+    const file = new File([blob], "avatar.jpg", { type: blob.type });
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+    if (avatarInputRef.current) {
+      avatarInputRef.current.files = dataTransfer.files;
+    }
+    setPreview(URL.createObjectURL(blob));
+    setCropSrc(null);
+  }
+
+  function handleCropCancel() {
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+    setCropSrc(null);
+  }
+
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <>
+      {cropSrc && (
+        <AvatarCropper
+          imageSrc={cropSrc}
+          onCancel={handleCropCancel}
+          onCropped={handleCropped}
+        />
+      )}
+      <form action={formAction} className="flex flex-col gap-6">
       <div className="overflow-hidden rounded-[2.5rem] bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.18)]">
         <div
           className="h-36 bg-slate-200 bg-cover bg-center sm:h-40"
@@ -112,12 +139,13 @@ export function ProfileForm({
             >
               <PencilIcon className="h-4 w-4" />
               <input
+                ref={avatarInputRef}
                 name="avatar"
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
-                  if (file) setPreview(URL.createObjectURL(file));
+                  if (file) setCropSrc(URL.createObjectURL(file));
                 }}
                 className="sr-only"
               />
@@ -316,5 +344,6 @@ export function ProfileForm({
         </button>
       </div>
     </form>
+    </>
   );
 }

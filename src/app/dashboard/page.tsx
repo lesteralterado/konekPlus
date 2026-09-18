@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import { AddTagForm } from "./add-tag-form";
 import { ProfileForm } from "./profile-form";
 import { signOut, toggleTagEnabled } from "./actions";
@@ -77,7 +78,18 @@ export default async function DashboardPage({
           No profile yet — tap one of your Konek+ cards to set it up.
         </p>
       ) : (
-        <ProfileForm profile={profile} feedback={feedback} />
+        <>
+          <ProfileForm profile={profile} feedback={feedback} />
+          <Link
+            href="/dashboard/template"
+            className="mt-4 flex items-center justify-between rounded-3xl bg-white px-5 py-4 text-sm font-semibold text-brand-900 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] transition hover:bg-brand-50/60 active:scale-[0.99]"
+          >
+            Change your style
+            <span className="text-brand-500">
+              {TEMPLATE_LABELS[profile.template]} →
+            </span>
+          </Link>
+        </>
       )}
 
       <section className="mt-6 rounded-4xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-8">

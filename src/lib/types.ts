@@ -1,5 +1,7 @@
 export type Socials = Record<string, string>;
 
+export type ProfileTemplate = "classic" | "editorial" | "minimal";
+
 export type Profile = {
   id: string;
   user_id: string;
@@ -10,6 +12,7 @@ export type Profile = {
   email: string | null;
   socials: Socials | null;
   avatar_url: string | null;
+  template: ProfileTemplate;
   updated_at: string;
 };
 

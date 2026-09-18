@@ -1,7 +1,7 @@
 import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ClaimForm } from "./claim-form";
-import { PublicProfile } from "./public-profile";
+import { ProfileTemplateView } from "./templates";
 
 export const dynamic = "force-dynamic";
 
@@ -89,5 +89,7 @@ export default async function TagPage({
     after(() => supabase.rpc("record_tag_view", { p_tag_id: tag_id }));
   }
 
-  return <PublicProfile profile={profile} tagId={tag_id} isOwner={isOwner} />;
+  return (
+    <ProfileTemplateView profile={profile} tagId={tag_id} isOwner={isOwner} />
+  );
 }
