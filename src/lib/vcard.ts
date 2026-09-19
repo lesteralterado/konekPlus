@@ -27,7 +27,13 @@ export function buildVCard(profile: Profile): string {
   if (profile.email) {
     lines.push(`EMAIL:${escapeVCardValue(profile.email)}`);
   }
+  if (profile.bio) {
+    lines.push(`NOTE:${escapeVCardValue(profile.bio)}`);
+  }
   for (const [label, url] of Object.entries(profile.socials ?? {})) {
+    if (url) lines.push(`URL;TYPE=${escapeVCardValue(label)}:${escapeVCardValue(url)}`);
+  }
+  for (const { label, url } of profile.links ?? []) {
     if (url) lines.push(`URL;TYPE=${escapeVCardValue(label)}:${escapeVCardValue(url)}`);
   }
 

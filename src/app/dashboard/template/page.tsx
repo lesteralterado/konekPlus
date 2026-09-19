@@ -36,6 +36,13 @@ export default async function TemplatePickerPage() {
     .maybeSingle();
   const previewTagId = firstTag?.tag_id ?? "preview";
 
+  const { data: portfolioItems } = await supabase
+    .from("portfolio_items")
+    .select("*")
+    .eq("profile_id", profile.id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
       <Link
@@ -71,6 +78,7 @@ export default async function TemplatePickerPage() {
                     profile={profile}
                     tagId={previewTagId}
                     isOwner={false}
+                    portfolioItems={portfolioItems ?? []}
                   />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-100 to-transparent" />

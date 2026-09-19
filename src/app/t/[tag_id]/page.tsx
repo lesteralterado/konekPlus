@@ -89,7 +89,19 @@ export default async function TagPage({
     after(() => supabase.rpc("record_tag_view", { p_tag_id: tag_id }));
   }
 
+  const { data: portfolioItems } = await supabase
+    .from("portfolio_items")
+    .select("*")
+    .eq("profile_id", profile.id)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+
   return (
-    <ProfileTemplateView profile={profile} tagId={tag_id} isOwner={isOwner} />
+    <ProfileTemplateView
+      profile={profile}
+      tagId={tag_id}
+      isOwner={isOwner}
+      portfolioItems={portfolioItems ?? []}
+    />
   );
 }

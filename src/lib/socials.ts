@@ -47,6 +47,27 @@ export function buildWhatsAppUrl(input: string): string {
   return `https://wa.me/${digits}`;
 }
 
+export function buildXUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  if (isFullUrl(trimmed)) return trimmed;
+  return `https://x.com/${bareHandle(trimmed)}`;
+}
+
+export function buildThreadsUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  if (isFullUrl(trimmed)) return trimmed;
+  return `https://www.threads.net/@${bareHandle(trimmed)}`;
+}
+
+export function buildPinterestUrl(input: string): string {
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+  if (isFullUrl(trimmed)) return trimmed;
+  return `https://www.pinterest.com/${bareHandle(trimmed)}/`;
+}
+
 export function buildWebsiteUrl(input: string): string {
   const trimmed = input.trim();
   if (!trimmed) return "";
@@ -58,6 +79,9 @@ const HANDLE_PATTERNS = {
   instagram: /^https?:\/\/(www\.)?instagram\.com\/([^/?#]+)/i,
   facebook: /^https?:\/\/(www\.)?facebook\.com\/([^/?#]+)/i,
   tiktok: /^https?:\/\/(www\.)?tiktok\.com\/@?([^/?#]+)/i,
+  x: /^https?:\/\/(www\.)?(?:x|twitter)\.com\/([^/?#]+)/i,
+  threads: /^https?:\/\/(www\.)?threads\.net\/@?([^/?#]+)/i,
+  pinterest: /^https?:\/\/(www\.)?pinterest\.[a-z.]+\/([^/?#]+)/i,
 } as const;
 
 export function extractHandle(

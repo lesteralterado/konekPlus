@@ -1,18 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
-import type { Profile } from "@/lib/types";
+import type { TemplateProps } from "./index";
+import { PortfolioGrid } from "./portfolio-grid";
+import { ShareButton } from "./share-button";
 import { getOrderedSocials } from "./social-list";
 
 export function ClassicTemplate({
   profile,
   tagId,
   isOwner,
-}: {
-  profile: Profile;
-  tagId: string;
-  isOwner: boolean;
-}) {
+  portfolioItems,
+}: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
 
   return (
@@ -57,6 +56,12 @@ export function ClassicTemplate({
               {[profile.job_title, profile.company].filter(Boolean).join(" · ")}
             </p>
           )}
+          {profile.tagline && (
+            <p className="mt-1 text-sm italic text-slate-400">{profile.tagline}</p>
+          )}
+          {profile.bio && (
+            <p className="mt-3 text-sm leading-relaxed text-slate-500">{profile.bio}</p>
+          )}
 
           <div className="mt-6 flex w-full flex-col gap-3">
             {profile.phone && (
@@ -75,12 +80,26 @@ export function ClassicTemplate({
                 Email {profile.email}
               </a>
             )}
+            {profile.cta_label && profile.cta_url && (
+              <a
+                href={profile.cta_url}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-2xl bg-accent-500 px-4 py-3.5 text-center font-bold text-brand-900 shadow-lg shadow-accent-500/25 transition hover:bg-accent-500/90 active:scale-[0.98]"
+              >
+                {profile.cta_label}
+              </a>
+            )}
             <a
               href={`/t/${tagId}/vcard`}
               className="rounded-2xl bg-brand-600 px-4 py-3.5 text-center font-bold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 active:scale-[0.98]"
             >
               Save to contacts
             </a>
+            <ShareButton
+              title={profile.full_name ?? "Konek+ profile"}
+              className="flex items-center justify-center gap-1.5 rounded-2xl border-2 border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
+            />
           </div>
 
           {socials.length > 0 && (
@@ -100,6 +119,24 @@ export function ClassicTemplate({
               ))}
             </div>
           )}
+
+          {profile.links.length > 0 && (
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {profile.links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100 active:scale-95"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <PortfolioGrid items={portfolioItems} />
         </div>
       </div>
     </main>

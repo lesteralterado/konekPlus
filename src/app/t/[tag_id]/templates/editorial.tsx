@@ -1,18 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PhoneIcon, MailIcon } from "@/app/dashboard/icons";
-import type { Profile } from "@/lib/types";
+import type { TemplateProps } from "./index";
+import { PortfolioGrid } from "./portfolio-grid";
+import { ShareButton } from "./share-button";
 import { getOrderedSocials } from "./social-list";
 
 export function EditorialTemplate({
   profile,
   tagId,
   isOwner,
-}: {
-  profile: Profile;
-  tagId: string;
-  isOwner: boolean;
-}) {
+  portfolioItems,
+}: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
   const initial = (profile.full_name ?? "?").slice(0, 1).toUpperCase();
 
@@ -53,10 +52,17 @@ export function EditorialTemplate({
                 {[profile.job_title, profile.company].filter(Boolean).join(" · ")}
               </p>
             )}
+            {profile.tagline && (
+              <p className="mt-1 text-sm italic text-white/60">{profile.tagline}</p>
+            )}
           </div>
         </div>
 
         <div className="flex flex-col items-center px-6 py-7 text-center">
+          {profile.bio && (
+            <p className="mb-6 text-sm leading-relaxed text-slate-500">{profile.bio}</p>
+          )}
+
           {socials.length > 0 && (
             <div className="mb-6 flex flex-wrap justify-center gap-2.5">
               {socials.map(({ key, url, Icon, label }) => (
@@ -94,7 +100,22 @@ export function EditorialTemplate({
                 <span className="text-xs font-semibold">Email</span>
               </a>
             )}
+            <ShareButton
+              title={profile.full_name ?? "Konek+ profile"}
+              className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
+            />
           </div>
+
+          {profile.cta_label && profile.cta_url && (
+            <a
+              href={profile.cta_url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 w-full rounded-2xl border-2 border-accent-500 px-4 py-3.5 text-center font-bold text-accent-500 transition hover:bg-accent-500/10 active:scale-[0.98]"
+            >
+              {profile.cta_label}
+            </a>
+          )}
 
           <a
             href={`/t/${tagId}/vcard`}
@@ -102,6 +123,24 @@ export function EditorialTemplate({
           >
             Save to contacts
           </a>
+
+          {profile.links.length > 0 && (
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {profile.links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 active:scale-95"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
+
+          <PortfolioGrid items={portfolioItems} />
         </div>
       </div>
     </main>

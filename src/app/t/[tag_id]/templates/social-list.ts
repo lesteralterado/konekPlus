@@ -3,8 +3,11 @@ import {
   GlobeIcon,
   InstagramIcon,
   LinkedInIcon,
+  PinterestIcon,
+  ThreadsIcon,
   TikTokIcon,
   WhatsAppIcon,
+  XIcon,
   YouTubeIcon,
 } from "@/app/dashboard/icons";
 import type { Socials } from "@/lib/types";
@@ -14,9 +17,11 @@ const SOCIAL_ORDER = [
   "instagram",
   "facebook",
   "tiktok",
+  "x",
+  "threads",
+  "pinterest",
   "whatsapp",
   "youtube",
-  "website",
 ] as const;
 
 const SOCIAL_ICONS: Record<string, typeof GlobeIcon> = {
@@ -24,9 +29,11 @@ const SOCIAL_ICONS: Record<string, typeof GlobeIcon> = {
   instagram: InstagramIcon,
   facebook: FacebookIcon,
   tiktok: TikTokIcon,
+  x: XIcon,
+  threads: ThreadsIcon,
+  pinterest: PinterestIcon,
   whatsapp: WhatsAppIcon,
   youtube: YouTubeIcon,
-  website: GlobeIcon,
 };
 
 const SOCIAL_LABELS: Record<string, string> = {
@@ -34,9 +41,11 @@ const SOCIAL_LABELS: Record<string, string> = {
   instagram: "Instagram",
   facebook: "Facebook",
   tiktok: "TikTok",
+  x: "X",
+  threads: "Threads",
+  pinterest: "Pinterest",
   whatsapp: "WhatsApp",
   youtube: "YouTube",
-  website: "Website",
 };
 
 export function getOrderedSocials(socials: Socials | null) {

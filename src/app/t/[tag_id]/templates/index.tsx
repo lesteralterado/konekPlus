@@ -1,11 +1,18 @@
-import type { Profile, ProfileTemplate } from "@/lib/types";
+import type { PortfolioItem, Profile, ProfileTemplate } from "@/lib/types";
 import { ClassicTemplate } from "./classic";
 import { EditorialTemplate } from "./editorial";
 import { MinimalTemplate } from "./minimal";
 
+export type TemplateProps = {
+  profile: Profile;
+  tagId: string;
+  isOwner: boolean;
+  portfolioItems: PortfolioItem[];
+};
+
 export const TEMPLATES: Record<
   ProfileTemplate,
-  (props: { profile: Profile; tagId: string; isOwner: boolean }) => React.ReactElement
+  (props: TemplateProps) => React.ReactElement
 > = {
   classic: ClassicTemplate,
   editorial: EditorialTemplate,
@@ -18,11 +25,7 @@ export const TEMPLATE_LABELS: Record<ProfileTemplate, string> = {
   minimal: "Minimal",
 };
 
-export function ProfileTemplateView(props: {
-  profile: Profile;
-  tagId: string;
-  isOwner: boolean;
-}) {
+export function ProfileTemplateView(props: TemplateProps) {
   const Template = TEMPLATES[props.profile.template] ?? ClassicTemplate;
   return <Template {...props} />;
 }

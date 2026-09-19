@@ -6,9 +6,12 @@ import {
   buildFacebookUrl,
   buildInstagramUrl,
   buildLinkedInUrl,
+  buildPinterestUrl,
+  buildThreadsUrl,
   buildTikTokUrl,
   buildWebsiteUrl,
   buildWhatsAppUrl,
+  buildXUrl,
 } from "@/lib/socials";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,10 +30,26 @@ export async function updateProfile(
   const fullName = String(formData.get("full_name") ?? "").trim();
   const jobTitle = String(formData.get("job_title") ?? "").trim();
   const company = String(formData.get("company") ?? "").trim();
+  const tagline = String(formData.get("tagline") ?? "").trim();
+  const bio = String(formData.get("bio") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
+  const ctaLabel = String(formData.get("cta_label") ?? "").trim();
+  const ctaUrl = String(formData.get("cta_url") ?? "").trim();
 
   if (!fullName) return { error: "Full name is required.", success: false };
+  if (!!ctaLabel !== !!ctaUrl) {
+    return {
+      error: "The custom button needs both a label and a URL — or leave both blank.",
+      success: false,
+    };
+  }
+
+  const linkLabels = formData.getAll("link_label").map((v) => String(v).trim());
+  const linkUrls = formData.getAll("link_url").map((v) => String(v).trim());
+  const links = linkLabels
+    .map((label, i) => ({ label, url: buildWebsiteUrl(linkUrls[i] ?? "") }))
+    .filter((l) => l.label && l.url);
 
   const { data: existing } = await supabase
     .from("profiles")
@@ -63,9 +82,14 @@ export async function updateProfile(
     "whatsapp",
     buildWhatsAppUrl(String(formData.get("social_whatsapp") ?? "")),
   );
+  setOrDelete("x", buildXUrl(String(formData.get("social_x") ?? "")));
   setOrDelete(
-    "website",
-    buildWebsiteUrl(String(formData.get("social_website") ?? "")),
+    "threads",
+    buildThreadsUrl(String(formData.get("social_threads") ?? "")),
+  );
+  setOrDelete(
+    "pinterest",
+    buildPinterestUrl(String(formData.get("social_pinterest") ?? "")),
   );
 
   let avatarUrl: string | undefined;
@@ -93,8 +117,13 @@ export async function updateProfile(
       full_name: fullName,
       job_title: jobTitle || null,
       company: company || null,
+      tagline: tagline || null,
+      bio: bio || null,
       phone: phone || null,
       email: email || null,
+      cta_label: ctaLabel || null,
+      cta_url: ctaUrl || null,
+      links,
       socials,
       ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       updated_at: new Date().toISOString(),

@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PhoneIcon, MailIcon } from "@/app/dashboard/icons";
-import type { Profile } from "@/lib/types";
+import type { TemplateProps } from "./index";
+import { PortfolioGrid } from "./portfolio-grid";
+import { ShareButton } from "./share-button";
 import { getOrderedSocials } from "./social-list";
 
 function BadgeCheckIcon({ className }: { className?: string }) {
@@ -52,13 +54,10 @@ export function MinimalTemplate({
   profile,
   tagId,
   isOwner,
-}: {
-  profile: Profile;
-  tagId: string;
-  isOwner: boolean;
-}) {
+  portfolioItems,
+}: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
-  const tagline = [profile.job_title, profile.company].filter(Boolean).join(" · ");
+  const roleLine = [profile.job_title, profile.company].filter(Boolean).join(" · ");
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
@@ -94,7 +93,13 @@ export function MinimalTemplate({
           </h1>
           <BadgeCheckIcon className="h-[18px] w-[18px] text-brand-600" />
         </div>
-        {tagline && <p className="mt-0.5 text-sm text-slate-400">{tagline}</p>}
+        {roleLine && <p className="mt-0.5 text-sm text-slate-400">{roleLine}</p>}
+        {profile.tagline && (
+          <p className="mt-0.5 text-sm italic text-slate-400">{profile.tagline}</p>
+        )}
+        {profile.bio && (
+          <p className="mt-3 text-sm leading-relaxed text-slate-500">{profile.bio}</p>
+        )}
 
         <a
           href={`/t/${tagId}/vcard`}
@@ -102,6 +107,17 @@ export function MinimalTemplate({
         >
           Save to contacts
         </a>
+
+        {profile.cta_label && profile.cta_url && (
+          <a
+            href={profile.cta_url}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2.5 inline-flex w-full items-center justify-center rounded-full border border-brand-200 px-6 py-3 text-sm font-bold text-brand-700 transition hover:bg-brand-50 active:scale-[0.98]"
+          >
+            {profile.cta_label}
+          </a>
+        )}
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           {profile.phone && (
@@ -119,7 +135,30 @@ export function MinimalTemplate({
               <Icon className="h-[18px] w-[18px]" />
             </IconAction>
           ))}
+          <ShareButton
+            title={profile.full_name ?? "Konek+ profile"}
+            iconOnly
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
+          />
         </div>
+
+        {profile.links.length > 0 && (
+          <div className="mt-5 flex flex-wrap justify-center gap-2">
+            {profile.links.map((link) => (
+              <a
+                key={link.url}
+                href={link.url}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
+
+        <PortfolioGrid items={portfolioItems} />
       </div>
     </main>
   );

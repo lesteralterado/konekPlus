@@ -9,14 +9,18 @@ import { disconnectSocial, type ProfileFormState, updateProfile } from "./action
 import { AvatarCropper } from "./avatar-cropper";
 import {
   FacebookIcon,
-  GlobeIcon,
   InstagramIcon,
   LinkedInIcon,
+  LinkIcon,
   MailIcon,
   PencilIcon,
   PhoneIcon,
+  PinterestIcon,
+  SparkleIcon,
+  ThreadsIcon,
   TikTokIcon,
   WhatsAppIcon,
+  XIcon,
   YouTubeIcon,
 } from "./icons";
 
@@ -83,6 +87,10 @@ export function ProfileForm({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isDisconnecting, startDisconnect] = useTransition();
   const youtubeUrl = profile.socials?.youtube ?? "";
+  const [links, setLinks] = useState<{ key: number; label: string; url: string }[]>(
+    () => profile.links.map((l, i) => ({ key: i, ...l })),
+  );
+  const nextLinkKey = useRef(links.length);
 
   function handleCropped(blob: Blob) {
     const file = new File([blob], "avatar.jpg", { type: blob.type });
@@ -177,6 +185,21 @@ export function ProfileForm({
               className="min-w-0 flex-1 truncate border-0 border-b border-transparent bg-transparent p-0 text-center placeholder:text-slate-400 focus:border-brand-300 focus:outline-none"
             />
           </div>
+
+          <input
+            name="tagline"
+            defaultValue={profile.tagline ?? ""}
+            placeholder="Short tagline (e.g. “Building modern web solutions”)"
+            className="mt-2 w-full max-w-xs border-0 border-b border-transparent bg-transparent p-0 text-center text-sm italic text-slate-500 placeholder:text-slate-400 placeholder:not-italic focus:border-brand-300 focus:outline-none"
+          />
+
+          <textarea
+            name="bio"
+            defaultValue={profile.bio ?? ""}
+            placeholder="A short bio — a couple sentences about what you do."
+            rows={2}
+            className="mt-2 w-full max-w-xs resize-none border-0 bg-transparent p-0 text-center text-sm text-slate-500 placeholder:text-slate-400 focus:outline-none"
+          />
         </div>
       </div>
 
@@ -311,12 +334,120 @@ export function ProfileForm({
             )}
           />
           <SocialField
-            icon={<GlobeIcon />}
-            label="Website"
-            name="social_website"
-            placeholder="yourname.com"
-            defaultValue={profile.socials?.website ?? ""}
+            icon={<XIcon />}
+            label="X (Twitter)"
+            name="social_x"
+            prefix="@"
+            placeholder="username"
+            defaultValue={extractHandle("x", profile.socials?.x ?? "")}
           />
+          <SocialField
+            icon={<ThreadsIcon />}
+            label="Threads"
+            name="social_threads"
+            prefix="@"
+            placeholder="username"
+            defaultValue={extractHandle("threads", profile.socials?.threads ?? "")}
+          />
+          <SocialField
+            icon={<PinterestIcon />}
+            label="Pinterest"
+            name="social_pinterest"
+            prefix="pinterest.com/"
+            placeholder="username"
+            defaultValue={extractHandle(
+              "pinterest",
+              profile.socials?.pinterest ?? "",
+            )}
+          />
+        </div>
+      </div>
+
+      <div className={cardClass}>
+        <h3 className="mb-1 text-sm font-semibold text-brand-900">
+          Custom action button
+        </h3>
+        <p className="mb-3 text-xs text-slate-400">
+          One prominent button on your profile — book a meeting, get a quote,
+          shop now, whatever matters most.
+        </p>
+        <div className="flex flex-col divide-y divide-slate-100">
+          <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <span className={iconChipClass}>
+              <SparkleIcon />
+            </span>
+            <div className="min-w-0 flex-1 text-left">
+              <label className={rowLabelClass}>Button label</label>
+              <input
+                name="cta_label"
+                defaultValue={profile.cta_label ?? ""}
+                placeholder="e.g. Book a Meeting"
+                className={rowValueClass}
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 py-3 first:pt-0 last:pb-0">
+            <span className={iconChipClass}>
+              <LinkIcon />
+            </span>
+            <div className="min-w-0 flex-1 text-left">
+              <label className={rowLabelClass}>Button link</label>
+              <input
+                name="cta_url"
+                defaultValue={profile.cta_url ?? ""}
+                placeholder="https://…"
+                className={rowValueClass}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={cardClass}>
+        <h3 className="mb-1 text-sm font-semibold text-brand-900">Links</h3>
+        <p className="mb-3 text-xs text-slate-400">
+          Your website, portfolio, store, booking page — whatever you want to
+          point people to.
+        </p>
+        <div className="flex flex-col gap-3">
+          {links.map((link) => (
+            <div key={link.key} className="flex items-center gap-2">
+              <input
+                name="link_label"
+                defaultValue={link.label}
+                placeholder="Label (e.g. Portfolio)"
+                className={`${rowValueClass} w-28 shrink-0 rounded-lg border border-slate-200 px-2.5 py-2`}
+              />
+              <input
+                name="link_url"
+                defaultValue={link.url}
+                placeholder="https://…"
+                className={`${rowValueClass} flex-1 rounded-lg border border-slate-200 px-2.5 py-2`}
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setLinks((prev) => prev.filter((l) => l.key !== link.key))
+                }
+                aria-label="Remove link"
+                className="shrink-0 text-slate-300 transition hover:text-red-500"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={() =>
+              setLinks((prev) => [
+                ...prev,
+                { key: nextLinkKey.current++, label: "", url: "" },
+              ])
+            }
+            className="self-start text-sm font-semibold text-brand-600 hover:text-brand-700"
+          >
+            + Add a link
+          </button>
         </div>
       </div>
 

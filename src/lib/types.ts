@@ -2,6 +2,8 @@ export type Socials = Record<string, string>;
 
 export type ProfileTemplate = "classic" | "editorial" | "minimal";
 
+export type ProfileLink = { label: string; url: string };
+
 export type Profile = {
   id: string;
   user_id: string;
@@ -13,7 +15,24 @@ export type Profile = {
   socials: Socials | null;
   avatar_url: string | null;
   template: ProfileTemplate;
+  tagline: string | null;
+  bio: string | null;
+  cta_label: string | null;
+  cta_url: string | null;
+  links: ProfileLink[];
   updated_at: string;
+};
+
+export type PortfolioItem = {
+  id: string;
+  profile_id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  project_url: string | null;
+  tech: string | null;
+  sort_order: number;
+  created_at: string;
 };
 
 export type Tag = {
@@ -114,6 +133,12 @@ export type Database = {
         Insert: Pick<KeychainItem, "order_id" | "platform" | "profile_url"> &
           Partial<KeychainItem>;
         Update: Partial<KeychainItem>;
+        Relationships: [];
+      };
+      portfolio_items: {
+        Row: PortfolioItem;
+        Insert: Pick<PortfolioItem, "profile_id" | "title"> & Partial<PortfolioItem>;
+        Update: Partial<PortfolioItem>;
         Relationships: [];
       };
     };
