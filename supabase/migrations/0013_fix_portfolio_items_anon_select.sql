@@ -1,0 +1,11 @@
+-- The "Owners can manage their own portfolio items" policy (FOR ALL) uses
+-- private.owns_profile(), which was only granted to `authenticated`. Since
+-- Postgres evaluates every permissive policy applicable to a command (to OR
+-- them together), an anonymous SELECT also triggers this policy's check —
+-- and without EXECUTE, that throws "permission denied for function
+-- owns_profile" instead of just evaluating to false, breaking the *other*
+-- (anon-facing) "viewable via a claimed tag" policy on the same table.
+-- Same bug class as the is_admin() incident in migration history — the fix
+-- is identical: grant anon execute too. owns_profile() reads auth.uid(),
+-- which is null for anon, so this is harmless (always resolves to false).
+grant execute on function private.owns_profile(uuid) to anon;
