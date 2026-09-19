@@ -9,3 +9,8 @@ export const PROFILE_BANNER_URL =
 // same asset, preloaded in layout.tsx so the preloader never shows blank.
 export const LOGO_URL =
   "https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png";
+
+// Placeholder support inbox referenced by the Privacy Policy and Terms of
+// Service (src/app/(legal)/) — swap for a real, monitored inbox before
+// launch.
+export const LEGAL_CONTACT_EMAIL = "privacy@konek.plus";

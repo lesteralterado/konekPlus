@@ -668,6 +668,18 @@ export default async function Home() {
                 Sign in
               </Link>
             </div>
+
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Legal
+              </span>
+              <Link href="/privacy" className="text-slate-600 transition hover:text-brand-700">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-slate-600 transition hover:text-brand-700">
+                Terms of Service
+              </Link>
+            </div>
           </nav>
         </div>
 
