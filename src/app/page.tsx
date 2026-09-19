@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LOGO_URL } from "@/lib/constants";
 import { createPublicClient } from "@/lib/supabase/public";
 
 // Refresh the "cards claimed" stat every 5 minutes rather than on every
@@ -296,7 +297,7 @@ export default async function Home() {
           <div className="flex items-center gap-2 text-white">
             {/* <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10"> */}
               <Image
-                src="https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png"
+                src={LOGO_URL}
                 alt="Konek+ logo"
                 width={20}
                 height={20}
@@ -637,7 +638,7 @@ export default async function Home() {
           <div className="max-w-xs">
             <div className="flex items-center gap-2 text-brand-900">
               <Image
-                src="https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png"
+                src={LOGO_URL}
                 alt="Konek+ logo"
                 width={28}
                 height={28}
