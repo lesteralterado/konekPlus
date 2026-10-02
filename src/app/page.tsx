@@ -269,12 +269,21 @@ const productGallery: {
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const [{ data: claimedData }, { data: recentViewData }] = await Promise.all([
+  const [
+    { data: claimedData },
+    { data: recentViewData },
+    { data: avgRatingData },
+    { data: ratingCountData },
+  ] = await Promise.all([
     supabase.rpc("claimed_tag_count"),
     supabase.rpc("recent_tag_view_count"),
+    supabase.rpc("average_feedback_rating"),
+    supabase.rpc("feedback_rating_count"),
   ]);
   const claimedCount = claimedData ?? 0;
   const recentViewCount = recentViewData ?? 0;
+  const averageRating = avgRatingData ?? null;
+  const ratingCount = ratingCountData ?? 0;
   const floatingCards = buildFloatingCards(claimedCount);
 
   const year = new Date().getFullYear();
@@ -365,17 +374,19 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="mt-7 flex flex-col items-center gap-1.5">
-            <div className="flex gap-0.5 text-accent-500">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <StarIcon key={i} className="h-3.5 w-3.5" />
-              ))}
+          {averageRating !== null && ratingCount > 0 && (
+            <div className="mt-7 flex flex-col items-center gap-1.5">
+              <div className="flex gap-0.5 text-accent-500">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <StarIcon key={i} className="h-3.5 w-3.5" />
+                ))}
+              </div>
+              <p className="text-xs text-white/55">
+                Rated {averageRating.toFixed(1)}/5 from {ratingCount}+ pieces of
+                feedback
+              </p>
             </div>
-            <p className="text-xs text-white/55">
-              Rated X.X/5 by XX+ card owners{" "}
-              <span className="italic text-white/35">(placeholder)</span>
-            </p>
-          </div>
+          )}
 
           <p className="mt-6 text-sm text-white/55">
             Got a new card? Tap it — the code on the back opens{" "}

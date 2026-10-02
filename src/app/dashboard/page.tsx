@@ -96,6 +96,13 @@ export default async function DashboardPage({
             Manage portfolio
             <span className="text-brand-500">→</span>
           </Link>
+          <Link
+            href="/dashboard/testimonials"
+            className="mt-3 flex items-center justify-between rounded-3xl bg-white px-5 py-4 text-sm font-semibold text-brand-900 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] transition hover:bg-brand-50/60 active:scale-[0.99]"
+          >
+            Manage testimonials
+            <span className="text-brand-500">→</span>
+          </Link>
         </>
       )}
 

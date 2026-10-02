@@ -7,6 +7,7 @@ import {
   CreditCardIcon,
   KeyIcon,
   LogOutIcon,
+  MessageIcon,
   UsersIcon,
 } from "./icons";
 
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/admin/tags", label: "Tags", icon: CreditCardIcon },
   { href: "/admin/keychains", label: "Keychains", icon: KeyIcon },
   { href: "/admin/customers", label: "Customers", icon: UsersIcon },
+  { href: "/admin/feedback", label: "Feedback", icon: MessageIcon },
 ];
 
 export default async function AdminLayout({

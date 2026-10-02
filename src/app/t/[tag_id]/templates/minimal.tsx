@@ -5,6 +5,7 @@ import type { TemplateProps } from "./index";
 import { PortfolioGrid } from "./portfolio-grid";
 import { ShareButton } from "./share-button";
 import { getOrderedSocials } from "./social-list";
+import { TestimonialsSection } from "./testimonials-section";
 
 function BadgeCheckIcon({ className }: { className?: string }) {
   return (
@@ -55,6 +56,7 @@ export function MinimalTemplate({
   tagId,
   isOwner,
   portfolioItems,
+  testimonials,
 }: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
   const roleLine = [profile.job_title, profile.company].filter(Boolean).join(" · ");
@@ -159,6 +161,11 @@ export function MinimalTemplate({
         )}
 
         <PortfolioGrid items={portfolioItems} />
+        <TestimonialsSection
+          profileId={profile.id}
+          ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
+          items={testimonials}
+        />
       </div>
     </main>
   );

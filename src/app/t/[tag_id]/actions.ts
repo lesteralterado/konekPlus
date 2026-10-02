@@ -71,6 +71,51 @@ export async function signUpAndClaim(
   redirect(`/t/${tagId}`);
 }
 
+// resetToken only changes on success — the dialog form uses it as a React
+// `key` to clear its uncontrolled inputs. Same pattern as
+// src/app/feedback-actions.ts / src/app/dashboard/portfolio/actions.ts.
+export type TestimonialFormState = { error: string | null; resetToken: number };
+
+export async function submitTestimonial(
+  prevState: TestimonialFormState,
+  formData: FormData,
+): Promise<TestimonialFormState> {
+  // Honeypot — see src/app/feedback-actions.ts for why this field exists.
+  if (String(formData.get("website") ?? "").trim() !== "") {
+    return { error: null, resetToken: Date.now() };
+  }
+
+  const profileId = String(formData.get("profile_id") ?? "");
+  const authorName = String(formData.get("author_name") ?? "").trim();
+  const message = String(formData.get("message") ?? "").trim();
+  const ratingRaw = String(formData.get("rating") ?? "").trim();
+
+  if (!profileId) {
+    return { error: "Missing profile.", resetToken: prevState.resetToken };
+  }
+  if (!message) {
+    return { error: "Say a bit about your experience.", resetToken: prevState.resetToken };
+  }
+  if (message.length > 500) {
+    return { error: "Keep it under 500 characters.", resetToken: prevState.resetToken };
+  }
+  const rating = Number(ratingRaw);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return { error: "Pick a star rating.", resetToken: prevState.resetToken };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("profile_testimonials").insert({
+    profile_id: profileId,
+    author_name: authorName || null,
+    rating,
+    message,
+  });
+  if (error) return { error: error.message, resetToken: prevState.resetToken };
+
+  return { error: null, resetToken: Date.now() };
+}
+
 // Existing owner: log in, then link this tag to their existing profile — no
 // new profile fields needed.
 export async function linkExistingAndClaim(

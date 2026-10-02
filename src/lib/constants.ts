@@ -14,3 +14,11 @@ export const LOGO_URL =
 // Service (src/app/(legal)/) — swap for a real, monitored inbox before
 // launch.
 export const LEGAL_CONTACT_EMAIL = "privacy@konek.plus";
+
+// Valid destinations for the standalone feedback page (src/app/f/[slug]/),
+// meant to be printed as a QR code or written to a dedicated NFC feedback
+// card. One fixed slug for now — add more here (and give them their own
+// admin-visible labels) if per-location/per-event tracking is ever needed;
+// src/app/admin/feedback/page.tsx already surfaces page_path per submission,
+// which is what actually distinguishes one slug's feedback from another's.
+export const FEEDBACK_SLUGS = ["card"] as const;

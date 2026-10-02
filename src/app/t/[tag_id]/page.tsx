@@ -96,12 +96,22 @@ export default async function TagPage({
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
 
+  // RLS only returns approved rows to non-owners (see 0014_feedback.sql);
+  // the owner sees everything including pending ones from /dashboard/testimonials.
+  const { data: testimonials } = await supabase
+    .from("profile_testimonials")
+    .select("*")
+    .eq("profile_id", profile.id)
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
+
   return (
     <ProfileTemplateView
       profile={profile}
       tagId={tag_id}
       isOwner={isOwner}
       portfolioItems={portfolioItems ?? []}
+      testimonials={testimonials ?? []}
     />
   );
 }

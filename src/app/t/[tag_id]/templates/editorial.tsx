@@ -5,12 +5,14 @@ import type { TemplateProps } from "./index";
 import { PortfolioGrid } from "./portfolio-grid";
 import { ShareButton } from "./share-button";
 import { getOrderedSocials } from "./social-list";
+import { TestimonialsSection } from "./testimonials-section";
 
 export function EditorialTemplate({
   profile,
   tagId,
   isOwner,
   portfolioItems,
+  testimonials,
 }: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
   const initial = (profile.full_name ?? "?").slice(0, 1).toUpperCase();
@@ -141,6 +143,11 @@ export function EditorialTemplate({
           )}
 
           <PortfolioGrid items={portfolioItems} />
+          <TestimonialsSection
+            profileId={profile.id}
+            ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
+            items={testimonials}
+          />
         </div>
       </div>
     </main>

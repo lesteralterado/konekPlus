@@ -1,4 +1,4 @@
-import type { PortfolioItem, Profile, ProfileTemplate } from "@/lib/types";
+import type { PortfolioItem, Profile, ProfileTemplate, ProfileTestimonial } from "@/lib/types";
 import { ClassicTemplate } from "./classic";
 import { EditorialTemplate } from "./editorial";
 import { MinimalTemplate } from "./minimal";
@@ -8,6 +8,7 @@ export type TemplateProps = {
   tagId: string;
   isOwner: boolean;
   portfolioItems: PortfolioItem[];
+  testimonials: ProfileTestimonial[];
 };
 
 export const TEMPLATES: Record<

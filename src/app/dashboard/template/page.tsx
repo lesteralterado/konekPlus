@@ -79,6 +79,7 @@ export default async function TemplatePickerPage() {
                     tagId={previewTagId}
                     isOwner={false}
                     portfolioItems={portfolioItems ?? []}
+                    testimonials={[]}
                   />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-100 to-transparent" />

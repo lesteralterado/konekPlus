@@ -123,3 +123,26 @@ export function CheckIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function MessageIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-4-.9L3 20l1.4-5.5a8.5 8.5 0 0 1 16.6-3Z" />
+    </Svg>
+  );
+}
+
+export function StarIcon({ filled, ...props }: IconProps & { filled?: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 20 20"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={1.4}
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M10 1.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L10 14.9l-5.2 2.8 1-5.9L1.5 7.7l5.9-.8L10 1.5z" />
+    </svg>
+  );
+}

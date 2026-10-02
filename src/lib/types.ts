@@ -35,6 +35,31 @@ export type PortfolioItem = {
   created_at: string;
 };
 
+export type FeedbackCategory = "bug" | "feature" | "general";
+export type FeedbackStatus = "new" | "reviewed" | "resolved";
+
+export type Feedback = {
+  id: string;
+  user_id: string | null;
+  category: FeedbackCategory;
+  message: string;
+  rating: number | null;
+  screenshot_url: string | null;
+  page_path: string | null;
+  status: FeedbackStatus;
+  created_at: string;
+};
+
+export type ProfileTestimonial = {
+  id: string;
+  profile_id: string;
+  author_name: string | null;
+  rating: number;
+  message: string;
+  approved: boolean;
+  created_at: string;
+};
+
 export type Tag = {
   tag_id: string;
   claimed: boolean;
@@ -141,6 +166,19 @@ export type Database = {
         Update: Partial<PortfolioItem>;
         Relationships: [];
       };
+      feedback: {
+        Row: Feedback;
+        Insert: Pick<Feedback, "category" | "message"> & Partial<Feedback>;
+        Update: Partial<Feedback>;
+        Relationships: [];
+      };
+      profile_testimonials: {
+        Row: ProfileTestimonial;
+        Insert: Pick<ProfileTestimonial, "profile_id" | "rating" | "message"> &
+          Partial<ProfileTestimonial>;
+        Update: Partial<ProfileTestimonial>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -173,6 +211,14 @@ export type Database = {
         Returns: undefined;
       };
       recent_tag_view_count: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      average_feedback_rating: {
+        Args: Record<string, never>;
+        Returns: number | null;
+      };
+      feedback_rating_count: {
         Args: Record<string, never>;
         Returns: number;
       };
