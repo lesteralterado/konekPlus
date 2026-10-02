@@ -102,6 +102,50 @@ export const en = {
       rights: "All rights reserved.",
     },
   },
+  guide: {
+    kicker: "Quick guide",
+    heading: "Unboxed your card? You're one tap from live.",
+    subtitle:
+      "The paper guide inside every Konek+ box, so you can follow along before you even open the box.",
+    outsideLabel: "Outside of the leaflet",
+    insideLabel: "Inside of the leaflet",
+    swipeHint: "Swipe to flip through the guide",
+    stepsHeading: "Three ways it works",
+    steps: [
+      {
+        title: "Tap your card",
+        body: "Hold your Konek+ card near the top of a smartphone, where NFC is located.",
+      },
+      {
+        title: "View your profile",
+        body: "Your contact details, socials, website and more appear instantly.",
+      },
+      {
+        title: "Or scan the QR code",
+        body: "If NFC isn't available or you prefer your camera, scan the QR code on the back of your card.",
+      },
+    ],
+    androidNote:
+      "Most Android phones have NFC enabled. On iPhone, make sure NFC is on and you're using a supported model (iPhone 7 and newer).",
+    proTip: "Pro tip: you can also save the contact to your phone, or share it, with just one tap.",
+    noAppNeeded: "No app needed. Just tap or scan!",
+    viewFullGuide: "Open the full guide",
+    backToDashboard: "← Back to dashboard",
+    pageTitle: "Your Konek+ quick guide",
+    pageSubtitle: "Everything from the paper guide in your box, always at hand.",
+    panelAlts: [
+      "Konek+ quick guide cover: Digital Business Card, tap, connect, grow",
+      "What's in your Konek+ card: NFC technology, a unique QR code and a premium finish",
+      "Back of the guide showing the front and back of a Konek+ card: small card, big connections",
+      "Step 1: tap your card on the top of a smartphone",
+      "Step 2: your profile appears on the phone",
+      "Step 3: or scan the QR code on the back of the card",
+    ],
+    outsideAlt:
+      "The outside of the Konek+ paper guide: cover, what's in your card, and the card front and back",
+    insideAlt:
+      "The inside of the Konek+ paper guide: tap your card, view your profile, or scan the QR code",
+  },
   tagStatus: {
     invalidCardTitle: "This card isn't recognized",
     invalidCardBody:

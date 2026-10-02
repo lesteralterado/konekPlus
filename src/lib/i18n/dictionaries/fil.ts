@@ -119,6 +119,51 @@ export const fil = {
       rights: "Lahat ng karapatan ay nakalaan.",
     },
   },
+  guide: {
+    kicker: "Mabilis na gabay",
+    heading: "Nabuksan mo na ang card mo? Isang tap na lang, live ka na.",
+    subtitle:
+      "Ang papel na gabay sa loob ng bawat kahon ng Konek+, para masundan mo ito kahit bago mo pa buksan ang kahon.",
+    outsideLabel: "Labas ng leaflet",
+    insideLabel: "Loob ng leaflet",
+    swipeHint: "I-swipe para tingnan ang gabay",
+    stepsHeading: "Tatlong paraan kung paano ito gumagana",
+    steps: [
+      {
+        title: "I-tap ang iyong card",
+        body: "Idikit ang iyong Konek+ card malapit sa itaas ng smartphone, kung nasaan ang NFC.",
+      },
+      {
+        title: "Tingnan ang iyong profile",
+        body: "Agad na lalabas ang iyong contact details, socials, website, at iba pa.",
+      },
+      {
+        title: "O i-scan ang QR code",
+        body: "Kung walang NFC o mas gusto mo ang camera, i-scan ang QR code sa likod ng iyong card.",
+      },
+    ],
+    androidNote:
+      "Karamihan ng Android phone ay may NFC. Sa iPhone, siguraduhing naka-on ang NFC at gumagamit ka ng sinusuportahang modelo (iPhone 7 pataas).",
+    proTip:
+      "Pro tip: puwede mo ring i-save ang contact sa iyong phone, o ibahagi ito, sa isang tap lang.",
+    noAppNeeded: "Hindi kailangan ng app. I-tap o i-scan lang!",
+    viewFullGuide: "Buksan ang buong gabay",
+    backToDashboard: "← Bumalik sa dashboard",
+    pageTitle: "Ang iyong Konek+ quick guide",
+    pageSubtitle: "Lahat ng nasa papel na gabay sa iyong kahon, laging abot-kamay.",
+    panelAlts: [
+      "Pabalat ng Konek+ quick guide: Digital Business Card, tap, connect, grow",
+      "Ano ang laman ng iyong Konek+ card: NFC technology, natatanging QR code, at premium na finish",
+      "Likod ng gabay na nagpapakita ng harap at likod ng Konek+ card: maliit na card, malaking koneksyon",
+      "Hakbang 1: i-tap ang iyong card sa itaas ng smartphone",
+      "Hakbang 2: lalabas ang iyong profile sa phone",
+      "Hakbang 3: o i-scan ang QR code sa likod ng card",
+    ],
+    outsideAlt:
+      "Ang labas ng papel na gabay ng Konek+: pabalat, laman ng card, at harap at likod ng card",
+    insideAlt:
+      "Ang loob ng papel na gabay ng Konek+: i-tap ang card, tingnan ang profile, o i-scan ang QR code",
+  },
   tagStatus: {
     invalidCardTitle: "Hindi makilala ang card na ito",
     invalidCardBody:

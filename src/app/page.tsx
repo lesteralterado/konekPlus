@@ -6,6 +6,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getLocale } from "@/lib/i18n/locale";
 import { format } from "@/lib/i18n/format";
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { GuideSection } from "./guide/guide-section";
 import { LanguageSwitcher } from "./language-switcher";
 
 // Refresh the "cards claimed" stat every 5 minutes rather than on every
@@ -493,6 +494,11 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ============ UNBOXING GUIDE ============ */}
+      <section id="guide" className="scroll-mt-24 bg-white py-20 sm:py-28">
+        <GuideSection t={dict.guide} />
+      </section>
+
       {/* ============ SHOWCASE IMAGE ============ */}
       <section className="relative h-[50vh] max-h-[560px] min-h-[320px] w-full">
         <Image
@@ -602,6 +608,9 @@ export default async function Home() {
               <a href="#about" className="text-slate-600 transition hover:text-brand-700">
                 {t.nav.about}
               </a>
+              <Link href="/guide" className="text-slate-600 transition hover:text-brand-700">
+                {dict.guide.kicker}
+              </Link>
               <Link href="/login" className="text-slate-600 transition hover:text-brand-700">
                 {dict.common.signIn}
               </Link>

@@ -60,6 +60,27 @@ export type Dictionary = {
       rights: string;
     };
   };
+  guide: {
+    kicker: string;
+    heading: string;
+    subtitle: string;
+    outsideLabel: string;
+    insideLabel: string;
+    swipeHint: string;
+    stepsHeading: string;
+    steps: { title: string; body: string }[];
+    androidNote: string;
+    proTip: string;
+    noAppNeeded: string;
+    viewFullGuide: string;
+    backToDashboard: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    /** Alt text for the six leaflet panels, in carousel order. */
+    panelAlts: string[];
+    outsideAlt: string;
+    insideAlt: string;
+  };
   tagStatus: {
     invalidCardTitle: string;
     invalidCardBody: string;
