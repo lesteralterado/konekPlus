@@ -1,13 +1,13 @@
 import Image from "next/image";
 import type { PortfolioItem } from "@/lib/types";
 
-export function PortfolioGrid({ items }: { items: PortfolioItem[] }) {
+export function PortfolioGrid({ items, heading }: { items: PortfolioItem[]; heading: string }) {
   if (items.length === 0) return null;
 
   return (
     <div className="mt-6 w-full text-left">
       <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-        Portfolio
+        {heading}
       </h2>
       <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
         {items.map((item) => (

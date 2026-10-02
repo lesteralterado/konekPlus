@@ -2,6 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { LOGO_URL } from "@/lib/constants";
 import { createPublicClient } from "@/lib/supabase/public";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getLocale } from "@/lib/i18n/locale";
+import { format } from "@/lib/i18n/format";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { LanguageSwitcher } from "./language-switcher";
 
 // Refresh the "cards claimed" stat every 5 minutes rather than on every
 // request, so the homepage stays statically served.
@@ -126,7 +131,7 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
-function buildFloatingCards(claimedCount: number) {
+function buildFloatingCards(claimedCount: number, t: Dictionary["home"]["floatingCards"]) {
   return [
     {
       tilt: "-rotate-[6deg] translate-y-2 md:-rotate-[12deg] md:translate-y-4",
@@ -139,12 +144,12 @@ function buildFloatingCards(claimedCount: number) {
             </div>
             <div>
               <p className="text-xs font-semibold text-slate-800">Alex Ade</p>
-              <p className="text-[10px] text-slate-400">Studio Lead</p>
+              <p className="text-[10px] text-slate-400">{t.studioLead}</p>
             </div>
           </div>
           <div className="h-px bg-slate-100" />
           <span className="inline-flex w-fit items-center gap-1 rounded-full bg-brand-900 px-2.5 py-1 text-[10px] font-medium text-white">
-            Save to contacts
+            {t.saveToContacts}
           </span>
         </div>
       ),
@@ -158,8 +163,8 @@ function buildFloatingCards(claimedCount: number) {
             <TapIcon className="h-[18px] w-[18px]" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-800">Tap to connect</p>
-            <p className="text-[10px] text-slate-400">Works with any phone</p>
+            <p className="text-xs font-semibold text-slate-800">{t.tapToConnect}</p>
+            <p className="text-[10px] text-slate-400">{t.worksAnyPhone}</p>
           </div>
         </div>
       ),
@@ -181,7 +186,7 @@ function buildFloatingCards(claimedCount: number) {
           </div>
           <div className="flex items-center justify-center gap-1.5 text-brand-700">
             <UserIcon className="h-4 w-4" />
-            <p className="text-[10px] font-semibold text-slate-800">1 profile</p>
+            <p className="text-[10px] font-semibold text-slate-800">{t.oneProfile}</p>
           </div>
         </div>
       ),
@@ -193,9 +198,7 @@ function buildFloatingCards(claimedCount: number) {
       content: (
         <div className="flex h-full flex-col justify-between">
           <p className="text-2xl font-bold text-white">{claimedCount}</p>
-          <p className="text-[10px] leading-snug text-white/50">
-            cards linked so far
-          </p>
+          <p className="text-[10px] leading-snug text-white/50">{t.cardsLinked}</p>
         </div>
       ),
     },
@@ -208,8 +211,8 @@ function buildFloatingCards(claimedCount: number) {
             <RefreshIcon className="h-[18px] w-[18px]" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-800">Edit once</p>
-            <p className="text-[10px] text-slate-400">Every card updates instantly</p>
+            <p className="text-xs font-semibold text-slate-800">{t.editOnce}</p>
+            <p className="text-[10px] text-slate-400">{t.updatesInstantly}</p>
           </div>
         </div>
       ),
@@ -217,74 +220,30 @@ function buildFloatingCards(claimedCount: number) {
   ];
 }
 
-const faqs = [
-  {
-    q: "Do I need to install an app?",
-    a: "No. Tapping a Konek+ card opens your profile straight in the phone's browser — nothing to download, on iPhone or Android.",
-  },
-  {
-    q: "What if I have more than one Konek+ card?",
-    a: "Every card you own links back to the same profile. Edit it once from your dashboard and the change shows up no matter which card gets tapped.",
-  },
-  {
-    q: "Can I change my info after the card is already out in the world?",
-    a: "Yes — sign in to your dashboard any time to update your name, photo, contact details, or socials.",
-  },
-  {
-    q: "Who can see my public profile?",
-    a: "Anyone who taps or scans your card — that's the point. You choose exactly what goes on it: name, contact info, and socials, nothing more.",
-  },
-  {
-    q: "What happens if a card is lost?",
-    a: "Contact us and we'll unlink it from your profile, so it can't share your info anymore and can be reissued.",
-  },
-];
-
-const productGallery: {
-  title: string;
-  description: string;
-  src: string;
-}[] = [
-  {
-    title: "The full kit",
-    description: "Your Konek+ card, arriving ready to tap on day one.",
-    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025285/ChatGPT_Image_Sep_10_2026_02_59_11_PM_dhpx6b.png",
-  },
-  {
-    title: "Every angle",
-    description: "A closer look at the card from all sides.",
-    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025282/ChatGPT_Image_Sep_10_2026_03_00_56_PM_u31ljz.png",
-  },
-  {
-    title: "Thoughtful packaging",
-    description: "Presentation that feels as premium as the card itself.",
-    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025270/ChatGPT_Image_Sep_10_2026_02_57_04_PM_hwvubn.png",
-  },
-  {
-    title: "What's inside",
-    description: "The NFC chip and antenna that make the tap work.",
-    src: "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025560/ChatGPT_Image_Sep_10_2026_03_31_50_PM_xcvlyr.png",
-  },
+const productGalleryImages = [
+  "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025285/ChatGPT_Image_Sep_10_2026_02_59_11_PM_dhpx6b.png",
+  "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025282/ChatGPT_Image_Sep_10_2026_03_00_56_PM_u31ljz.png",
+  "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025270/ChatGPT_Image_Sep_10_2026_02_57_04_PM_hwvubn.png",
+  "https://res.cloudinary.com/dhxi75eld/image/upload/v1789025560/ChatGPT_Image_Sep_10_2026_03_31_50_PM_xcvlyr.png",
 ];
 
 export default async function Home() {
   const supabase = createPublicClient();
-  const [
-    { data: claimedData },
-    { data: recentViewData },
-    { data: avgRatingData },
-    { data: ratingCountData },
-  ] = await Promise.all([
-    supabase.rpc("claimed_tag_count"),
-    supabase.rpc("recent_tag_view_count"),
-    supabase.rpc("average_feedback_rating"),
-    supabase.rpc("feedback_rating_count"),
-  ]);
+  const [locale, dict, { data: claimedData }, { data: recentViewData }, { data: avgRatingData }, { data: ratingCountData }] =
+    await Promise.all([
+      getLocale(),
+      getDictionary(),
+      supabase.rpc("claimed_tag_count"),
+      supabase.rpc("recent_tag_view_count"),
+      supabase.rpc("average_feedback_rating"),
+      supabase.rpc("feedback_rating_count"),
+    ]);
   const claimedCount = claimedData ?? 0;
   const recentViewCount = recentViewData ?? 0;
   const averageRating = avgRatingData ?? null;
   const ratingCount = ratingCountData ?? 0;
-  const floatingCards = buildFloatingCards(claimedCount);
+  const floatingCards = buildFloatingCards(claimedCount, dict.home.floatingCards);
+  const t = dict.home;
 
   const year = new Date().getFullYear();
 
@@ -319,22 +278,25 @@ export default async function Home() {
 
           <div className="hidden items-center gap-8 text-sm font-medium text-white/70 md:flex">
             <a href="#how-it-works" className="transition hover:text-white">
-              How it works
+              {t.nav.howItWorks}
             </a>
             <a href="#about" className="transition hover:text-white">
-              About
+              {t.nav.about}
             </a>
           </div>
 
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-accent-500 py-2 pl-4 pr-2 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
-          >
-            Sign in
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
-              <ArrowUpRightIcon className="h-3.5 w-3.5" />
-            </span>
-          </Link>
+          <div className="flex items-center gap-4">
+            <LanguageSwitcher locale={locale} variant="dark" />
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 rounded-full bg-accent-500 py-2 pl-4 pr-2 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
+            >
+              {dict.common.signIn}
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
+                <ArrowUpRightIcon className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          </div>
         </nav>
 
         <div
@@ -342,32 +304,29 @@ export default async function Home() {
           style={{ textShadow: "0 2px 20px rgba(0,0,0,0.45)" }}
         >
           <span className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-medium uppercase tracking-wide text-white/80 backdrop-blur-sm">
-            NFC digital business cards
+            {t.hero.badge}
           </span>
 
           <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white text-balance sm:text-5xl">
-            Tap your card,
+            {t.hero.titleLine1}
             <br />
-            <span className="text-accent-500">share who you are.</span>
+            <span className="text-accent-500">{t.hero.titleLine2}</span>
           </h1>
 
-          <p className="mt-5 max-w-md text-balance text-white/75">
-            One profile behind every card you own. Update it once, and
-            every tap — on any card — stays current.
-          </p>
+          <p className="mt-5 max-w-md text-balance text-white/75">{t.hero.subtitle}</p>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a
               href="#how-it-works"
               className="rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
             >
-              See how it works
+              {t.hero.ctaHowItWorks}
             </a>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 rounded-full bg-accent-500 py-2.5 pl-5 pr-2.5 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
             >
-              Sign in to your dashboard
+              {t.hero.ctaSignIn}
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
                 <ArrowUpRightIcon className="h-3.5 w-3.5" />
               </span>
@@ -382,14 +341,13 @@ export default async function Home() {
                 ))}
               </div>
               <p className="text-xs text-white/55">
-                Rated {averageRating.toFixed(1)}/5 from {ratingCount}+ pieces of
-                feedback
+                {format(t.hero.ratingText, { rating: averageRating.toFixed(1), count: ratingCount })}
               </p>
             </div>
           )}
 
           <p className="mt-6 text-sm text-white/55">
-            Got a new card? Tap it — the code on the back opens{" "}
+            {t.hero.tapHint}{" "}
             <code className="rounded bg-white/15 px-1.5 py-0.5 text-white/80">
               /t/&lt;code&gt;
             </code>
@@ -434,25 +392,20 @@ export default async function Home() {
         <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-6 lg:grid-cols-2 lg:gap-16">
           <div>
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-              • About us
+              {t.about.kicker}
             </span>
             <h2 className="mt-4 text-3xl font-semibold leading-snug text-balance text-brand-900 sm:text-4xl">
-              A digital card platform built to keep your profile{" "}
+              {t.about.headingPrefix}{" "}
               <span className="inline-flex h-7 w-7 -translate-y-0.5 items-center justify-center rounded-full bg-brand-100 align-middle text-brand-700">
                 <RefreshIcon className="h-3.5 w-3.5" />
               </span>{" "}
-              always current and{" "}
+              {t.about.headingMiddle}{" "}
               <span className="inline-flex h-7 w-7 -translate-y-0.5 items-center justify-center rounded-full bg-accent-500/15 align-middle text-accent-500">
                 <LinkChainIcon className="h-3.5 w-3.5" />
               </span>{" "}
-              effortlessly shareable
+              {t.about.headingSuffix}
             </h2>
-            <p className="mt-5 text-slate-500">
-              Every Konek+ card carries the same live link back to your
-              profile. Whether it&apos;s your first card or your fifth,
-              one dashboard controls exactly what people see the moment
-              they tap.
-            </p>
+            <p className="mt-5 text-slate-500">{t.about.body}</p>
           </div>
 
           <div className="relative aspect-[4/5] overflow-hidden rounded-3xl shadow-xl">
@@ -473,37 +426,28 @@ export default async function Home() {
             </div>
             <div>
               <p className="text-3xl font-bold text-white">{claimedCount}</p>
-              <p className="mt-1 text-sm text-white/50">
-                Physical cards claimed and linked to a profile so far.
-              </p>
+              <p className="mt-1 text-sm text-white/50">{t.about.statCardsClaimed}</p>
             </div>
           </div>
 
           <div className="flex flex-col justify-between gap-6 rounded-3xl bg-slate-50 p-6">
-            <p className="text-3xl font-bold text-brand-900">100%</p>
-            <p className="text-sm text-slate-500">
-              Of profile edits sync to every linked card instantly — no
-              re-tapping required.
-            </p>
+            <p className="text-3xl font-bold text-brand-900">{t.about.statSyncValue}</p>
+            <p className="text-sm text-slate-500">{t.about.statSyncLabel}</p>
           </div>
 
           <div className="flex flex-col justify-between gap-6 rounded-3xl bg-accent-500 p-6">
             <p className="text-3xl font-bold text-brand-900">{recentViewCount}</p>
-            <p className="text-sm text-brand-900/70">
-              Profile taps served in the last 30 days.
-            </p>
+            <p className="text-sm text-brand-900/70">{t.about.statTapsServed}</p>
           </div>
 
           <div className="flex flex-col justify-between gap-6 rounded-3xl bg-brand-900 p-6">
             <p className="text-xs font-medium uppercase tracking-wide text-white/40">
-              Always in sync
+              {t.about.statAlwaysInSync}
             </p>
             <p className="text-2xl font-bold text-white">
-              One tap.
+              {t.about.statOneTap}
               <br />
-              <span className="text-lg font-medium text-white/60">
-                Every card you own.
-              </span>
+              <span className="text-lg font-medium text-white/60">{t.about.statEveryCard}</span>
             </p>
           </div>
         </div>
@@ -514,42 +458,37 @@ export default async function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-              • The card kit
+              {t.gallery.kicker}
             </span>
             <h2 className="mt-4 text-3xl font-semibold text-balance text-brand-900 sm:text-4xl">
-              Every detail, made to be tapped.
+              {t.gallery.heading}
             </h2>
           </div>
 
           <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {productGallery.map((item) => (
-              <div
-                key={item.title}
-                className="overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
-              >
-                <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
-                  {item.src ? (
-                    <Image
-                      src={item.src}
-                      alt={item.title}
-                      fill
-                      unoptimized
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-200 text-xs font-medium uppercase tracking-wide text-slate-300">
-                      Image coming soon
-                    </div>
-                  )}
+            {t.gallery.items.map((item, i) => {
+              const src = productGalleryImages[i];
+              return (
+                <div
+                  key={item.title}
+                  className="overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
+                >
+                  <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
+                    {src ? (
+                      <Image src={src} alt={item.title} fill unoptimized className="object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center border-2 border-dashed border-slate-200 text-xs font-medium uppercase tracking-wide text-slate-300">
+                        {t.gallery.imageComingSoon}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-semibold text-brand-900">{item.title}</h3>
+                    <p className="mt-1 text-sm text-slate-500">{item.description}</p>
+                  </div>
                 </div>
-                <div className="p-5">
-                  <h3 className="font-semibold text-brand-900">{item.title}</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {item.description}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -569,18 +508,14 @@ export default async function Home() {
       <section className="bg-brand-900 py-20 sm:py-24">
         <div className="mx-auto flex max-w-2xl flex-col items-center px-6 text-center">
           <h2 className="text-3xl font-semibold text-balance text-white sm:text-4xl">
-            Ready to make your card{" "}
-            <span className="text-accent-500">do more?</span>
+            {t.cta.headingPrefix} <span className="text-accent-500">{t.cta.headingSuffix}</span>
           </h2>
-          <p className="mt-4 max-w-md text-balance text-white/60">
-            Sign in to set up your profile, then tap any Konek+ card to
-            share it — no app, no re-typing, ever.
-          </p>
+          <p className="mt-4 max-w-md text-balance text-white/60">{t.cta.body}</p>
           <Link
             href="/login"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-500 py-2.5 pl-5 pr-2.5 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
           >
-            Sign in to your dashboard
+            {t.cta.button}
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
               <ArrowUpRightIcon className="h-3.5 w-3.5" />
             </span>
@@ -593,23 +528,21 @@ export default async function Home() {
         <div className="mx-auto max-w-2xl px-6">
           <div className="text-center">
             <span className="text-xs font-semibold uppercase tracking-wide text-brand-600">
-              • FAQ
+              {t.faq.kicker}
             </span>
             <h2 className="mt-4 text-3xl font-semibold text-balance text-brand-900 sm:text-4xl">
-              Questions, answered.
+              {t.faq.heading}
             </h2>
           </div>
 
           <div className="mt-10 flex flex-col divide-y divide-slate-100 rounded-3xl bg-slate-50 px-6">
-            {faqs.map((faq) => (
+            {t.faq.items.map((faq) => (
               <details key={faq.q} className="group py-5">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium text-brand-900 marker:content-none">
                   {faq.q}
                   <ChevronDownIcon className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                  {faq.a}
-                </p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">{faq.a}</p>
               </details>
             ))}
           </div>
@@ -621,18 +554,15 @@ export default async function Home() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="flex flex-col items-center gap-6 rounded-[2.5rem] bg-brand-900 px-6 py-14 text-center sm:px-16">
             <h2 className="max-w-lg text-3xl font-semibold text-balance text-white sm:text-4xl">
-              One card. Every version of you,{" "}
-              <span className="text-accent-500">always current.</span>
+              {t.finalCta.headingPrefix}{" "}
+              <span className="text-accent-500">{t.finalCta.headingSuffix}</span>
             </h2>
-            <p className="max-w-md text-balance text-white/60">
-              Set up your profile once — every Konek+ card you own shares
-              it, updated the instant you change it.
-            </p>
+            <p className="max-w-md text-balance text-white/60">{t.finalCta.body}</p>
             <Link
               href="/login"
               className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent-500 py-2.5 pl-5 pr-2.5 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
             >
-              Sign in to your dashboard
+              {t.finalCta.button}
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
                 <ArrowUpRightIcon className="h-3.5 w-3.5" />
               </span>
@@ -658,44 +588,48 @@ export default async function Home() {
               />
               <span className="text-lg font-semibold tracking-tight">Konek+</span>
             </div>
-            <p className="mt-3 text-sm text-slate-500">
-              One profile behind every card you own — tap to share, edit
-              once to keep it current.
-            </p>
+            <p className="mt-3 text-sm text-slate-500">{t.footer.tagline}</p>
           </div>
 
           <nav className="flex gap-10 text-sm">
             <div className="flex flex-col gap-3">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Product
+                {t.footer.productKicker}
               </span>
               <a href="#how-it-works" className="text-slate-600 transition hover:text-brand-700">
-                How it works
+                {t.nav.howItWorks}
               </a>
               <a href="#about" className="text-slate-600 transition hover:text-brand-700">
-                About
+                {t.nav.about}
               </a>
               <Link href="/login" className="text-slate-600 transition hover:text-brand-700">
-                Sign in
+                {dict.common.signIn}
               </Link>
             </div>
 
             <div className="flex flex-col gap-3">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Legal
+                {t.footer.legalKicker}
               </span>
               <Link href="/privacy" className="text-slate-600 transition hover:text-brand-700">
-                Privacy Policy
+                {t.footer.privacyPolicy}
               </Link>
               <Link href="/terms" className="text-slate-600 transition hover:text-brand-700">
-                Terms of Service
+                {t.footer.termsOfService}
               </Link>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                {dict.common.langEnglish} / {dict.common.langFilipino}
+              </span>
+              <LanguageSwitcher locale={locale} />
             </div>
           </nav>
         </div>
 
         <div className="mt-12 border-t border-slate-100 pt-6 text-center text-xs text-slate-400 sm:text-left">
-          © {year} Konek+. All rights reserved.
+          © {year} Konek+. {t.footer.rights}
         </div>
       </div>
     </footer>

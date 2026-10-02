@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FEEDBACK_SLUGS } from "@/lib/constants";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { FeedbackPageForm } from "./feedback-page-form";
 
 export const metadata: Metadata = {
@@ -18,5 +19,6 @@ export default async function FeedbackSlugPage({
     notFound();
   }
 
-  return <FeedbackPageForm slug={slug} />;
+  const dict = await getDictionary();
+  return <FeedbackPageForm slug={slug} page={dict.feedbackPage} form={dict.feedbackWidget} />;
 }

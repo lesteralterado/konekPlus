@@ -1,12 +1,22 @@
 import type { ReactNode } from "react";
 
-export function LegalHeader({ title, updated }: { title: string; updated: string }) {
+export function LegalHeader({
+  title,
+  updated,
+  updatedLabel = "Last updated",
+}: {
+  title: string;
+  updated: string;
+  updatedLabel?: string;
+}) {
   return (
     <header className="mb-12">
       <h1 className="text-3xl font-semibold tracking-tight text-brand-900 sm:text-4xl">
         {title}
       </h1>
-      <p className="mt-3 text-sm text-slate-400">Last updated {updated}</p>
+      <p className="mt-3 text-sm text-slate-400">
+        {updatedLabel} {updated}
+      </p>
     </header>
   );
 }

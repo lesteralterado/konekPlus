@@ -3,6 +3,8 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { CloseIcon, StarIcon } from "@/app/dashboard/icons";
 import type { ProfileTestimonial } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { format } from "@/lib/i18n/format";
 import { submitTestimonial, type TestimonialFormState } from "../actions";
 
 const initialState: TestimonialFormState = { error: null, resetToken: 0 };
@@ -44,10 +46,12 @@ export function TestimonialsSection({
   profileId,
   ownerFirstName,
   items,
+  dict,
 }: {
   profileId: string;
   ownerFirstName: string;
   items: ProfileTestimonial[];
+  dict: Dictionary["profile"];
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [state, formAction, pending] = useActionState(submitTestimonial, initialState);
@@ -69,7 +73,7 @@ export function TestimonialsSection({
           onClick={() => dialogRef.current?.showModal()}
           className="mx-auto block rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:border-brand-300 hover:text-brand-700"
         >
-          Leave feedback for {ownerFirstName}
+          {format(dict.leaveFeedbackFor, { name: ownerFirstName })}
         </button>
         <TestimonialDialog
           dialogRef={dialogRef}
@@ -80,6 +84,7 @@ export function TestimonialsSection({
           justSubmitted={justSubmitted}
           onClose={() => setJustSubmitted(false)}
           onSubmitAnother={() => setJustSubmitted(false)}
+          dict={dict}
         />
       </div>
     );
@@ -89,14 +94,14 @@ export function TestimonialsSection({
     <div className="mt-6 w-full text-left">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">
-          Feedback
+          {dict.feedbackHeading}
         </h2>
         <button
           type="button"
           onClick={() => dialogRef.current?.showModal()}
           className="text-xs font-semibold text-brand-700 hover:text-brand-900"
         >
-          Leave feedback
+          {dict.leaveFeedback}
         </button>
       </div>
       <div className="flex flex-col gap-2">
@@ -104,7 +109,7 @@ export function TestimonialsSection({
           <div key={t.id} className="rounded-2xl bg-slate-50 p-4">
             <div className="flex items-center justify-between gap-2">
               <span className="text-sm font-semibold text-slate-700">
-                {t.author_name || "Anonymous"}
+                {t.author_name || dict.anonymous}
               </span>
               <StarRow rating={t.rating} />
             </div>
@@ -121,6 +126,7 @@ export function TestimonialsSection({
         justSubmitted={justSubmitted}
         onClose={() => setJustSubmitted(false)}
         onSubmitAnother={() => setJustSubmitted(false)}
+        dict={dict}
       />
     </div>
   );
@@ -135,6 +141,7 @@ function TestimonialDialog({
   justSubmitted,
   onClose,
   onSubmitAnother,
+  dict,
 }: {
   dialogRef: React.RefObject<HTMLDialogElement | null>;
   profileId: string;
@@ -144,6 +151,7 @@ function TestimonialDialog({
   justSubmitted: boolean;
   onClose: () => void;
   onSubmitAnother: () => void;
+  dict: Dictionary["profile"];
 }) {
   return (
     <dialog
@@ -157,7 +165,7 @@ function TestimonialDialog({
       <div onClick={(e) => e.stopPropagation()} className="rounded-3xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-start justify-between">
           <h2 className="text-lg font-semibold text-brand-900">
-            {justSubmitted ? "Thanks!" : "Leave feedback"}
+            {justSubmitted ? dict.testimonialThanksTitle : dict.leaveFeedback}
           </h2>
           <button
             type="button"
@@ -171,15 +179,13 @@ function TestimonialDialog({
 
         {justSubmitted ? (
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-slate-600">
-              Thanks for the feedback — it&apos;ll show up here once they approve it.
-            </p>
+            <p className="text-sm text-slate-600">{dict.testimonialThanksBody}</p>
             <button
               type="button"
               onClick={onSubmitAnother}
               className="self-start rounded-full bg-brand-50 px-5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
             >
-              Leave another
+              {dict.testimonialAnother}
             </button>
           </div>
         ) : (
@@ -195,18 +201,20 @@ function TestimonialDialog({
 
             <input
               name="author_name"
-              placeholder="Your name (optional)"
+              placeholder={dict.testimonialNamePlaceholder}
               className={inputClass}
             />
             <textarea
               name="message"
               required
               rows={3}
-              placeholder="How was your experience?"
+              placeholder={dict.testimonialMessagePlaceholder}
               className={inputClass}
             />
             <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-500">Rating</span>
+              <span className="text-xs font-medium text-slate-500">
+                {dict.testimonialRatingLabel}
+              </span>
               <StarPicker name="rating" />
             </div>
 
@@ -217,7 +225,7 @@ function TestimonialDialog({
               disabled={pending}
               className="mt-1 self-start rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60"
             >
-              {pending ? "Sending…" : "Submit"}
+              {pending ? dict.testimonialSending : dict.testimonialSubmit}
             </button>
           </form>
         )}

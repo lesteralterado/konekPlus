@@ -1,35 +1,31 @@
 import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getLocale } from "@/lib/i18n/locale";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import type { Locale } from "@/lib/i18n/locale";
+import { LanguageSwitcher } from "@/app/language-switcher";
 import { ClaimForm } from "./claim-form";
 import { ProfileTemplateView } from "./templates";
 
 export const dynamic = "force-dynamic";
 
-function InvalidCard() {
+function InvalidCard({ t, locale }: { t: Dictionary["tagStatus"]; locale: Locale }) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="text-2xl font-semibold text-slate-800">
-        This card isn&apos;t recognized
-      </h1>
-      <p className="max-w-sm text-slate-500">
-        The code on this card doesn&apos;t match any Konek+ card. If you just
-        got this card, contact support — if this kept happening on a card
-        that used to work, try tapping it again.
-      </p>
+      <LanguageSwitcher locale={locale} className="mb-2" />
+      <h1 className="text-2xl font-semibold text-slate-800">{t.invalidCardTitle}</h1>
+      <p className="max-w-sm text-slate-500">{t.invalidCardBody}</p>
     </main>
   );
 }
 
-function CardUnavailable() {
+function CardUnavailable({ t, locale }: { t: Dictionary["tagStatus"]; locale: Locale }) {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="text-2xl font-semibold text-slate-800">
-        This card isn&apos;t available right now
-      </h1>
-      <p className="max-w-sm text-slate-500">
-        Its owner has turned this card off. If you think that&apos;s a
-        mistake, reach out to whoever gave it to you.
-      </p>
+      <LanguageSwitcher locale={locale} className="mb-2" />
+      <h1 className="text-2xl font-semibold text-slate-800">{t.unavailableTitle}</h1>
+      <p className="max-w-sm text-slate-500">{t.unavailableBody}</p>
     </main>
   );
 }
@@ -41,6 +37,7 @@ export default async function TagPage({
 }) {
   const { tag_id } = await params;
   const supabase = await createClient();
+  const [locale, dict] = await Promise.all([getLocale(), getDictionary()]);
 
   const { data: status } = await supabase.rpc("tag_status", {
     p_tag_id: tag_id,
@@ -49,15 +46,16 @@ export default async function TagPage({
   switch (status) {
     case null:
     case undefined:
-      return <InvalidCard />;
+      return <InvalidCard t={dict.tagStatus} locale={locale} />;
     case "unclaimed":
       return (
         <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
-          <ClaimForm tagId={tag_id} />
+          <LanguageSwitcher locale={locale} className="mb-4 justify-center" />
+          <ClaimForm tagId={tag_id} dict={dict.claimForm} />
         </main>
       );
     case "disabled":
-      return <CardUnavailable />;
+      return <CardUnavailable t={dict.tagStatus} locale={locale} />;
   }
 
   const { data: profileId } = await supabase.rpc("get_tag_profile", {
@@ -66,7 +64,7 @@ export default async function TagPage({
   if (!profileId) {
     // Lost a race between the two reads above — someone else claimed it,
     // or the owner disabled it, in between.
-    return <InvalidCard />;
+    return <InvalidCard t={dict.tagStatus} locale={locale} />;
   }
 
   const { data: profile } = await supabase
@@ -75,7 +73,7 @@ export default async function TagPage({
     .eq("id", profileId)
     .maybeSingle();
   if (!profile) {
-    return <InvalidCard />;
+    return <InvalidCard t={dict.tagStatus} locale={locale} />;
   }
 
   const {
@@ -112,6 +110,8 @@ export default async function TagPage({
       isOwner={isOwner}
       portfolioItems={portfolioItems ?? []}
       testimonials={testimonials ?? []}
+      locale={locale}
+      dict={dict.profile}
     />
   );
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PhoneIcon, MailIcon } from "@/app/dashboard/icons";
+import { LanguageSwitcher } from "@/app/language-switcher";
 import type { TemplateProps } from "./index";
 import { PortfolioGrid } from "./portfolio-grid";
 import { ShareButton } from "./share-button";
@@ -13,12 +14,15 @@ export function EditorialTemplate({
   isOwner,
   portfolioItems,
   testimonials,
+  locale,
+  dict,
 }: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
   const initial = (profile.full_name ?? "?").slice(0, 1).toUpperCase();
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+      <LanguageSwitcher locale={locale} className="mb-3 justify-center self-center" />
       <div className="fade-up overflow-hidden rounded-[2.5rem] bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.18)]">
         <div className="relative h-80 sm:h-96">
           {profile.avatar_url ? (
@@ -41,7 +45,7 @@ export function EditorialTemplate({
               href="/dashboard"
               className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur transition hover:bg-white active:scale-95"
             >
-              Edit
+              {dict.editButton}
             </Link>
           )}
 
@@ -90,7 +94,7 @@ export function EditorialTemplate({
                 className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
               >
                 <PhoneIcon className="h-5 w-5" />
-                <span className="text-xs font-semibold">Call</span>
+                <span className="text-xs font-semibold">{dict.call}</span>
               </a>
             )}
             {profile.email && (
@@ -99,11 +103,13 @@ export function EditorialTemplate({
                 className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
               >
                 <MailIcon className="h-5 w-5" />
-                <span className="text-xs font-semibold">Email</span>
+                <span className="text-xs font-semibold">{dict.email}</span>
               </a>
             )}
             <ShareButton
               title={profile.full_name ?? "Konek+ profile"}
+              label={dict.share}
+              copiedLabel={dict.copied}
               className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
             />
           </div>
@@ -123,7 +129,7 @@ export function EditorialTemplate({
             href={`/t/${tagId}/vcard`}
             className="mt-3 w-full rounded-2xl bg-accent-500 px-4 py-3.5 text-center font-bold text-brand-900 shadow-lg shadow-accent-500/30 transition hover:bg-accent-500/90 active:scale-[0.98]"
           >
-            Save to contacts
+            {dict.saveToContacts}
           </a>
 
           {profile.links.length > 0 && (
@@ -142,11 +148,12 @@ export function EditorialTemplate({
             </div>
           )}
 
-          <PortfolioGrid items={portfolioItems} />
+          <PortfolioGrid items={portfolioItems} heading={dict.portfolioHeading} />
           <TestimonialsSection
             profileId={profile.id}
             ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
             items={testimonials}
+            dict={dict}
           />
         </div>
       </div>

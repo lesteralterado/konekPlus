@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { StarIcon } from "@/app/dashboard/icons";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import { submitFeedback, type FeedbackFormState } from "@/app/feedback-actions";
 
 const initialState: FeedbackFormState = { error: null, resetToken: 0 };
@@ -29,7 +30,15 @@ function StarPicker({ name }: { name: string }) {
   );
 }
 
-export function FeedbackPageForm({ slug }: { slug: string }) {
+export function FeedbackPageForm({
+  slug,
+  page,
+  form,
+}: {
+  slug: string;
+  page: Dictionary["feedbackPage"];
+  form: Dictionary["feedbackWidget"];
+}) {
   const [state, formAction, pending] = useActionState(submitFeedback, initialState);
   const [justSubmitted, setJustSubmitted] = useState(false);
   const prevToken = useRef(initialState.resetToken);
@@ -44,16 +53,14 @@ export function FeedbackPageForm({ slug }: { slug: string }) {
   if (justSubmitted) {
     return (
       <div className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-2xl font-semibold text-brand-900">Thanks!</h1>
-        <p className="text-sm text-slate-600">
-          Your feedback was sent. We genuinely appreciate it.
-        </p>
+        <h1 className="text-2xl font-semibold text-brand-900">{form.thanksTitle}</h1>
+        <p className="text-sm text-slate-600">{form.thanksBody}</p>
         <button
           type="button"
           onClick={() => setJustSubmitted(false)}
           className="rounded-full bg-brand-50 px-5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
         >
-          Send another
+          {form.sendAnother}
         </button>
       </div>
     );
@@ -61,10 +68,8 @@ export function FeedbackPageForm({ slug }: { slug: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-brand-900">Send us feedback</h1>
-      <p className="mt-1.5 text-sm text-slate-500">
-        Bugs, ideas, anything — we read every one.
-      </p>
+      <h1 className="text-2xl font-semibold text-brand-900">{page.title}</h1>
+      <p className="mt-1.5 text-sm text-slate-500">{page.subtitle}</p>
 
       <form
         action={formAction}
@@ -81,29 +86,27 @@ export function FeedbackPageForm({ slug }: { slug: string }) {
         <input type="hidden" name="page_path" value={`/f/${slug}`} />
 
         <select name="category" defaultValue="general" className={inputClass}>
-          <option value="general">General feedback</option>
-          <option value="bug">Something&apos;s broken</option>
-          <option value="feature">Feature request</option>
+          <option value="general">{form.categoryGeneral}</option>
+          <option value="bug">{form.categoryBug}</option>
+          <option value="feature">{form.categoryFeature}</option>
         </select>
 
         <textarea
           name="message"
           required
           rows={5}
-          placeholder="What's on your mind?"
+          placeholder={form.messagePlaceholder}
           className={inputClass}
         />
 
         <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-slate-500">
-            Rate your experience (optional)
-          </span>
+          <span className="text-xs font-medium text-slate-500">{form.ratingLabel}</span>
           <StarPicker name="rating" />
         </div>
 
         <div>
           <label className="mb-1 block text-xs font-medium text-slate-500">
-            Screenshot (optional)
+            {form.screenshotLabel}
           </label>
           <input
             name="screenshot"
@@ -120,7 +123,7 @@ export function FeedbackPageForm({ slug }: { slug: string }) {
           disabled={pending}
           className="mt-1 self-start rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60"
         >
-          {pending ? "Sending…" : "Send feedback"}
+          {pending ? form.sending : form.submit}
         </button>
       </form>
     </div>

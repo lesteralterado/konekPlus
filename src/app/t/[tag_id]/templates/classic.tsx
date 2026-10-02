@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
+import { LanguageSwitcher } from "@/app/language-switcher";
 import type { TemplateProps } from "./index";
 import { PortfolioGrid } from "./portfolio-grid";
 import { ShareButton } from "./share-button";
@@ -13,11 +14,14 @@ export function ClassicTemplate({
   isOwner,
   portfolioItems,
   testimonials,
+  locale,
+  dict,
 }: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+      <LanguageSwitcher locale={locale} className="mb-3 justify-center self-center" />
       <div className="fade-up overflow-hidden rounded-[2.5rem] bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.18)]">
         <div className="relative h-40 sm:h-48">
           <div
@@ -29,7 +33,7 @@ export function ClassicTemplate({
               href="/dashboard"
               className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur transition hover:bg-white active:scale-95"
             >
-              Edit
+              {dict.editButton}
             </Link>
           )}
         </div>
@@ -71,7 +75,7 @@ export function ClassicTemplate({
                 href={`tel:${profile.phone}`}
                 className="rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-center font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
               >
-                Call {profile.phone}
+                {dict.call} {profile.phone}
               </a>
             )}
             {profile.email && (
@@ -79,7 +83,7 @@ export function ClassicTemplate({
                 href={`mailto:${profile.email}`}
                 className="rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-center font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
               >
-                Email {profile.email}
+                {dict.email} {profile.email}
               </a>
             )}
             {profile.cta_label && profile.cta_url && (
@@ -96,10 +100,12 @@ export function ClassicTemplate({
               href={`/t/${tagId}/vcard`}
               className="rounded-2xl bg-brand-600 px-4 py-3.5 text-center font-bold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 active:scale-[0.98]"
             >
-              Save to contacts
+              {dict.saveToContacts}
             </a>
             <ShareButton
               title={profile.full_name ?? "Konek+ profile"}
+              label={dict.share}
+              copiedLabel={dict.copied}
               className="flex items-center justify-center gap-1.5 rounded-2xl border-2 border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
             />
           </div>
@@ -138,11 +144,12 @@ export function ClassicTemplate({
             </div>
           )}
 
-          <PortfolioGrid items={portfolioItems} />
+          <PortfolioGrid items={portfolioItems} heading={dict.portfolioHeading} />
           <TestimonialsSection
             profileId={profile.id}
             ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
             items={testimonials}
+            dict={dict}
           />
         </div>
       </div>

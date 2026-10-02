@@ -3,6 +3,7 @@ import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import ReactDOM from "react-dom";
 import "./globals.css";
 import { LOGO_URL } from "@/lib/constants";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { FeedbackWidget } from "./feedback-widget";
 import { Preloader } from "./preloader";
 
@@ -24,13 +25,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
   // The homepage navbar/footer render this logo (src/app/page.tsx) —
   // hint the browser to fetch it early so it's ready without a pop-in by
   // the time the preloader below finishes. ReactDOM.preload is the App
   // Router's documented way to emit resource hints (a raw <link> isn't
   // supported in the component tree).
   ReactDOM.preload(LOGO_URL, { as: "image", fetchPriority: "high" });
+
+  const dict = await getDictionary();
 
   return (
     <html
@@ -41,7 +44,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Preloader />
         {children}
-        <FeedbackWidget />
+        <FeedbackWidget dict={dict.feedbackWidget} />
       </body>
     </html>
   );

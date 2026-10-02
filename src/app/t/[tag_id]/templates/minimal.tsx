@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { PhoneIcon, MailIcon } from "@/app/dashboard/icons";
+import { LanguageSwitcher } from "@/app/language-switcher";
 import type { TemplateProps } from "./index";
 import { PortfolioGrid } from "./portfolio-grid";
 import { ShareButton } from "./share-button";
@@ -57,19 +58,22 @@ export function MinimalTemplate({
   isOwner,
   portfolioItems,
   testimonials,
+  locale,
+  dict,
 }: TemplateProps) {
   const socials = getOrderedSocials(profile.socials);
   const roleLine = [profile.job_title, profile.company].filter(Boolean).join(" · ");
 
   return (
     <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
+      <LanguageSwitcher locale={locale} className="mb-3 justify-center self-center" />
       <div className="fade-up relative overflow-hidden rounded-[2.5rem] bg-white px-6 pb-9 pt-12 text-center shadow-[0_8px_40px_-12px_rgba(15,23,42,0.14)]">
         {isOwner && (
           <Link
             href="/dashboard"
             className="absolute right-4 top-4 rounded-full border border-slate-200 px-4 py-1.5 text-xs font-bold text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
           >
-            Edit
+            {dict.editButton}
           </Link>
         )}
 
@@ -107,7 +111,7 @@ export function MinimalTemplate({
           href={`/t/${tagId}/vcard`}
           className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-brand-600/20 transition hover:bg-brand-700 active:scale-[0.98]"
         >
-          Save to contacts
+          {dict.saveToContacts}
         </a>
 
         {profile.cta_label && profile.cta_url && (
@@ -123,12 +127,12 @@ export function MinimalTemplate({
 
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
           {profile.phone && (
-            <IconAction href={`tel:${profile.phone}`} label="Call">
+            <IconAction href={`tel:${profile.phone}`} label={dict.call}>
               <PhoneIcon className="h-[18px] w-[18px]" />
             </IconAction>
           )}
           {profile.email && (
-            <IconAction href={`mailto:${profile.email}`} label="Email">
+            <IconAction href={`mailto:${profile.email}`} label={dict.email}>
               <MailIcon className="h-[18px] w-[18px]" />
             </IconAction>
           )}
@@ -139,6 +143,8 @@ export function MinimalTemplate({
           ))}
           <ShareButton
             title={profile.full_name ?? "Konek+ profile"}
+            label={dict.share}
+            copiedLabel={dict.copied}
             iconOnly
             className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-95"
           />
@@ -160,11 +166,12 @@ export function MinimalTemplate({
           </div>
         )}
 
-        <PortfolioGrid items={portfolioItems} />
+        <PortfolioGrid items={portfolioItems} heading={dict.portfolioHeading} />
         <TestimonialsSection
           profileId={profile.id}
           ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
           items={testimonials}
+          dict={dict}
         />
       </div>
     </main>

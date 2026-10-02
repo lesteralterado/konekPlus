@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TEMPLATES, TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import type { ProfileTemplate } from "@/lib/types";
+import { en } from "@/lib/i18n/dictionaries/en";
 import { UseTemplateButton } from "./use-template-button";
 
 export const dynamic = "force-dynamic";
@@ -80,6 +81,8 @@ export default async function TemplatePickerPage() {
                     isOwner={false}
                     portfolioItems={portfolioItems ?? []}
                     testimonials={[]}
+                    locale="en"
+                    dict={en.profile}
                   />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-100 to-transparent" />

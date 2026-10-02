@@ -1,4 +1,6 @@
 import type { PortfolioItem, Profile, ProfileTemplate, ProfileTestimonial } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import type { Locale } from "@/lib/i18n/locale";
 import { ClassicTemplate } from "./classic";
 import { EditorialTemplate } from "./editorial";
 import { MinimalTemplate } from "./minimal";
@@ -9,6 +11,8 @@ export type TemplateProps = {
   isOwner: boolean;
   portfolioItems: PortfolioItem[];
   testimonials: ProfileTestimonial[];
+  locale: Locale;
+  dict: Dictionary["profile"];
 };
 
 export const TEMPLATES: Record<

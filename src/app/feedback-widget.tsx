@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { CloseIcon, StarIcon } from "@/app/dashboard/icons";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import { submitFeedback, type FeedbackFormState } from "./feedback-actions";
 
 const initialState: FeedbackFormState = { error: null, resetToken: 0 };
@@ -46,7 +47,7 @@ function StarPicker({ name }: { name: string }) {
   );
 }
 
-export function FeedbackWidget() {
+export function FeedbackWidget({ dict }: { dict: Dictionary["feedbackWidget"] }) {
   const pathname = usePathname();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [state, formAction, pending] = useActionState(submitFeedback, initialState);
@@ -73,7 +74,7 @@ export function FeedbackWidget() {
         className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-brand-900 px-4 py-3 text-white shadow-lg shadow-brand-900/20 transition hover:bg-brand-700 active:scale-95"
       >
         <MessageIcon className="h-5 w-5" />
-        <span className="hidden text-sm font-semibold sm:inline">Feedback</span>
+        <span className="hidden text-sm font-semibold sm:inline">{dict.buttonLabel}</span>
       </button>
 
       <dialog
@@ -91,12 +92,10 @@ export function FeedbackWidget() {
           <div className="mb-4 flex items-start justify-between">
             <div>
               <h2 className="text-lg font-semibold text-brand-900">
-                {justSubmitted ? "Thanks!" : "Send feedback"}
+                {justSubmitted ? dict.thanksTitle : dict.dialogTitle}
               </h2>
               {!justSubmitted && (
-                <p className="mt-0.5 text-xs text-slate-400">
-                  Bugs, ideas, anything — we read every one.
-                </p>
+                <p className="mt-0.5 text-xs text-slate-400">{dict.dialogSubtitle}</p>
               )}
             </div>
             <button
@@ -111,15 +110,13 @@ export function FeedbackWidget() {
 
           {justSubmitted ? (
             <div className="flex flex-col gap-4">
-              <p className="text-sm text-slate-600">
-                Your feedback was sent. We genuinely appreciate it.
-              </p>
+              <p className="text-sm text-slate-600">{dict.thanksBody}</p>
               <button
                 type="button"
                 onClick={() => setJustSubmitted(false)}
                 className="self-start rounded-full bg-brand-50 px-5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
               >
-                Send another
+                {dict.sendAnother}
               </button>
             </div>
           ) : (
@@ -135,29 +132,27 @@ export function FeedbackWidget() {
               <input type="hidden" name="page_path" value={pathname ?? ""} />
 
               <select name="category" defaultValue="general" className={inputClass}>
-                <option value="general">General feedback</option>
-                <option value="bug">Something&apos;s broken</option>
-                <option value="feature">Feature request</option>
+                <option value="general">{dict.categoryGeneral}</option>
+                <option value="bug">{dict.categoryBug}</option>
+                <option value="feature">{dict.categoryFeature}</option>
               </select>
 
               <textarea
                 name="message"
                 required
                 rows={4}
-                placeholder="What's on your mind?"
+                placeholder={dict.messagePlaceholder}
                 className={inputClass}
               />
 
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-slate-500">
-                  Rate your experience (optional)
-                </span>
+                <span className="text-xs font-medium text-slate-500">{dict.ratingLabel}</span>
                 <StarPicker name="rating" />
               </div>
 
               <div>
                 <label className="mb-1 block text-xs font-medium text-slate-500">
-                  Screenshot (optional)
+                  {dict.screenshotLabel}
                 </label>
                 <input
                   name="screenshot"
@@ -174,7 +169,7 @@ export function FeedbackWidget() {
                 disabled={pending}
                 className="mt-1 self-start rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60"
               >
-                {pending ? "Sending…" : "Send feedback"}
+                {pending ? dict.sending : dict.submit}
               </button>
             </form>
           )}

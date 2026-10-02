@@ -8,6 +8,8 @@ import {
   extractHandle,
 } from "@/lib/socials";
 import type { KeychainPlatform } from "@/lib/types";
+import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { format } from "@/lib/i18n/format";
 import {
   type KeychainSubmissionItem,
   submitKeychainOrder,
@@ -80,7 +82,7 @@ const cardClass =
 const inputClass =
   "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-500";
 
-export function KeychainWizard() {
+export function KeychainWizard({ dict }: { dict: Dictionary["keychain"] }) {
   const [step, setStep] = useState<Step>({ kind: "select" });
   const [confirmed, setConfirmed] = useState<KeychainSubmissionItem[]>([]);
   const [checked, setChecked] = useState<Set<KeychainPlatform>>(new Set());
@@ -101,6 +103,8 @@ export function KeychainWizard() {
   );
   const availablePlatforms = PLATFORMS.filter((p) => !confirmedPlatforms.has(p.id));
   const totalKeychains = confirmed.length + checked.size;
+  const keychainWord = (n: number) =>
+    n === 1 ? dict.keychainCountSingular : dict.keychainCountPlural;
 
   function toggleChecked(id: KeychainPlatform) {
     setChecked((prev) => {
@@ -128,12 +132,12 @@ export function KeychainWizard() {
     const platform = platformOf(currentPlatform);
     const trimmed = linkValue.trim();
     if (!trimmed) {
-      setLinkError("Paste your profile link or username.");
+      setLinkError(dict.linkErrorEmpty);
       return;
     }
     const url = platform.build(trimmed);
     if (!hostMatches(url, platform.host)) {
-      setLinkError(`That doesn't look like a ${platform.label} link.`);
+      setLinkError(format(dict.linkErrorMismatch, { platform: platform.label }));
       return;
     }
 
@@ -165,11 +169,11 @@ export function KeychainWizard() {
 
   async function handleSubmit() {
     if (!customerName.trim()) {
-      setSubmitError("Enter your name.");
+      setSubmitError(dict.submitErrorName);
       return;
     }
     if (!contactPhone.trim() && !contactEmail.trim()) {
-      setSubmitError("Add a phone number or email so we can reach you.");
+      setSubmitError(dict.submitErrorContact);
       return;
     }
     setSubmitting(true);
@@ -182,7 +186,7 @@ export function KeychainWizard() {
     });
     setSubmitting(false);
     if (result.error || !result.orderId) {
-      setSubmitError(result.error ?? "Something went wrong. Please try again.");
+      setSubmitError(result.error ?? dict.submitErrorGeneric);
       return;
     }
     setStep({ kind: "done", orderId: result.orderId });
@@ -194,12 +198,8 @@ export function KeychainWizard() {
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
           <CheckIcon className="h-7 w-7" />
         </span>
-        <h1 className="text-xl font-semibold text-brand-900">
-          Your social media links have been submitted successfully.
-        </h1>
-        <p className="text-sm text-slate-500">
-          Your Konek+ Keychains are now being prepared.
-        </p>
+        <h1 className="text-xl font-semibold text-brand-900">{dict.doneTitle}</h1>
+        <p className="text-sm text-slate-500">{dict.doneBody}</p>
       </div>
     );
   }
@@ -210,13 +210,8 @@ export function KeychainWizard() {
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
           <KeychainIcon className="h-6 w-6" />
         </span>
-        <h1 className="mt-1 text-2xl font-semibold text-brand-900">
-          Konek+ Social Media Keychain
-        </h1>
-        <p className="max-w-sm text-sm text-slate-500">
-          Choose the social media accounts you want to connect to your Konek+
-          Keychain.
-        </p>
+        <h1 className="mt-1 text-2xl font-semibold text-brand-900">{dict.heading}</h1>
+        <p className="max-w-sm text-sm text-slate-500">{dict.subheading}</p>
       </div>
 
       {step.kind === "select" && (
@@ -246,7 +241,7 @@ export function KeychainWizard() {
                     {p.label}
                   </span>
                   {alreadyAdded && (
-                    <span className="text-xs font-medium text-brand-700">Added</span>
+                    <span className="text-xs font-medium text-brand-700">{dict.added}</span>
                   )}
                 </label>
               );
@@ -255,7 +250,7 @@ export function KeychainWizard() {
 
           <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
             <span className="text-sm text-slate-500">
-              {totalKeychains} Keychain{totalKeychains === 1 ? "" : "s"}
+              {totalKeychains} {keychainWord(totalKeychains)}
             </span>
             <button
               type="button"
@@ -263,7 +258,7 @@ export function KeychainWizard() {
               disabled={checked.size === 0}
               className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Continue
+              {dict.continue}
             </button>
           </div>
 
@@ -273,7 +268,7 @@ export function KeychainWizard() {
               onClick={() => setStep({ kind: "review" })}
               className="mt-3 w-full text-center text-sm font-medium text-brand-700 hover:underline"
             >
-              Back to summary ({confirmed.length} added)
+              {format(dict.backToSummary, { count: confirmed.length })}
             </button>
           )}
         </div>
@@ -287,7 +282,7 @@ export function KeychainWizard() {
             className="mb-4 flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-brand-700"
           >
             <ChevronLeftIcon className="h-4 w-4" />
-            Back
+            {dict.back}
           </button>
 
           <div className="mb-4 flex items-center gap-3">
@@ -302,13 +297,13 @@ export function KeychainWizard() {
                 {platformOf(currentPlatform).label}
               </p>
               <h2 className="text-sm font-semibold text-brand-900">
-                Find your {platformOf(currentPlatform).label} account
+                {format(dict.findAccount, { platform: platformOf(currentPlatform).label })}
               </h2>
             </div>
           </div>
 
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">
-            Paste your profile link
+            {dict.pasteLink}
           </label>
           <input
             value={linkValue}
@@ -316,13 +311,10 @@ export function KeychainWizard() {
             placeholder={platformOf(currentPlatform).placeholder}
             className={inputClass}
           />
-          <p className="mt-1.5 text-xs text-slate-400">
-            Can&apos;t find your account? Just paste your profile link — that
-            always works.
-          </p>
+          <p className="mt-1.5 text-xs text-slate-400">{dict.pasteLinkHint}</p>
 
           <label className="mb-1 mt-4 block text-xs font-medium uppercase tracking-wide text-slate-400">
-            Display name (optional)
+            {dict.displayNameOptional}
           </label>
           <input
             value={labelValue}
@@ -338,7 +330,7 @@ export function KeychainWizard() {
             onClick={confirmLink}
             className="mt-5 w-full rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
           >
-            Confirm account
+            {dict.confirmAccount}
           </button>
         </div>
       )}
@@ -346,9 +338,7 @@ export function KeychainWizard() {
       {step.kind === "review" && (
         <>
           <div className={cardClass}>
-            <h2 className="mb-3 text-sm font-semibold text-brand-900">
-              Your Konek+ Keychains
-            </h2>
+            <h2 className="mb-3 text-sm font-semibold text-brand-900">{dict.yourKeychains}</h2>
             <ul className="flex flex-col divide-y divide-slate-100">
               {confirmed.map((item) => {
                 const platform = platformOf(item.platform);
@@ -384,39 +374,39 @@ export function KeychainWizard() {
                 onClick={() => setStep({ kind: "select" })}
                 className="mt-3 w-full rounded-full border border-dashed border-slate-300 py-2.5 text-sm font-medium text-slate-500 hover:border-brand-300 hover:text-brand-700"
               >
-                + Add another social media
+                {dict.addAnother}
               </button>
             )}
 
             <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-4 text-sm">
-              <span className="text-slate-500">Total</span>
+              <span className="text-slate-500">{dict.total}</span>
               <span className="font-semibold text-brand-900">
-                {confirmed.length} Keychain{confirmed.length === 1 ? "" : "s"}
+                {confirmed.length} {keychainWord(confirmed.length)}
               </span>
             </div>
           </div>
 
           <div className={cardClass}>
-            <h2 className="mb-3 text-sm font-semibold text-brand-900">Your details</h2>
+            <h2 className="mb-3 text-sm font-semibold text-brand-900">{dict.yourDetails}</h2>
             <div className="flex flex-col gap-3">
               <input
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Full name"
+                placeholder={dict.fullNamePlaceholder}
                 className={inputClass}
               />
               <input
                 value={contactPhone}
                 onChange={(e) => setContactPhone(e.target.value)}
                 type="tel"
-                placeholder="Phone number"
+                placeholder={dict.phonePlaceholder}
                 className={inputClass}
               />
               <input
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 type="email"
-                placeholder="Email (optional if you gave a phone number)"
+                placeholder={dict.emailPlaceholder}
                 className={inputClass}
               />
             </div>
@@ -429,7 +419,7 @@ export function KeychainWizard() {
               disabled={submitting || confirmed.length === 0}
               className="mt-5 w-full rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Submitting…" : "Submit"}
+              {submitting ? dict.submitting : dict.submit}
             </button>
           </div>
         </>

@@ -8,11 +8,13 @@ export function ShareButton({
   className,
   iconOnly,
   label = "Share",
+  copiedLabel = "Copied!",
 }: {
   title: string;
   className: string;
   iconOnly?: boolean;
   label?: string;
+  copiedLabel?: string;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -39,8 +41,8 @@ export function ShareButton({
     <button
       type="button"
       onClick={handleShare}
-      aria-label={iconOnly ? (copied ? "Copied!" : label) : undefined}
-      title={iconOnly ? (copied ? "Copied!" : label) : undefined}
+      aria-label={iconOnly ? (copied ? copiedLabel : label) : undefined}
+      title={iconOnly ? (copied ? copiedLabel : label) : undefined}
       className={className}
     >
       {iconOnly && copied ? (
@@ -50,7 +52,7 @@ export function ShareButton({
       ) : (
         <ShareIcon className="h-[18px] w-[18px]" />
       )}
-      {!iconOnly && (copied ? "Copied!" : label)}
+      {!iconOnly && (copied ? copiedLabel : label)}
     </button>
   );
 }
