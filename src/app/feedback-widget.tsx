@@ -60,7 +60,10 @@ export function FeedbackWidget() {
     prevToken.current = state.resetToken;
   }, [state.resetToken, state.error]);
 
-  if (pathname?.startsWith("/admin")) return null;
+  // /admin already has its own review screen, and /f/[slug] *is* a
+  // dedicated full-page feedback form — the floating button would just
+  // duplicate it on top of itself.
+  if (pathname?.startsWith("/admin") || pathname?.startsWith("/f/")) return null;
 
   return (
     <>
