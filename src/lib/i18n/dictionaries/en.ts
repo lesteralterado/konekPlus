@@ -8,7 +8,7 @@ export const en = {
     langFilipino: "FIL",
   },
   home: {
-    nav: { howItWorks: "How it works", about: "About" },
+    nav: { howItWorks: "How it works", about: "About", product: "Product", faq: "FAQ" },
     hero: {
       badge: "NFC digital business cards",
       titleLine1: "Tap your card,",
@@ -20,15 +20,33 @@ export const en = {
       ratingText: "Rated {rating}/5 from {count}+ pieces of feedback",
       tapHint: "Got a new card? Tap it — the code on the back opens",
     },
-    floatingCards: {
-      saveToContacts: "Save to contacts",
-      studioLead: "Studio Lead",
-      tapToConnect: "Tap to connect",
-      worksAnyPhone: "Works with any phone",
-      oneProfile: "1 profile",
-      cardsLinked: "cards linked so far",
-      editOnce: "Edit once",
-      updatesInstantly: "Every card updates instantly",
+    deck: {
+      hint: "Five finishes. Tap a card to flip it.",
+      flipHint: "Flip to see details",
+      flipBack: "Tap to flip back",
+      perCard: "per card",
+      finishes: {
+        obsidian: {
+          tagline: "Matte black, embossed",
+          description: "Soft-touch matte black with an embossed Konek+ mark. Quietly confident.",
+        },
+        frost: {
+          tagline: "Frosted glass",
+          description: "A translucent frosted finish that catches the light around it.",
+        },
+        titanium: {
+          tagline: "Brushed metal",
+          description: "Fine-grain brushed metal with a sheen that shifts as it moves.",
+        },
+        linen: {
+          tagline: "Letterpress paper",
+          description: "Warm linen texture with letterpress-style lettering. Classic and tactile.",
+        },
+        aurora: {
+          tagline: "Brand gradient",
+          description: "A teal-to-sunset gradient in Konek+ colors. Impossible to miss.",
+        },
+      },
     },
     about: {
       kicker: "• About us",

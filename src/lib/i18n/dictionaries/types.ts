@@ -6,7 +6,7 @@ export type Dictionary = {
     langFilipino: string;
   };
   home: {
-    nav: { howItWorks: string; about: string };
+    nav: { howItWorks: string; about: string; product: string; faq: string };
     hero: {
       badge: string;
       titleLine1: string;
@@ -18,15 +18,15 @@ export type Dictionary = {
       ratingText: string;
       tapHint: string;
     };
-    floatingCards: {
-      saveToContacts: string;
-      studioLead: string;
-      tapToConnect: string;
-      worksAnyPhone: string;
-      oneProfile: string;
-      cardsLinked: string;
-      editOnce: string;
-      updatesInstantly: string;
+    deck: {
+      hint: string;
+      flipHint: string;
+      flipBack: string;
+      perCard: string;
+      finishes: Record<
+        "obsidian" | "frost" | "titanium" | "linen" | "aurora",
+        { tagline: string; description: string }
+      >;
     };
     about: {
       kicker: string;

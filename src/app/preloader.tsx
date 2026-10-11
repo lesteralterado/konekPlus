@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { markPreloaderDone } from "@/lib/preloader-events";
 
-const HOLD_MS = 1300;
-const EXIT_MS = 700;
+// The first tap lands ~0.93s in (see .preloader-tap in globals.css); hold
+// a little past that so its NFC rings visibly bloom before the lift.
+const MIN_HOLD_MS = 1250;
+// Never trap someone on a slow connection behind the splash.
+const MAX_HOLD_MS = 3200;
+const EXIT_MS = 800;
+const REDUCED_EXIT_MS = 200;
 
-// Inline, not the remote Cloudinary logo — a preloader has to render
-// instantly regardless of network speed, and a splash screen that itself
-// waits on an external image fetch defeats the point. Same NFC-wave mark
-// used as the navbar's original icon (src/app/page.tsx's TapIcon).
+// Inline, not the remote Cloudinary logo — the splash must render
+// instantly regardless of network speed.
 function TapMark({ className }: { className?: string }) {
   return (
     <svg
@@ -28,69 +32,107 @@ function TapMark({ className }: { className?: string }) {
   );
 }
 
+const WORDMARK = "KONEK+".split("");
+
 export function Preloader() {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [exiting, setExiting] = useState(false);
+  const [phase, setPhase] = useState<"holding" | "exiting" | "done">("holding");
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // One tick so the entrance transition (opacity/scale-in) actually
-    // animates from its initial state instead of snapping in already-visible.
-    const raf = requestAnimationFrame(() => setMounted(true));
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const holdMs = prefersReducedMotion ? 0 : HOLD_MS;
-    const exitMs = prefersReducedMotion ? 0 : EXIT_MS;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const wait = (ms: number) =>
+      new Promise<void>((resolve) => timers.push(setTimeout(resolve, Math.max(0, ms))));
+    let cancelled = false;
 
     document.body.style.overflow = "hidden";
-    const exitTimer = setTimeout(() => setExiting(true), holdMs);
-    const removeTimer = setTimeout(() => {
-      setVisible(false);
-      document.body.style.overflow = "";
-    }, holdMs + exitMs);
+
+    const pageLoaded =
+      document.readyState === "complete"
+        ? Promise.resolve()
+        : new Promise<void>((resolve) =>
+            window.addEventListener("load", () => resolve(), { once: true }),
+          );
+    // The minimum hold counts from when the CSS animation actually started
+    // (first paint), not navigation start — first paint can land a second
+    // in, and holding from t=0 would lift the overlay mid-animation. The
+    // maximum stays anchored to navigation start: on a slow load, getting
+    // out of the way beats finishing the flourish.
+    const now = performance.now();
+    const animationStart = Number(
+      cardRef.current?.getAnimations()[0]?.startTime ?? now,
+    );
+    const minHold = wait(
+      reduceMotion ? 0 : animationStart + MIN_HOLD_MS - now,
+    );
+    const maxHold = wait(MAX_HOLD_MS - now);
+
+    Promise.race([Promise.all([pageLoaded, minHold]), maxHold]).then(() => {
+      if (cancelled) return;
+      setPhase("exiting");
+      timers.push(
+        setTimeout(
+          () => {
+            setPhase("done");
+            document.body.style.overflow = "";
+            markPreloaderDone();
+          },
+          reduceMotion ? REDUCED_EXIT_MS : EXIT_MS,
+        ),
+      );
+    });
 
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(exitTimer);
-      clearTimeout(removeTimer);
+      cancelled = true;
+      timers.forEach(clearTimeout);
       document.body.style.overflow = "";
     };
   }, []);
 
-  if (!visible) return null;
+  if (phase === "done") return null;
 
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-brand-900 transition-transform duration-700 ease-[cubic-bezier(0.65,0,0.35,1)] ${
-        exiting ? "-translate-y-full" : "translate-y-0"
+      className={`preloader fixed inset-0 z-100 flex items-center justify-center bg-brand-900 ${
+        phase === "exiting" ? "preloader-exiting" : ""
       }`}
     >
-      <div
-        className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 transition-all duration-500 ease-out ${
-          mounted ? "scale-100 opacity-100" : "scale-75 opacity-0"
-        } ${exiting ? "" : "animate-pulse-soft"}`}
-      >
-        <TapMark className="h-8 w-8 text-white" />
-      </div>
+      <div className="preloader-content flex flex-col items-center gap-10">
+        <div className="relative perspective-midrange">
+          {[0, 1, 2].map((i) => (
+            <span
+              key={i}
+              className="preloader-ring"
+              style={{ animationDelay: `${0.93 + i * 0.14}s` }}
+            />
+          ))}
 
-      <span
-        className={`text-sm font-semibold tracking-[0.2em] text-white/70 transition-all delay-150 duration-500 ease-out ${
-          mounted ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-        }`}
-      >
-        KONEK+
-      </span>
+          {/* Positioned so it paints above the absolutely-positioned rings
+              — they should bloom out from behind the card. */}
+          <div ref={cardRef} className="preloader-card-in relative">
+            <div className="preloader-tap relative flex h-24 w-42 flex-col justify-between overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#17384f_0%,#0a1c29_100%)] p-4 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/10">
+              <TapMark className="h-6 w-6 text-accent-500" />
+              <div className="flex items-end justify-between">
+                <span className="text-sm font-semibold tracking-tight text-white/85">konek+</span>
+                <span className="text-[9px] font-semibold tracking-[0.2em] text-white/30">NFC</span>
+              </div>
+              <span className="preloader-sheen" />
+            </div>
+          </div>
+        </div>
 
-      <div className="h-0.5 w-24 overflow-hidden rounded-full bg-white/10">
-        <div
-          className={`h-full rounded-full bg-accent-500 transition-[width] ease-linear ${
-            mounted ? "w-full" : "w-0"
-          }`}
-          style={{ transitionDuration: `${HOLD_MS}ms` }}
-        />
+        <span className="flex text-sm font-semibold tracking-[0.35em] text-white/70">
+          {WORDMARK.map((letter, i) => (
+            <span
+              key={i}
+              className="preloader-word"
+              style={{ animationDelay: `${0.3 + i * 0.05}s` }}
+            >
+              {letter}
+            </span>
+          ))}
+        </span>
       </div>
     </div>
   );

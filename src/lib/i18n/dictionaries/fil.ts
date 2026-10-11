@@ -11,7 +11,12 @@ export const fil = {
     langFilipino: "FIL",
   },
   home: {
-    nav: { howItWorks: "Paano Ito Gumagana", about: "Tungkol Sa Amin" },
+    nav: {
+      howItWorks: "Paano Ito Gumagana",
+      about: "Tungkol Sa Amin",
+      product: "Produkto",
+      faq: "Mga Tanong",
+    },
     hero: {
       badge: "NFC na digital business card",
       titleLine1: "I-tap ang iyong card,",
@@ -23,15 +28,33 @@ export const fil = {
       ratingText: "{rating}/5 ang rating mula sa {count}+ na feedback",
       tapHint: "May bago kang card? I-tap ito — ang code sa likod ay nagbubukas ng",
     },
-    floatingCards: {
-      saveToContacts: "I-save sa contacts",
-      studioLead: "Studio Lead",
-      tapToConnect: "I-tap para kumonekta",
-      worksAnyPhone: "Gumagana sa kahit anong phone",
-      oneProfile: "1 profile",
-      cardsLinked: "cards na na-link na",
-      editOnce: "I-edit nang minsan",
-      updatesInstantly: "Agad na na-a-update ang bawat card",
+    deck: {
+      hint: "Limang finish. I-tap ang card para baligtarin.",
+      flipHint: "Baligtarin para sa detalye",
+      flipBack: "I-tap para ibalik",
+      perCard: "bawat card",
+      finishes: {
+        obsidian: {
+          tagline: "Matte black, naka-emboss",
+          description: "Malambot na matte black na may naka-emboss na Konek+ mark. Tahimik pero kumpiyansa.",
+        },
+        frost: {
+          tagline: "Frosted glass",
+          description: "Malabong salaming finish na sumasalo sa liwanag sa paligid nito.",
+        },
+        titanium: {
+          tagline: "Brushed metal",
+          description: "Pinong brushed metal na may kintab na gumagalaw habang ginagalaw mo ito.",
+        },
+        linen: {
+          tagline: "Letterpress na papel",
+          description: "Mainit na linen texture na may letterpress-style na letra. Klasiko at masarap hawakan.",
+        },
+        aurora: {
+          tagline: "Brand gradient",
+          description: "Gradient mula teal hanggang kulay-dapithapon, sa kulay ng Konek+. Siguradong mapapansin.",
+        },
+      },
     },
     about: {
       kicker: "• Tungkol sa Amin",
