@@ -1,9 +1,40 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import {
+  getOrCreateDeviceId,
+  sendLoginPinEmail,
+} from "@/lib/device-verification";
 import { createClient } from "@/lib/supabase/server";
 
 export type ClaimState = { error: string | null };
+
+// Shared by both claim paths below so a card claim never becomes a second,
+// inconsistent way for a device to end up trusted — same check /login uses.
+// See supabase/migrations/0009_device_verification.sql. Deliberately runs
+// *after* claim_tag() succeeds in both callers, not before: gating the
+// claim itself behind device verification would mean re-deriving "claim
+// intent" through a detour that doesn't own it, for a low-severity action —
+// linking a card to an account you just password-authenticated into isn't
+// the surface this feature protects; ongoing /dashboard access is.
+async function redirectAfterClaim(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  email: string,
+  next: string,
+): Promise<never> {
+  const deviceId = await getOrCreateDeviceId();
+  const { data: trusted } = await supabase.rpc("is_device_trusted", {
+    p_device_id: deviceId,
+  });
+
+  if (!trusted) {
+    const { data: pin } = await supabase.rpc("store_login_pin");
+    if (pin) await sendLoginPinEmail(email, pin);
+    redirect(`/verify-device?next=${encodeURIComponent(next)}`);
+  }
+
+  redirect(next);
+}
 
 // New owner: create the Auth user, create their one profiles row, then link
 // this tag to it. See supabase/migrations/0001_init.sql for claim_tag().
@@ -68,7 +99,7 @@ export async function signUpAndClaim(
     };
   }
 
-  redirect(`/t/${tagId}`);
+  return redirectAfterClaim(supabase, email, `/t/${tagId}`);
 }
 
 // resetToken only changes on success — the dialog form uses it as a React
@@ -151,5 +182,5 @@ export async function linkExistingAndClaim(
     };
   }
 
-  redirect(`/t/${tagId}`);
+  return redirectAfterClaim(supabase, email, `/t/${tagId}`);
 }

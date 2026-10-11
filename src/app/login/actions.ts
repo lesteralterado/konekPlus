@@ -1,6 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import {
+  getOrCreateDeviceId,
+  safeNextPath,
+  sendLoginPinEmail,
+} from "@/lib/device-verification";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState = { error: string | null };
@@ -11,7 +16,7 @@ export async function login(
 ): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "/dashboard");
+  const next = safeNextPath(String(formData.get("next") ?? ""));
 
   if (!email || !password) {
     return { error: "Email and password are required." };
@@ -21,5 +26,19 @@ export async function login(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
 
-  redirect(next.startsWith("/") ? next : "/dashboard");
+  // Password check passed — not enough on its own to reach /dashboard from
+  // an unrecognized browser. See
+  // supabase/migrations/0009_device_verification.sql and src/proxy.ts.
+  const deviceId = await getOrCreateDeviceId();
+  const { data: trusted } = await supabase.rpc("is_device_trusted", {
+    p_device_id: deviceId,
+  });
+
+  if (!trusted) {
+    const { data: pin } = await supabase.rpc("store_login_pin");
+    if (pin) await sendLoginPinEmail(email, pin);
+    redirect(`/verify-device?next=${encodeURIComponent(next)}`);
+  }
+
+  redirect(next);
 }
