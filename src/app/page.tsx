@@ -4,6 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getLocale } from "@/lib/i18n/locale";
 import { About } from "./_landing/about";
+import { CostCalculator } from "./_landing/cost-calculator";
 import { CtaBand, FinalCta } from "./_landing/cta";
 import { Faq } from "./_landing/faq";
 import { Footer } from "./_landing/footer";
@@ -15,6 +16,7 @@ import { OrderSection } from "./_landing/order-section";
 import { SiteNav } from "./_landing/site-nav";
 import { SmoothScroll } from "./_landing/smooth-scroll";
 import { StickyCta } from "./_landing/sticky-cta";
+import { Testimonials } from "./_landing/testimonials";
 import { TryIt } from "./_landing/try-it";
 import { Unboxing } from "./_landing/unboxing";
 import { GuideSection } from "./guide/guide-section";
@@ -27,9 +29,10 @@ export const revalidate = 300;
 const HERO_ID = "top";
 const ORDER_ID = "order";
 
-// Sales funnel order: hook (hero + deck) → show it (unboxing) → proof
-// (stats) → nudge (CTA) → detail (kit) → buy (order) → objections (FAQ).
-// The owner-facing unboxing guide sits after the FAQ, out of the buying path.
+// Sales funnel order: hook (hero + deck) → understand it (try-it, unboxing)
+// → justify the price (calculator) → proof (stats, testimonials) → nudge
+// (CTA) → detail (kit) → buy (order) → objections (FAQ). The owner-facing
+// unboxing guide sits after the FAQ, out of the buying path.
 export default async function Home() {
   const supabase = createPublicClient();
   const [
@@ -39,6 +42,7 @@ export default async function Home() {
     { data: recentViewData },
     { data: avgRatingData },
     { data: ratingCountData },
+    { data: testimonials },
   ] = await Promise.all([
     getLocale(),
     getDictionary(),
@@ -46,6 +50,12 @@ export default async function Home() {
     supabase.rpc("recent_tag_view_count"),
     supabase.rpc("average_feedback_rating"),
     supabase.rpc("feedback_rating_count"),
+    // RLS returns published rows only.
+    supabase
+      .from("landing_testimonials")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true }),
   ]);
   const t = dict.home;
 
@@ -78,11 +88,13 @@ export default async function Home() {
           beats={t.unboxing.beats}
         />
         <FeatureMarquee items={t.marquee} />
+        <CostCalculator t={t.calculator} />
         <About
           t={t.about}
           claimedCount={claimedData ?? 0}
           recentViewCount={recentViewData ?? 0}
         />
+        <Testimonials t={t.testimonials} items={testimonials ?? []} />
         <CtaBand t={t.cta} />
         <Gallery t={t.gallery} />
         <OrderSection t={t} />

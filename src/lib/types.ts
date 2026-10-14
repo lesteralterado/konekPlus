@@ -67,6 +67,17 @@ export type CardOrder = {
   created_at: string;
 };
 
+export type LandingTestimonial = {
+  id: string;
+  author_name: string;
+  author_role: string | null;
+  quote: string;
+  rating: number;
+  published: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
 export type ProfileTestimonial = {
   id: string;
   profile_id: string;
@@ -193,6 +204,12 @@ export type Database = {
         Row: CardOrder;
         Insert: Omit<CardOrder, "id" | "status" | "created_at"> & { id?: string };
         Update: Partial<CardOrder>;
+        Relationships: [];
+      };
+      landing_testimonials: {
+        Row: LandingTestimonial;
+        Insert: Pick<LandingTestimonial, "author_name" | "quote"> & Partial<LandingTestimonial>;
+        Update: Partial<LandingTestimonial>;
         Relationships: [];
       };
       profile_testimonials: {

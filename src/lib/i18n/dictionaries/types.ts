@@ -58,6 +58,31 @@ export type Dictionary = {
     };
     /** Short benefit phrases for the scrolling strip. Only true claims. */
     marquee: string[];
+    calculator: {
+      kicker: string;
+      heading: string;
+      body: string;
+      perMonthLabel: string;
+      costPerCardLabel: string;
+      reprintsLabel: string;
+      /** Explains what a reprint costs in the model. {box} placeholder. */
+      reprintsHint: string;
+      paperLabel: string;
+      paperSub: string;
+      konekLabel: string;
+      konekSub: string;
+      /** {amount} placeholder */
+      savings: string;
+      /** {months} placeholder */
+      payback: string;
+      paybackUnderMonth: string;
+      /** {amount} placeholder */
+      perDay: string;
+      noSavings: string;
+      disclaimer: string;
+      cta: string;
+    };
+    testimonials: { kicker: string; heading: string };
     unboxing: {
       kicker: string;
       // Exactly three, timed to the clip: closed box → lid opens → card.
