@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import { images } from "./images";
+import { StackedCards } from "./stacked-cards";
 
 export function Gallery({ t }: { t: Dictionary["home"]["gallery"] }) {
   return (
@@ -15,13 +16,13 @@ export function Gallery({ t }: { t: Dictionary["home"]["gallery"] }) {
           </h2>
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <StackedCards className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
           {t.items.map((item, i) => {
             const src = images.gallery[i];
             return (
               <div
                 key={item.title}
-                className="overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
+                className="h-full overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
               >
                 <div className="relative aspect-4/3 overflow-hidden bg-slate-100">
                   {src ? (
@@ -39,7 +40,7 @@ export function Gallery({ t }: { t: Dictionary["home"]["gallery"] }) {
               </div>
             );
           })}
-        </div>
+        </StackedCards>
       </div>
     </section>
   );
