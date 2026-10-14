@@ -8,7 +8,13 @@ export const en = {
     langFilipino: "FIL",
   },
   home: {
-    nav: { howItWorks: "How it works", about: "About", product: "Product", faq: "FAQ" },
+    nav: {
+      howItWorks: "How it works",
+      about: "About",
+      product: "Product",
+      faq: "FAQ",
+      order: "Order",
+    },
     hero: {
       badge: "NFC digital business cards",
       titleLine1: "Tap your card,",
@@ -16,15 +22,19 @@ export const en = {
       subtitle:
         "One profile behind every card you own. Update it once, and every tap — on any card — stays current.",
       ctaHowItWorks: "See how it works",
-      ctaSignIn: "Sign in to your dashboard",
+      ctaOrder: "Get your card · from {price}",
       ratingText: "Rated {rating}/5 from {count}+ pieces of feedback",
-      tapHint: "Got a new card? Tap it — the code on the back opens",
+      trustPayment: "Cash on delivery or GCash",
+      trustGuarantee: "Replacement guarantee",
+      trustCompatibility: "Works with every phone (NFC + QR)",
     },
     deck: {
       hint: "Five finishes. Tap a card to flip it.",
       flipHint: "Flip to see details",
       flipBack: "Tap to flip back",
       perCard: "per card",
+      popular: "Most popular",
+      chooseFinish: "Choose this finish",
       finishes: {
         obsidian: {
           tagline: "Matte black, embossed",
@@ -47,6 +57,23 @@ export const en = {
           description: "A teal-to-sunset gradient in Konek+ colors. Impossible to miss.",
         },
       },
+    },
+    unboxing: {
+      kicker: "• Unboxing",
+      beats: [
+        {
+          title: "Arrives ready.",
+          body: "Every Konek+ card ships in a box worth keeping.",
+        },
+        {
+          title: "Open it.",
+          body: "Your card sits right on top, ready the moment you lift the lid.",
+        },
+        {
+          title: "Tap it. You're connected.",
+          body: "Hold it to any phone and your profile opens instantly.",
+        },
+      ],
     },
     about: {
       kicker: "• About us",
@@ -76,13 +103,68 @@ export const en = {
     cta: {
       headingPrefix: "Ready to make your card",
       headingSuffix: "do more?",
-      body: "Sign in to set up your profile, then tap any Konek+ card to share it — no app, no re-typing, ever.",
-      button: "Sign in to your dashboard",
+      body: "Pick a finish, pay on delivery or via GCash, and start sharing with one tap — no app, no re-typing, ever.",
+      button: "Get your card",
     },
+    order: {
+      kicker: "• Order",
+      heading: "Pick your finish. We'll handle the rest.",
+      subtitle: "No payment now — we confirm every order with you first, then you pay on delivery or via GCash.",
+      finishLabel: "Finish",
+      quantityLabel: "Quantity",
+      decrease: "Fewer cards",
+      increase: "More cards",
+      tier: "{qty}+ cards: save {pct}%",
+      youSave: "You save {amount}",
+      total: "Total",
+      paymentLabel: "How you'll pay",
+      paymentCod: "Cash on delivery",
+      paymentGcash: "GCash",
+      nameLabel: "Full name",
+      phoneLabel: "Mobile number",
+      emailLabel: "Email (optional)",
+      addressLabel: "Delivery address",
+      notesLabel: "Notes (optional)",
+      notesPlaceholder: "Delivery instructions, or anything we should know",
+      submit: "Place order · {total}",
+      submitting: "Placing your order…",
+      guarantee: "Every card is covered by our replacement guarantee.",
+      noPaymentNow: "Nothing is charged now.",
+      successTitle: "Order received!",
+      successBody: "Your reference is {reference}. We'll message you at {phone} to confirm your order and payment.",
+      orderAnother: "Place another order",
+      errors: {
+        finish: "Pick a finish.",
+        quantity: "Choose between 1 and 100 cards.",
+        name: "Add your full name.",
+        phone: "Add a mobile number we can reach you on.",
+        email: "That email doesn't look right — or leave it blank.",
+        address: "Add a delivery address.",
+        payment: "Choose how you'll pay.",
+        server: "Something went wrong placing your order. Please try again.",
+      },
+    },
+    stickyCta: { from: "From {price}", order: "Order now" },
     faq: {
       kicker: "• FAQ",
       heading: "Questions, answered.",
       items: [
+        {
+          q: "Will it work with my phone?",
+          a: "Yes. Most phones read the card with a tap (NFC). If a phone can't, it can scan the QR code on the back of your card instead — so every phone with a camera works.",
+        },
+        {
+          q: "How do I pay?",
+          a: "Nothing is charged when you order. We confirm the details with you first, then you pay cash on delivery or via GCash.",
+        },
+        {
+          q: "What if my card stops working?",
+          a: "Every card is covered by our replacement guarantee. Message us and we'll sort out a replacement.",
+        },
+        {
+          q: "Can I order for my whole team?",
+          a: "Yes — the more cards you order, the more you save: 5+ cards save 10%, and 10+ cards save 15%. Each person gets their own profile.",
+        },
         {
           q: "Do I need to install an app?",
           a: "No. Tapping a Konek+ card opens your profile straight in the phone's browser — nothing to download, on iPhone or Android.",
@@ -101,7 +183,7 @@ export const en = {
         },
         {
           q: "What happens if a card is lost?",
-          a: "Contact us and we'll unlink it from your profile, so it can't share your info anymore and can be reissued.",
+          a: "Switch it off from your dashboard in one tap — it stops sharing your info immediately, and you can switch it back on if it turns up.",
         },
       ],
     },
@@ -109,7 +191,7 @@ export const en = {
       headingPrefix: "One card. Every version of you,",
       headingSuffix: "always current.",
       body: "Set up your profile once — every Konek+ card you own shares it, updated the instant you change it.",
-      button: "Sign in to your dashboard",
+      button: "Get your card",
     },
     footer: {
       tagline: "One profile behind every card you own — tap to share, edit once to keep it current.",

@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { signOut } from "@/app/dashboard/actions";
 import {
   ArrowLeftIcon,
+  BagIcon,
   GridIcon,
   CreditCardIcon,
   KeyIcon,
@@ -13,6 +14,7 @@ import {
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: GridIcon },
+  { href: "/admin/orders", label: "Orders", icon: BagIcon },
   { href: "/admin/tags", label: "Tags", icon: CreditCardIcon },
   { href: "/admin/keychains", label: "Keychains", icon: KeyIcon },
   { href: "/admin/customers", label: "Customers", icon: UsersIcon },

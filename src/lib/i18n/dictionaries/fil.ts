@@ -16,6 +16,7 @@ export const fil = {
       about: "Tungkol Sa Amin",
       product: "Produkto",
       faq: "Mga Tanong",
+      order: "Mag-order",
     },
     hero: {
       badge: "NFC na digital business card",
@@ -24,15 +25,19 @@ export const fil = {
       subtitle:
         "Iisang profile sa likod ng bawat card na pag-aari mo. I-update ito nang minsan, at mananatiling updated ang bawat tap — sa kahit anong card.",
       ctaHowItWorks: "Tingnan kung paano ito gumagana",
-      ctaSignIn: "Mag-sign in sa iyong dashboard",
+      ctaOrder: "Kunin ang iyong card · mula {price}",
       ratingText: "{rating}/5 ang rating mula sa {count}+ na feedback",
-      tapHint: "May bago kang card? I-tap ito — ang code sa likod ay nagbubukas ng",
+      trustPayment: "Cash on delivery o GCash",
+      trustGuarantee: "May replacement guarantee",
+      trustCompatibility: "Gumagana sa lahat ng phone (NFC + QR)",
     },
     deck: {
       hint: "Limang finish. I-tap ang card para baligtarin.",
       flipHint: "Baligtarin para sa detalye",
       flipBack: "I-tap para ibalik",
       perCard: "bawat card",
+      popular: "Pinakapatok",
+      chooseFinish: "Piliin ang finish na ito",
       finishes: {
         obsidian: {
           tagline: "Matte black, naka-emboss",
@@ -55,6 +60,23 @@ export const fil = {
           description: "Gradient mula teal hanggang kulay-dapithapon, sa kulay ng Konek+. Siguradong mapapansin.",
         },
       },
+    },
+    unboxing: {
+      kicker: "• Pagbubukas",
+      beats: [
+        {
+          title: "Dumarating nang handa.",
+          body: "Bawat Konek+ card ay nasa kahong sulit itago.",
+        },
+        {
+          title: "Buksan mo.",
+          body: "Nasa ibabaw agad ang iyong card, handa na pagbukas mo ng takip.",
+        },
+        {
+          title: "I-tap. Konektado ka na.",
+          body: "Idikit sa kahit anong phone at agad bubukas ang iyong profile.",
+        },
+      ],
     },
     about: {
       kicker: "• Tungkol sa Amin",
@@ -97,13 +119,70 @@ export const fil = {
     cta: {
       headingPrefix: "Handa ka na bang gawin ang iyong card na",
       headingSuffix: "mas magagawa pa?",
-      body: "Mag-sign in para i-set up ang iyong profile, pagkatapos ay i-tap ang kahit anong Konek+ card para ibahagi ito — walang app, walang paulit-ulit na pag-type.",
-      button: "Mag-sign in sa iyong dashboard",
+      body: "Pumili ng finish, magbayad pagdating o sa GCash, at magsimulang magbahagi sa isang tap — walang app, walang paulit-ulit na pag-type.",
+      button: "Kunin ang iyong card",
     },
+    order: {
+      kicker: "• Mag-order",
+      heading: "Piliin ang finish mo. Kami na ang bahala sa iba.",
+      subtitle:
+        "Walang bayad ngayon — kinukumpirma muna namin sa iyo ang bawat order, saka ka magbabayad pagdating o sa GCash.",
+      finishLabel: "Finish",
+      quantityLabel: "Dami",
+      decrease: "Bawasan",
+      increase: "Dagdagan",
+      tier: "{qty}+ na card: makatipid ng {pct}%",
+      youSave: "Makakatipid ka ng {amount}",
+      total: "Kabuuan",
+      paymentLabel: "Paraan ng pagbabayad",
+      paymentCod: "Cash on delivery",
+      paymentGcash: "GCash",
+      nameLabel: "Buong pangalan",
+      phoneLabel: "Mobile number",
+      emailLabel: "Email (opsyonal)",
+      addressLabel: "Delivery address",
+      notesLabel: "Tala (opsyonal)",
+      notesPlaceholder: "Mga bilin sa delivery, o anumang dapat naming malaman",
+      submit: "I-order · {total}",
+      submitting: "Ipinapadala ang iyong order…",
+      guarantee: "May replacement guarantee ang bawat card.",
+      noPaymentNow: "Walang sisingilin ngayon.",
+      successTitle: "Natanggap na ang order mo!",
+      successBody:
+        "Ang reference mo ay {reference}. Ime-message ka namin sa {phone} para kumpirmahin ang order at bayad.",
+      orderAnother: "Mag-order ulit",
+      errors: {
+        finish: "Pumili ng finish.",
+        quantity: "Pumili ng 1 hanggang 100 na card.",
+        name: "Ilagay ang buong pangalan mo.",
+        phone: "Ilagay ang mobile number kung saan ka namin makokontak.",
+        email: "Mukhang mali ang email — o iwanang blangko.",
+        address: "Ilagay ang delivery address.",
+        payment: "Piliin kung paano ka magbabayad.",
+        server: "Nagkaproblema sa pag-order. Pakisubukang muli.",
+      },
+    },
+    stickyCta: { from: "Mula {price}", order: "Mag-order na" },
     faq: {
       kicker: "• FAQ",
       heading: "Mga tanong, sinagot.",
       items: [
+        {
+          q: "Gagana ba ito sa phone ko?",
+          a: "Oo. Karamihan ng phone ay nababasa ang card sa isang tap (NFC). Kung hindi kaya ng phone, pwedeng i-scan ang QR code sa likod ng card mo — kaya gagana ito sa lahat ng phone na may camera.",
+        },
+        {
+          q: "Paano ako magbabayad?",
+          a: "Walang sisingilin kapag nag-order ka. Kinukumpirma muna namin ang detalye sa iyo, saka ka magbabayad ng cash pagdating o sa GCash.",
+        },
+        {
+          q: "Paano kung huminto sa paggana ang card ko?",
+          a: "May replacement guarantee ang bawat card. I-message lang kami at aayusin namin ang kapalit.",
+        },
+        {
+          q: "Pwede ba akong mag-order para sa buong team?",
+          a: "Oo — mas maraming card, mas malaki ang tipid: 10% sa 5+ na card, at 15% sa 10+ na card. May sariling profile ang bawat tao.",
+        },
         {
           q: "Kailangan ko bang mag-install ng app?",
           a: "Hindi. Ang pag-tap ng Konek+ card ay direktang magbubukas ng iyong profile sa browser ng phone — walang kailangang i-download, sa iPhone man o Android.",
@@ -122,7 +201,7 @@ export const fil = {
         },
         {
           q: "Ano ang mangyayari kung mawala ang isang card?",
-          a: "Makipag-ugnayan sa amin at ia-unlink namin ito mula sa iyong profile, para hindi na ito makapagbahagi ng iyong impormasyon at maaari nang muling i-isyu.",
+          a: "I-off ito mula sa iyong dashboard sa isang tap — agad itong titigil sa pagbabahagi ng impormasyon mo, at pwede mo itong i-on ulit kapag nakita mo na.",
         },
       ],
     },
@@ -130,7 +209,7 @@ export const fil = {
       headingPrefix: "Isang card. Bawat bersyon mo,",
       headingSuffix: "laging updated.",
       body: "I-set up ang iyong profile nang minsan — ibabahagi ito ng bawat Konek+ card na pag-aari mo, updated sa sandaling baguhin mo ito.",
-      button: "Mag-sign in sa iyong dashboard",
+      button: "Kunin ang iyong card",
     },
     footer: {
       tagline:

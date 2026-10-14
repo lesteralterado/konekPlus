@@ -30,6 +30,15 @@ export function GridIcon(props: IconProps) {
   );
 }
 
+export function BagIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M6 7h12l1 14H5L6 7z" />
+      <path d="M9 7a3 3 0 0 1 6 0" />
+    </Svg>
+  );
+}
+
 export function CreditCardIcon(props: IconProps) {
   return (
     <Svg {...props}>

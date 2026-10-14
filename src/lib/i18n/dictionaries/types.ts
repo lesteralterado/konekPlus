@@ -1,3 +1,5 @@
+type Beat = { title: string; body: string };
+
 export type Dictionary = {
   common: {
     signIn: string;
@@ -6,27 +8,38 @@ export type Dictionary = {
     langFilipino: string;
   };
   home: {
-    nav: { howItWorks: string; about: string; product: string; faq: string };
+    nav: { howItWorks: string; about: string; product: string; faq: string; order: string };
     hero: {
       badge: string;
       titleLine1: string;
       titleLine2: string;
       subtitle: string;
       ctaHowItWorks: string;
-      ctaSignIn: string;
+      /** {price} placeholder — the lowest finish price, e.g. "Get your card · from {price}" */
+      ctaOrder: string;
       /** {rating} and {count} placeholders, e.g. "Rated {rating}/5 from {count}+ pieces of feedback" */
       ratingText: string;
-      tapHint: string;
+      // Trust row — only claims Lester has confirmed are true.
+      trustPayment: string;
+      trustGuarantee: string;
+      trustCompatibility: string;
     };
     deck: {
       hint: string;
       flipHint: string;
       flipBack: string;
       perCard: string;
+      popular: string;
+      chooseFinish: string;
       finishes: Record<
         "obsidian" | "frost" | "titanium" | "linen" | "aurora",
         { tagline: string; description: string }
       >;
+    };
+    unboxing: {
+      kicker: string;
+      // Exactly three, timed to the clip: closed box → lid opens → card.
+      beats: [Beat, Beat, Beat];
     };
     about: {
       kicker: string;
@@ -49,6 +62,44 @@ export type Dictionary = {
       items: { title: string; description: string }[];
     };
     cta: { headingPrefix: string; headingSuffix: string; body: string; button: string };
+    order: {
+      kicker: string;
+      heading: string;
+      subtitle: string;
+      finishLabel: string;
+      quantityLabel: string;
+      decrease: string;
+      increase: string;
+      /** {qty} and {pct} placeholders, e.g. "{qty}+ cards: save {pct}%" */
+      tier: string;
+      /** {amount} placeholder */
+      youSave: string;
+      total: string;
+      paymentLabel: string;
+      paymentCod: string;
+      paymentGcash: string;
+      nameLabel: string;
+      phoneLabel: string;
+      emailLabel: string;
+      addressLabel: string;
+      notesLabel: string;
+      notesPlaceholder: string;
+      /** {total} placeholder */
+      submit: string;
+      submitting: string;
+      guarantee: string;
+      noPaymentNow: string;
+      successTitle: string;
+      /** {reference} and {phone} placeholders */
+      successBody: string;
+      orderAnother: string;
+      errors: Record<
+        "finish" | "quantity" | "name" | "phone" | "email" | "address" | "payment" | "server",
+        string
+      >;
+    };
+    /** {price} placeholder — the lowest finish price */
+    stickyCta: { from: string; order: string };
     faq: { kicker: string; heading: string; items: { q: string; a: string }[] };
     finalCta: { headingPrefix: string; headingSuffix: string; body: string; button: string };
     footer: {

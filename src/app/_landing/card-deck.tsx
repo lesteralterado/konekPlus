@@ -17,6 +17,7 @@ import {
 } from "react";
 import type { FinishId } from "@/lib/finishes";
 import { whenPreloaderDone } from "@/lib/preloader-events";
+import { announceFinishChoice } from "./choose-finish";
 import { TapIcon } from "./icons";
 
 export type DeckItem = {
@@ -25,9 +26,17 @@ export type DeckItem = {
   price: string;
   tagline: string;
   description: string;
+  popular: boolean;
 };
 
-type Labels = { hint: string; flipHint: string; flipBack: string; perCard: string };
+type Labels = {
+  hint: string;
+  flipHint: string;
+  flipBack: string;
+  perCard: string;
+  popular: string;
+  chooseFinish: string;
+};
 
 type FinishStyle = {
   face: string;
@@ -40,7 +49,9 @@ type FinishStyle = {
   glare: number;
 };
 
-const FINISH_STYLES: Record<FinishId, FinishStyle> = {
+// Also used by the order form's finish picker, so a finish looks the same
+// wherever it's shown.
+export const FINISH_STYLES: Record<FinishId, FinishStyle> = {
   obsidian: {
     face: "bg-[linear-gradient(135deg,#262a31_0%,#0c0d10_100%)] ring-1 ring-white/10",
     // Embossed: dark drop below, faint highlight above.
@@ -269,7 +280,31 @@ function DeckCard({
           className="pointer-events-none absolute inset-0 rounded-2xl mix-blend-soft-light transform-[translateZ(1px)]"
           style={{ background: glareBackground, opacity: glareOpacity }}
         />
+
+        {/* Outside the flip button, so it stays readable on both faces. */}
+        {item.popular && (
+          <span className="pointer-events-none absolute -top-2.5 left-4 rounded-full bg-accent-500 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-900 shadow-md transform-[translateZ(2px)]">
+            {labels.popular}
+          </span>
+        )}
       </motion.div>
+
+      {/* Sibling of the flip button rather than inside it — a link can't be
+          nested in a <button>. Appears once the details are showing. */}
+      <motion.a
+        href="#order"
+        onClick={() => announceFinishChoice(item.id)}
+        tabIndex={flipped ? 0 : -1}
+        aria-hidden={!flipped}
+        initial={false}
+        animate={{ opacity: flipped ? 1 : 0, y: flipped ? 0 : -8 }}
+        transition={reduceMotion ? { duration: 0 } : { duration: 0.25 }}
+        className={`absolute left-1/2 top-full mt-3 -translate-x-1/2 whitespace-nowrap rounded-full bg-accent-500 px-4 py-1.5 text-xs font-semibold text-brand-900 shadow-lg transition-colors hover:bg-accent-500/90 ${
+          flipped ? "" : "pointer-events-none"
+        }`}
+      >
+        {labels.chooseFinish} · {item.price}
+      </motion.a>
     </motion.div>
   );
 }
@@ -285,7 +320,7 @@ export function CardDeck({ items, labels }: { items: DeckItem[]; labels: Labels 
   return (
     <div>
       {fan ? (
-        <div className="relative mx-auto h-60 w-full max-w-5xl">
+        <div className="relative mx-auto h-64 w-full max-w-5xl">
           {items.map((item, i) => (
             <DeckCard
               key={item.id}
@@ -300,7 +335,7 @@ export function CardDeck({ items, labels }: { items: DeckItem[]; labels: Labels 
           ))}
         </div>
       ) : (
-        <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-6 pt-4 scrollbar-none [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-14 pt-5 scrollbar-none [&::-webkit-scrollbar]:hidden">
           {items.map((item, i) => (
             <div key={item.id} className="shrink-0 snap-center">
               <DeckCard

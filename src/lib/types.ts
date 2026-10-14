@@ -50,6 +50,23 @@ export type Feedback = {
   created_at: string;
 };
 
+export type CardOrderStatus = "new" | "contacted" | "fulfilled" | "cancelled";
+export type PaymentMethod = "cod" | "gcash";
+
+export type CardOrder = {
+  id: string;
+  finish: "obsidian" | "frost" | "titanium" | "linen" | "aurora";
+  quantity: number;
+  full_name: string;
+  phone: string;
+  email: string | null;
+  address: string;
+  payment_method: PaymentMethod;
+  notes: string | null;
+  status: CardOrderStatus;
+  created_at: string;
+};
+
 export type ProfileTestimonial = {
   id: string;
   profile_id: string;
@@ -170,6 +187,12 @@ export type Database = {
         Row: Feedback;
         Insert: Pick<Feedback, "category" | "message"> & Partial<Feedback>;
         Update: Partial<Feedback>;
+        Relationships: [];
+      };
+      card_orders: {
+        Row: CardOrder;
+        Insert: Omit<CardOrder, "id" | "status" | "created_at"> & { id?: string };
+        Update: Partial<CardOrder>;
         Relationships: [];
       };
       profile_testimonials: {

@@ -4,13 +4,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { LOGO_URL } from "@/lib/constants";
-import { ArrowUpRightIcon } from "./icons";
+import { ArrowRightIcon } from "./icons";
 
-type NavState = "top" | "overHero" | "overContent";
+type NavState = "top" | "overDark" | "overLight";
 
-// Height of the compact (scrolled) bar — the point where the hero counts
-// as "passed" for the dark→light frosted switch.
+// Height of the compact (scrolled) bar — whatever section sits under its
+// bottom edge decides the dark/light frosted style.
 const COMPACT_NAV_HEIGHT = 64;
+
+// Sections opt in with data-nav-theme="dark" (hero, unboxing, CTA band);
+// everything else is treated as light.
+function isOverDarkSection() {
+  return Array.from(document.querySelectorAll("[data-nav-theme='dark']")).some((el) => {
+    const rect = el.getBoundingClientRect();
+    return rect.top <= COMPACT_NAV_HEIGHT && rect.bottom > COMPACT_NAV_HEIGHT;
+  });
+}
 
 export function SiteNav({
   heroId,
@@ -19,7 +28,7 @@ export function SiteNav({
   switcherOnLight,
 }: {
   heroId: string;
-  labels: { howItWorks: string; product: string; faq: string; signIn: string };
+  labels: { howItWorks: string; product: string; faq: string; signIn: string; order: string };
   // Server-rendered LanguageSwitcher variants (plain forms → work without JS).
   switcherOnDark: ReactNode;
   switcherOnLight: ReactNode;
@@ -29,9 +38,7 @@ export function SiteNav({
   useEffect(() => {
     const update = () => {
       if (window.scrollY < 24) return setState("top");
-      const heroBottom =
-        document.getElementById(heroId)?.getBoundingClientRect().bottom ?? 0;
-      setState(heroBottom > COMPACT_NAV_HEIGHT ? "overHero" : "overContent");
+      setState(isOverDarkSection() ? "overDark" : "overLight");
     };
 
     // Initial read covers a reload that restores a mid-page scroll position.
@@ -41,9 +48,9 @@ export function SiteNav({
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", update);
     };
-  }, [heroId]);
+  }, []);
 
-  const light = state === "overContent";
+  const light = state === "overLight";
   const links = [
     { href: "#how-it-works", label: labels.howItWorks },
     { href: "#product", label: labels.product },
@@ -81,7 +88,10 @@ export function SiteNav({
               state === "top" ? "h-12 w-12 sm:h-20 sm:w-20" : "h-10 w-10"
             }`}
           />
-          <span className="text-lg font-semibold tracking-tight">Konek+</span>
+          {/* Logo mark alone on small phones, to fit sign-in + order. */}
+          <span className="hidden text-lg font-semibold tracking-tight min-[400px]:inline">
+            Konek+
+          </span>
         </a>
 
         <div
@@ -100,17 +110,27 @@ export function SiteNav({
           ))}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {light ? switcherOnLight : switcherOnDark}
+          {/* Existing owners still need this on every screen size, but the
+              accent spot belongs to the buying path. */}
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 rounded-full bg-accent-500 py-2 pl-4 pr-2 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90"
+            className={`text-sm font-medium transition-colors duration-500 ${
+              light ? "text-slate-600 hover:text-brand-900" : "text-white/80 hover:text-white"
+            }`}
           >
             {labels.signIn}
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500">
-              <ArrowUpRightIcon className="h-3.5 w-3.5" />
-            </span>
           </Link>
+          <a
+            href="#order"
+            className="inline-flex items-center gap-2 rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-brand-900 transition hover:bg-accent-500/90 sm:pr-2"
+          >
+            {labels.order}
+            <span className="hidden h-6 w-6 items-center justify-center rounded-full bg-brand-900 text-accent-500 sm:flex">
+              <ArrowRightIcon className="h-3.5 w-3.5" />
+            </span>
+          </a>
         </div>
       </nav>
     </header>

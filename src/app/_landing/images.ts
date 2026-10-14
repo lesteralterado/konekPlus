@@ -12,10 +12,20 @@ export const images = {
     `${base}/v1788159282/NFC_business_card_displayed_2K_202608311454_c1ho83.jpg`,
     1000,
   ),
-  showcase: cloudinary(
-    `${base}/v1788155884/Smartphone_tapping_NFC_business___202608311357_vcyllv.jpg`,
-    1920,
-  ),
+  unboxing: (() => {
+    const video = "https://res.cloudinary.com/dhxi75eld/video/upload";
+    const clip = "v1789104655/kling_20260911_VIDEO_Create_smo_2089_0_xye0fj";
+    // c_crop,h_0.9,g_north trims the bottom 10% (generator watermark).
+    const crop = "c_crop,h_0.9,g_north";
+    return {
+      // ki_0.2 = a keyframe every 0.2s, so scroll-scrubbing (including
+      // backwards) seeks smoothly instead of stuttering between the
+      // default ~2s keyframes. ~1 MB vs ~0.6 MB without it.
+      video: `${video}/${crop}/w_1280,q_auto,ki_0.2/${clip}.mp4`,
+      firstFrame: `${video}/${crop}/so_0,w_1280,q_auto,f_auto/${clip}.jpg`,
+      lastFrame: `${video}/${crop}/so_5.9,w_1280,q_auto,f_auto/${clip}.jpg`,
+    };
+  })(),
   // Order matches dict.home.gallery.items.
   gallery: [
     cloudinary(`${base}/v1789025285/ChatGPT_Image_Sep_10_2026_02_59_11_PM_dhpx6b.png`, 1000),

@@ -1,3 +1,5 @@
+import { formatPrice, LOWEST_PRICE_PHP } from "@/lib/finishes";
+import { format } from "@/lib/i18n/format";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getLocale } from "@/lib/i18n/locale";
@@ -8,9 +10,12 @@ import { Footer } from "./_landing/footer";
 import { Gallery } from "./_landing/gallery";
 import { Hero } from "./_landing/hero";
 import { LogoStrip } from "./_landing/logo-strip";
-import { Showcase } from "./_landing/showcase";
+import { images } from "./_landing/images";
+import { OrderSection } from "./_landing/order-section";
 import { SiteNav } from "./_landing/site-nav";
 import { SmoothScroll } from "./_landing/smooth-scroll";
+import { StickyCta } from "./_landing/sticky-cta";
+import { Unboxing } from "./_landing/unboxing";
 import { GuideSection } from "./guide/guide-section";
 import { LanguageSwitcher } from "./language-switcher";
 
@@ -19,7 +24,11 @@ import { LanguageSwitcher } from "./language-switcher";
 export const revalidate = 300;
 
 const HERO_ID = "top";
+const ORDER_ID = "order";
 
+// Sales funnel order: hook (hero + deck) → show it (unboxing) → proof
+// (stats) → nudge (CTA) → detail (kit) → buy (order) → objections (FAQ).
+// The owner-facing unboxing guide sits after the FAQ, out of the buying path.
 export default async function Home() {
   const supabase = createPublicClient();
   const [
@@ -49,6 +58,7 @@ export default async function Home() {
           product: t.nav.product,
           faq: t.nav.faq,
           signIn: dict.common.signIn,
+          order: t.nav.order,
         }}
         switcherOnDark={<LanguageSwitcher locale={locale} variant="dark" />}
         switcherOnLight={<LanguageSwitcher locale={locale} />}
@@ -60,22 +70,33 @@ export default async function Home() {
           averageRating={avgRatingData ?? null}
           ratingCount={ratingCountData ?? 0}
         />
+        <Unboxing
+          clip={images.unboxing}
+          kicker={t.unboxing.kicker}
+          beats={t.unboxing.beats}
+        />
         <LogoStrip />
         <About
           t={t.about}
           claimedCount={claimedData ?? 0}
           recentViewCount={recentViewData ?? 0}
         />
+        <CtaBand t={t.cta} />
         <Gallery t={t.gallery} />
+        <OrderSection t={t} />
+        <Faq t={t.faq} />
         <section id="guide" className="scroll-mt-24 bg-white py-20 sm:py-28">
           <GuideSection t={dict.guide} />
         </section>
-        <Showcase />
-        <CtaBand t={t.cta} />
-        <Faq t={t.faq} />
         <FinalCta t={t.finalCta} />
       </main>
       <Footer dict={dict} locale={locale} />
+      <StickyCta
+        heroId={HERO_ID}
+        orderId={ORDER_ID}
+        fromLabel={format(t.stickyCta.from, { price: formatPrice(LOWEST_PRICE_PHP) })}
+        orderLabel={t.stickyCta.order}
+      />
     </>
   );
 }

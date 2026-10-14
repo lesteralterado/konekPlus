@@ -67,6 +67,44 @@ export function LinkChainIcon({ className }: IconProps) {
   );
 }
 
+export function ArrowRightIcon({ className }: IconProps) {
+  return (
+    <Stroke className={className} strokeWidth={2}>
+      <path d="M5 12h14" />
+      <path d="m13 6 6 6-6 6" />
+    </Stroke>
+  );
+}
+
+export function WalletIcon({ className }: IconProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5" />
+      <path d="M16 14h.01" />
+    </Stroke>
+  );
+}
+
+export function ShieldCheckIcon({ className }: IconProps) {
+  return (
+    <Stroke className={className}>
+      <path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </Stroke>
+  );
+}
+
+export function QrIcon({ className }: IconProps) {
+  return (
+    <Stroke className={className}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3M21 14v.01M14 21h7v-4M17 21v.01" />
+    </Stroke>
+  );
+}
+
 export function ChevronDownIcon({ className }: IconProps) {
   return (
     <Stroke className={className} strokeWidth={2}>
