@@ -4,10 +4,10 @@ import {
   motion,
   useMotionTemplate,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import {
   useEffect,
   useState,
@@ -310,7 +310,7 @@ function DeckCard({
 }
 
 export function CardDeck({ items, labels }: { items: DeckItem[]; labels: Labels }) {
-  const reduceMotion = useReducedMotion() ?? false;
+  const reduceMotion = usePrefersReducedMotion();
   const fan = useFanLayout();
   const [entered, setEntered] = useState(false);
 

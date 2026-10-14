@@ -2,7 +2,7 @@
 
 import { ReactLenis } from "lenis/react";
 import "lenis/dist/lenis.css";
-import { useReducedMotion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { useEffect, useState } from "react";
 import { whenPreloaderDone } from "@/lib/preloader-events";
 
@@ -11,7 +11,7 @@ import { whenPreloaderDone } from "@/lib/preloader-events";
 // once the preloader has lifted, so wheel input during the splash can't
 // scroll the hidden page underneath it.
 export function SmoothScroll() {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const [ready, setReady] = useState(false);
 
   useEffect(() => whenPreloaderDone(() => setReady(true)), []);

@@ -1,5 +1,7 @@
 type Beat = { title: string; body: string };
 
+export type UseCaseId = "realtor" | "sales" | "creative" | "events" | "business";
+
 export type Dictionary = {
   common: {
     signIn: string;
@@ -36,6 +38,26 @@ export type Dictionary = {
         { tagline: string; description: string }
       >;
     };
+    tryIt: {
+      kicker: string;
+      heading: string;
+      body: string;
+      madeFor: string;
+      useCases: Record<UseCaseId, { label: string; name: string; role: string; action: string }>;
+      dragHint: string;
+      tapHint: string;
+      whereToTap: string;
+      qrToggle: string;
+      nfcToggle: string;
+      scanning: string;
+      saveContact: string;
+      saved: string;
+      tryAgain: string;
+      /** Shown on the demo phone's lock screen. */
+      holdNear: string;
+    };
+    /** Short benefit phrases for the scrolling strip. Only true claims. */
+    marquee: string[];
     unboxing: {
       kicker: string;
       // Exactly three, timed to the clip: closed box → lid opens → card.

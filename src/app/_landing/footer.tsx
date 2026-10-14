@@ -33,7 +33,7 @@ export function Footer({ dict, locale }: { dict: Dictionary; locale: Locale }) {
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 {t.footer.productKicker}
               </span>
-              <a href="#how-it-works" className="text-slate-600 transition hover:text-brand-700">
+              <a href="#try-it" className="text-slate-600 transition hover:text-brand-700">
                 {t.nav.howItWorks}
               </a>
               <a href="#product" className="text-slate-600 transition hover:text-brand-700">

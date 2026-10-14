@@ -67,6 +67,30 @@ html.lenis {
   }
 }
 
+/* Feature marquee (src/app/_landing/marquee.tsx) — slides by exactly one of
+   its two identical copies, so the loop is seamless. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: auto;
+  }
+}
+
 /* Aurora card finish (src/app/_landing/card-deck.tsx) — a slow drift
    through the brand gradient. */
 @keyframes aurora-drift {

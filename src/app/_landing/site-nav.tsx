@@ -52,7 +52,7 @@ export function SiteNav({
 
   const light = state === "overLight";
   const links = [
-    { href: "#how-it-works", label: labels.howItWorks },
+    { href: "#try-it", label: labels.howItWorks },
     { href: "#product", label: labels.product },
     { href: "#faq", label: labels.faq },
   ];

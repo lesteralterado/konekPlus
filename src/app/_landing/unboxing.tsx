@@ -4,11 +4,11 @@ import {
   motion,
   useInView,
   useMotionValueEvent,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
 } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { useRef } from "react";
 
 type Beat = { title: string; body: string };
@@ -78,8 +78,14 @@ function StaticUnboxing({ clip, kicker, beats }: { clip: Clip; kicker: string; b
   );
 }
 
-export function Unboxing({ clip, kicker, beats }: { clip: Clip; kicker: string; beats: Beat[] }) {
-  const reduceMotion = useReducedMotion();
+export function Unboxing(props: { clip: Clip; kicker: string; beats: Beat[] }) {
+  const reduceMotion = usePrefersReducedMotion();
+  return reduceMotion ? <StaticUnboxing {...props} /> : <PinnedUnboxing {...props} />;
+}
+
+// Its own component so the scroll tracker only exists while this version is
+// mounted — swapping to the static version unmounts it cleanly.
+function PinnedUnboxing({ clip, kicker, beats }: { clip: Clip; kicker: string; beats: Beat[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const targetTime = useRef(0);
@@ -129,8 +135,6 @@ export function Unboxing({ clip, kicker, beats }: { clip: Clip; kicker: string; 
         seekToTarget();
       });
   }
-
-  if (reduceMotion) return <StaticUnboxing clip={clip} kicker={kicker} beats={beats} />;
 
   return (
     <section ref={sectionRef} data-nav-theme="dark" className="relative h-[260vh] bg-[#0e1114]">

@@ -62,7 +62,7 @@ export function Hero({
             </span>
           </a>
           <a
-            href="#how-it-works"
+            href="#try-it"
             className="rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
           >
             {t.hero.ctaHowItWorks}

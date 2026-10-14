@@ -9,12 +9,13 @@ import { Faq } from "./_landing/faq";
 import { Footer } from "./_landing/footer";
 import { Gallery } from "./_landing/gallery";
 import { Hero } from "./_landing/hero";
-import { LogoStrip } from "./_landing/logo-strip";
+import { FeatureMarquee } from "./_landing/marquee";
 import { images } from "./_landing/images";
 import { OrderSection } from "./_landing/order-section";
 import { SiteNav } from "./_landing/site-nav";
 import { SmoothScroll } from "./_landing/smooth-scroll";
 import { StickyCta } from "./_landing/sticky-cta";
+import { TryIt } from "./_landing/try-it";
 import { Unboxing } from "./_landing/unboxing";
 import { GuideSection } from "./guide/guide-section";
 import { LanguageSwitcher } from "./language-switcher";
@@ -70,12 +71,13 @@ export default async function Home() {
           averageRating={avgRatingData ?? null}
           ratingCount={ratingCountData ?? 0}
         />
+        <TryIt t={t.tryIt} />
         <Unboxing
           clip={images.unboxing}
           kicker={t.unboxing.kicker}
           beats={t.unboxing.beats}
         />
-        <LogoStrip />
+        <FeatureMarquee items={t.marquee} />
         <About
           t={t.about}
           claimedCount={claimedData ?? 0}

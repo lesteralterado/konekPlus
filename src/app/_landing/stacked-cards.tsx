@@ -3,11 +3,11 @@
 import {
   motion,
   useMotionTemplate,
-  useReducedMotion,
   useScroll,
   useTransform,
   type MotionValue,
 } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import {
   Fragment,
   useRef,
@@ -88,7 +88,7 @@ export function StackedCards({
   const ref = useRef<HTMLDivElement>(null);
   const lastSlotRef = useRef<HTMLDivElement>(null);
   const isStack = useIsStackLayout();
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const total = children.length;
 
   // Progress runs from "first card pins" to "last card pins" — i.e. while

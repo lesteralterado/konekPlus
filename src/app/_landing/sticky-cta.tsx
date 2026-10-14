@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { useEffect, useState } from "react";
 
 // Phones only: keeps "order" one thumb-tap away once the hero's own CTA has
@@ -16,7 +17,7 @@ export function StickyCta({
   fromLabel: string;
   orderLabel: string;
 }) {
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = usePrefersReducedMotion();
   const [heroVisible, setHeroVisible] = useState(true);
   const [orderVisible, setOrderVisible] = useState(false);
 
