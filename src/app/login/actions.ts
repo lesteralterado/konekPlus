@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import {
   getOrCreateDeviceId,
+  isDeviceVerificationEnabled,
+  issueLoginPinAndGetVerifyUrl,
   safeNextPath,
-  sendLoginPinEmail,
 } from "@/lib/device-verification";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,18 +27,15 @@ export async function login(
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
 
-  // Password check passed — not enough on its own to reach /dashboard from
-  // an unrecognized browser. See
-  // supabase/migrations/0009_device_verification.sql and src/proxy.ts.
+  // Password check passed. With new-device verification switched on, that's
+  // not enough on its own to reach /dashboard from an unrecognized browser.
+  // See supabase/migrations/0009_device_verification.sql and src/proxy.ts.
   const deviceId = await getOrCreateDeviceId();
-  const { data: trusted } = await supabase.rpc("is_device_trusted", {
-    p_device_id: deviceId,
-  });
-
-  if (!trusted) {
-    const { data: pin } = await supabase.rpc("store_login_pin");
-    if (pin) await sendLoginPinEmail(email, pin);
-    redirect(`/verify-device?next=${encodeURIComponent(next)}`);
+  if (isDeviceVerificationEnabled()) {
+    const { data: trusted } = await supabase.rpc("is_device_trusted", {
+      p_device_id: deviceId,
+    });
+    if (!trusted) redirect(await issueLoginPinAndGetVerifyUrl(supabase, email, next));
   }
 
   redirect(next);

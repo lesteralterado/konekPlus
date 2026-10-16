@@ -8,7 +8,8 @@ import {
 } from "@/lib/device-verification";
 import { createClient } from "@/lib/supabase/server";
 
-export type VerifyDeviceState = { error: string | null; resent: boolean };
+// sentAt drives the form's visible resend cooldown.
+export type VerifyDeviceState = { error: string | null; resent: boolean; sentAt?: number };
 
 export async function verifyDevicePin(
   _prevState: VerifyDeviceState,
@@ -52,14 +53,20 @@ export async function resendLoginPin(
     return { error: "This account has no email on file.", resent: false };
   }
 
+  // store_login_pin() raises during its 60s cooldown (0009_device_verification.sql).
   const { data: pin, error } = await supabase.rpc("store_login_pin");
   if (error || !pin) {
     return {
-      error: "Please wait a bit before requesting another code.",
+      error: "Please wait a minute before requesting another code.",
       resent: false,
     };
   }
 
-  await sendLoginPinEmail(user.email, pin);
-  return { error: null, resent: true };
+  if (!(await sendLoginPinEmail(user.email, pin))) {
+    return {
+      error: "We couldn't send the code right now. Please try again in a minute.",
+      resent: false,
+    };
+  }
+  return { error: null, resent: true, sentAt: Date.now() };
 }

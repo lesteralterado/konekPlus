@@ -1,6 +1,16 @@
 "use server";
 
-import { isFinishId, MAX_QUANTITY, type FinishId } from "@/lib/finishes";
+import { after } from "next/server";
+import { sendEmail } from "@/lib/email/send";
+import { orderAlertEmail } from "@/lib/email/templates";
+import {
+  finishById,
+  formatPrice,
+  isFinishId,
+  MAX_QUANTITY,
+  quote,
+  type FinishId,
+} from "@/lib/finishes";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -77,10 +87,35 @@ export async function placeOrder(
   });
   if (error) return fail("server");
 
-  return {
-    status: "success",
-    reference: `KP-${id.slice(0, 6).toUpperCase()}`,
-    finish,
-    quantity,
-  };
+  const reference = `KP-${id.slice(0, 6).toUpperCase()}`;
+
+  // Alert the owner — after the response, so the customer never waits on
+  // it, and a failed alert never affects their order. Skipped when
+  // ORDER_ALERT_EMAIL isn't set.
+  const alertTo = process.env.ORDER_ALERT_EMAIL;
+  if (alertTo) {
+    const q = quote(finish, quantity);
+    const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
+    after(() =>
+      sendEmail({
+        to: alertTo,
+        ...orderAlertEmail({
+          reference,
+          finishName: finishById(finish).name,
+          quantity,
+          total: formatPrice(q.totalPhp),
+          discountPct: q.discountPct,
+          fullName,
+          phone,
+          email: email || null,
+          address,
+          payment: payment === "cod" ? "Cash on delivery" : "GCash",
+          notes: notes.slice(0, 1000) || null,
+          adminUrl: `${siteUrl}/admin/orders`,
+        }),
+      }),
+    );
+  }
+
+  return { status: "success", reference, finish, quantity };
 }

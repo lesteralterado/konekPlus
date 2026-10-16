@@ -1,0 +1,28 @@
+<!-- Paste into Supabase → Authentication → Email Templates → "Confirm signup".
+     Subject: Confirm your Konek+ account
+     Links to /auth/confirm (src/app/auth/confirm/route.ts), which verifies
+     the token and signs the user in. Keep {{ .SiteURL }} / {{ .TokenHash }}. -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f9fb;padding:32px 16px;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:20px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
+        <tr>
+          <td style="background:#0b2b3c;padding:20px 28px;">
+            <img src="https://res.cloudinary.com/dhxi75eld/image/upload/f_auto,q_auto,w_160/v1788160699/Untitled_design_4_cfbrps.png" width="32" height="32" alt="" style="vertical-align:middle;border:0;" />
+            <span style="color:#ffffff;font-size:18px;font-weight:bold;vertical-align:middle;margin-left:8px;">Konek+</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:28px;color:#0b2b3c;font-size:15px;line-height:1.6;">
+            <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Confirm your email</p>
+            <p style="margin:0 0 24px;color:#64748b;">One tap and your Konek+ account is ready. Then tap your card again to finish linking it.</p>
+            <p style="margin:0 0 24px;">
+              <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/dashboard" style="display:inline-block;background:#f2994a;color:#0b2b3c;font-weight:bold;text-decoration:none;padding:12px 22px;border-radius:999px;">Confirm my email</a>
+            </p>
+            <p style="margin:0;color:#64748b;font-size:13px;">Didn't create a Konek+ account? You can safely ignore this email.</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { PasswordInput } from "@/components/password-input";
 import { type LoginState, login } from "./actions";
@@ -31,6 +32,12 @@ export function LoginForm({ next }: { next: string }) {
         required
         className={inputClass}
       />
+      <Link
+        href="/forgot-password"
+        className="-mt-1 self-end text-sm font-medium text-brand-700 hover:text-brand-800"
+      >
+        Forgot password?
+      </Link>
       {state.error && <p className="text-sm text-red-600">{state.error}</p>}
       <button
         type="submit"

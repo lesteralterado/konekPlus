@@ -1,7 +1,9 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
-import { Resend } from "resend";
+import { sendEmail } from "@/lib/email/send";
+import type { createClient } from "@/lib/supabase/server";
+import { loginCodeEmail } from "@/lib/email/templates";
 
 export const DEVICE_COOKIE_NAME = "konek_device_id";
 
@@ -69,43 +71,55 @@ export function safeNextPath(
   return next;
 }
 
+// The new-device code step is switched on with DEVICE_VERIFICATION=on.
+//
+// It's OFF until Konek+ has a verified sending domain in Resend: without
+// one, Resend can only deliver to the Resend account owner's own inbox, so
+// every real customer on a new device would be told "we emailed you a
+// code" and never get it — i.e. locked out. Off means a correct password is
+// enough, exactly as before this feature existed. The device cookie keeps
+// being issued either way, so switching it on later needs no migration.
+// Turn it on the day the domain is verified (see .env.local.example).
+export function isDeviceVerificationEnabled(): boolean {
+  return process.env.DEVICE_VERIFICATION === "on";
+}
+
+// "lester@gmail.com" -> "l•••••@gmail.com" — enough for someone to know
+// which inbox to check, without printing their full address on screen.
+export function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!local || !domain) return email;
+  return `${local[0]}${"•".repeat(Math.max(2, Math.min(local.length - 1, 6)))}@${domain}`;
+}
+
 // Sends the 6-digit login PIN to the account's email. The PIN is generated
 // server-side in Postgres (store_login_pin() in
 // supabase/migrations/0009_device_verification.sql) and only ever reaches
 // this function already-generated — this function never invents or
-// receives a client-suppliable PIN.
-//
-// Resend fallback: RESEND_API_KEY isn't configured yet in this project.
-// Missing config must NOT skip the security gate — the PIN is still
-// generated/stored/required either way. When Resend isn't configured, this
-// logs the plaintext PIN to the server console instead of emailing it.
-// DEV-ONLY OUTPUT — this is intentional, not a leftover to clean up; it
-// stops firing the moment RESEND_API_KEY / RESEND_FROM_EMAIL are set.
-export async function sendLoginPinEmail(
+// receives a client-suppliable PIN. Returns whether it actually sent, so
+// the caller can tell the user the truth (see sendEmail()).
+export async function sendLoginPinEmail(email: string, pin: string): Promise<boolean> {
+  const result = await sendEmail({ to: email, ...loginCodeEmail(pin) });
+  return result.ok;
+}
+
+export type PinNotice = "rate_limited" | "send_failed";
+
+// Issues + emails a PIN and returns where to send the user. Never throws:
+// if the PIN couldn't be issued (60s cooldown) or emailed, the user still
+// lands on /verify-device, but with a notice explaining why there's no
+// email — instead of being told "we emailed you" when nothing was sent.
+export async function issueLoginPinAndGetVerifyUrl(
+  supabase: Awaited<ReturnType<typeof createClient>>,
   email: string,
-  pin: string,
-): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
+  next: string,
+): Promise<string> {
+  const { data: pin } = await supabase.rpc("store_login_pin");
+  let notice: PinNotice | null = null;
+  if (!pin) notice = "rate_limited";
+  else if (!(await sendLoginPinEmail(email, pin))) notice = "send_failed";
 
-  if (!apiKey || !from) {
-    console.log(
-      `[device-verification] RESEND_API_KEY not configured — login PIN for ${email}: ${pin}`,
-    );
-    return;
-  }
-
-  const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send({
-    from,
-    to: email,
-    subject: "Your Konek+ sign-in code",
-    text: `Your Konek+ verification code is ${pin}. It expires in 10 minutes.\n\nIf you didn't try to sign in, you can safely ignore this email.`,
-  });
-
-  if (error) {
-    // Fail loud: a caller that swallows this leaves the user stuck on
-    // /verify-device with a code that never arrived and no clue why.
-    throw new Error(`Failed to send login PIN email: ${error.message}`);
-  }
+  const params = new URLSearchParams({ next });
+  if (notice) params.set("notice", notice);
+  return `/verify-device?${params}`;
 }

@@ -3,7 +3,8 @@
 import { redirect } from "next/navigation";
 import {
   getOrCreateDeviceId,
-  sendLoginPinEmail,
+  isDeviceVerificationEnabled,
+  issueLoginPinAndGetVerifyUrl,
 } from "@/lib/device-verification";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,14 +24,11 @@ async function redirectAfterClaim(
   next: string,
 ): Promise<never> {
   const deviceId = await getOrCreateDeviceId();
-  const { data: trusted } = await supabase.rpc("is_device_trusted", {
-    p_device_id: deviceId,
-  });
-
-  if (!trusted) {
-    const { data: pin } = await supabase.rpc("store_login_pin");
-    if (pin) await sendLoginPinEmail(email, pin);
-    redirect(`/verify-device?next=${encodeURIComponent(next)}`);
+  if (isDeviceVerificationEnabled()) {
+    const { data: trusted } = await supabase.rpc("is_device_trusted", {
+      p_device_id: deviceId,
+    });
+    if (!trusted) redirect(await issueLoginPinAndGetVerifyUrl(supabase, email, next));
   }
 
   redirect(next);

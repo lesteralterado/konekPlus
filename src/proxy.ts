@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   DEVICE_COOKIE_NAME,
   DEVICE_COOKIE_OPTIONS,
+  isDeviceVerificationEnabled,
   randomDeviceId,
 } from "@/lib/device-verification";
 
@@ -83,7 +84,8 @@ export async function proxy(request: NextRequest) {
       response.cookies.set(DEVICE_COOKIE_NAME, deviceId, DEVICE_COOKIE_OPTIONS);
     }
 
-    if (requiresLogin) {
+    // Off until a sending domain is verified — see isDeviceVerificationEnabled().
+    if (requiresLogin && isDeviceVerificationEnabled()) {
       // A device id minted this same request can't possibly already be
       // trusted — skip the round trip. Fail closed on any RPC error: an
       // undefined/null `data` is treated as untrusted, never as trusted.
