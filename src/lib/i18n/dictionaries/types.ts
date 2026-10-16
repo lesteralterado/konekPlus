@@ -222,6 +222,22 @@ export type Dictionary = {
     anonymous: string;
     share: string;
     copied: string;
+    message: string;
+    phoneLabel: string;
+    emailLabel: string;
+    copy: string;
+    copyLink: string;
+    linkCopied: string;
+    moreOptions: string;
+    shareTitle: string;
+    scanToOpen: string;
+    contactSection: string;
+    linksSection: string;
+    about: string;
+    more: string;
+    madeWith: string;
+    saveShort: string;
+    close: string;
   };
   feedbackWidget: {
     buttonLabel: string;

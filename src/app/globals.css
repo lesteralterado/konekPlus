@@ -23,6 +23,19 @@
   --color-brand-700: var(--brand-700);
   --color-brand-900: var(--brand-900);
   --color-accent-500: var(--accent-500);
+  --color-ios-bg: var(--ios-bg);
+  --color-ios-surface: var(--ios-surface);
+  --color-ios-raised: var(--ios-raised);
+  --color-ios-fill: var(--ios-fill);
+  --color-ios-label: var(--ios-label);
+  --color-ios-label-2: var(--ios-label-2);
+  --color-ios-label-3: var(--ios-label-3);
+  --color-ios-separator: var(--ios-separator);
+  --color-ios-tint: var(--ios-tint);
+  --color-ios-accent: var(--ios-accent);
+  --color-ios-primary: var(--ios-primary);
+  --color-ios-on-primary: var(--ios-on-primary);
+  --color-ios-glass: var(--ios-glass);
   --font-sans: var(--font-plus-jakarta-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -41,6 +54,101 @@ html {
    would fight it on anchor jumps. */
 html.lenis {
   scroll-behavior: auto;
+}
+
+/* Public profile (/t/[tag_id]) design kit — iOS system colours, scoped to
+   .profile-ui so only the profile follows the visitor's dark mode; the rest
+   of the site stays light. Tints stay on-brand (navy/teal + orange) rather
+   than iOS blue. Sheets, toasts and the sticky bar portal to <body>, so they
+   add the class themselves to pick these up. */
+.profile-ui {
+  --ios-bg: #f2f2f7;
+  --ios-surface: #ffffff;
+  --ios-raised: #ffffff;
+  --ios-fill: rgb(120 120 128 / 0.12);
+  --ios-label: #0b2b3c;
+  --ios-label-2: rgb(60 60 67 / 0.62);
+  --ios-label-3: rgb(60 60 67 / 0.3);
+  --ios-separator: rgb(60 60 67 / 0.16);
+  --ios-tint: #0d7d73;
+  --ios-accent: #b8571a;
+  --ios-primary: #0b2b3c;
+  --ios-on-primary: #ffffff;
+  --ios-glass: rgb(255 255 255 / 0.72);
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .profile-ui {
+    --ios-bg: #000000;
+    --ios-surface: #1c1c1e;
+    --ios-raised: #2c2c2e;
+    --ios-fill: rgb(118 118 128 / 0.24);
+    --ios-label: #ffffff;
+    --ios-label-2: rgb(235 235 245 / 0.6);
+    --ios-label-3: rgb(235 235 245 / 0.3);
+    --ios-separator: rgb(84 84 88 / 0.6);
+    --ios-tint: #4fd1c5;
+    --ios-accent: #f2994a;
+    --ios-primary: #ffffff;
+    --ios-on-primary: #0b2b3c;
+    --ios-glass: rgb(30 30 32 / 0.72);
+    color-scheme: dark;
+  }
+}
+
+/* Match the overscroll/bounce area to the profile, so dark mode doesn't
+   flash the light site background at the edges. */
+body:has(> main.profile-ui) {
+  background: #f2f2f7;
+}
+@media (prefers-color-scheme: dark) {
+  body:has(> main.profile-ui) {
+    background: #000000;
+  }
+}
+
+/* iOS press feel: a quick shrink + dim on touch with no grey tap flash.
+   Rows (.ios-row) highlight instead of shrinking, like a UITableView. */
+.ios-press {
+  transition:
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 220ms ease,
+    background-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ios-press:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+.ios-row {
+  transition: background-color 200ms ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+.ios-row:active {
+  background-color: var(--ios-fill);
+}
+
+/* Continuous (squircle) corners where the browser supports them. */
+@supports (corner-shape: squircle) {
+  .ios-squircle {
+    corner-shape: squircle;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ios-press:active {
+    transform: none;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Staggered entrance for the public profile templates — pure CSS so the

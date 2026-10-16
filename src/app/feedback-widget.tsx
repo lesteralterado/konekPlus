@@ -63,8 +63,16 @@ export function FeedbackWidget({ dict }: { dict: Dictionary["feedbackWidget"] })
 
   // /admin already has its own review screen, and /f/[slug] *is* a
   // dedicated full-page feedback form — the floating button would just
-  // duplicate it on top of itself.
-  if (pathname?.startsWith("/admin") || pathname?.startsWith("/f/")) return null;
+  // duplicate it on top of itself. /t/ is a cardholder's public profile:
+  // its visitors aren't Konek+ users, and the bubble covered the profile's
+  // own buttons (it has its own "Leave feedback for …" row instead).
+  if (
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/f/") ||
+    pathname?.startsWith("/t/")
+  ) {
+    return null;
+  }
 
   return (
     <>

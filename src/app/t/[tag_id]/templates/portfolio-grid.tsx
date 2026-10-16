@@ -1,44 +1,42 @@
 import Image from "next/image";
 import type { PortfolioItem } from "@/lib/types";
+import { SectionHeader } from "../ui/ios";
 
+// Snap-scrolling cards with a visible peek of the next one, so it reads as
+// "swipe for more" without an arrow. Bleeds to the screen edges (-mx-4).
 export function PortfolioGrid({ items, heading }: { items: PortfolioItem[]; heading: string }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="mt-6 w-full text-left">
-      <h2 className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-400">
-        {heading}
-      </h2>
-      <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">
+    <section>
+      <SectionHeader>{heading}</SectionHeader>
+      <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-1">
         {items.map((item) => (
           <a
             key={item.id}
             href={item.project_url ?? undefined}
             target={item.project_url ? "_blank" : undefined}
             rel={item.project_url ? "noreferrer" : undefined}
-            className="w-48 shrink-0 overflow-hidden rounded-2xl bg-slate-50 transition hover:bg-slate-100 active:scale-[0.98]"
+            className="ios-press w-[78%] max-w-72 shrink-0 snap-start overflow-hidden rounded-[22px] bg-ios-surface"
           >
             {item.image_url && (
-              <div className="relative h-28 w-full bg-slate-200">
+              <div className="relative aspect-16/10 w-full bg-ios-fill">
                 <Image
                   src={item.image_url}
                   alt={item.title}
                   fill
+                  sizes="288px"
                   className="object-cover"
                 />
               </div>
             )}
-            <div className="p-3">
-              <p className="truncate text-sm font-bold text-slate-800">
-                {item.title}
-              </p>
+            <div className="px-4 py-3">
+              <p className="truncate text-[15px] font-semibold text-ios-label">{item.title}</p>
               {item.tech && (
-                <p className="mt-0.5 truncate text-xs font-medium text-brand-600">
-                  {item.tech}
-                </p>
+                <p className="mt-0.5 truncate text-[13px] font-medium text-ios-tint">{item.tech}</p>
               )}
               {item.description && (
-                <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+                <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-ios-label-2">
                   {item.description}
                 </p>
               )}
@@ -46,6 +44,6 @@ export function PortfolioGrid({ items, heading }: { items: PortfolioItem[]; head
           </a>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -13,6 +13,13 @@ export type TemplateProps = {
   testimonials: ProfileTestimonial[];
   locale: Locale;
   dict: Dictionary["profile"];
+  // Absolute URL of this profile — encoded in the share sheet QR.
+  profileUrl: string;
+  // Server-rendered QR SVG markup for profileUrl ("" in previews).
+  qrSvg: string;
+  // Rendered as a scaled thumbnail (dashboard template picker): fixed hero
+  // height, no sticky bar/toasts/ids that assume a single live page.
+  preview?: boolean;
 };
 
 export const TEMPLATES: Record<

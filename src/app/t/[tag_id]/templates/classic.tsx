@@ -1,157 +1,58 @@
 import Image from "next/image";
-import Link from "next/link";
 import { PROFILE_BANNER_URL } from "@/lib/constants";
-import { LanguageSwitcher } from "@/app/language-switcher";
 import type { TemplateProps } from "./index";
-import { PortfolioGrid } from "./portfolio-grid";
-import { ShareButton } from "./share-button";
-import { getOrderedSocials } from "./social-list";
-import { TestimonialsSection } from "./testimonials-section";
+import { ActionBar } from "../ui/action-bar";
+import { HeroChips, ProfileBody } from "../ui/profile-body";
 
-export function ClassicTemplate({
-  profile,
-  tagId,
-  isOwner,
-  portfolioItems,
-  testimonials,
-  locale,
-  dict,
-}: TemplateProps) {
-  const socials = getOrderedSocials(profile.socials);
+// Banner + overlapping round portrait, name centred, then solid action tiles.
+export function ClassicTemplate(props: TemplateProps) {
+  const { profile } = props;
+  const roleLine = [profile.job_title, profile.company].filter(Boolean).join(" · ");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
-      <LanguageSwitcher locale={locale} className="mb-3 justify-center self-center" />
-      <div className="fade-up overflow-hidden rounded-[2.5rem] bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.18)]">
-        <div className="relative h-40 sm:h-48">
-          <div
-            className="absolute inset-0 bg-slate-200 bg-cover bg-center"
-            style={{ backgroundImage: `url(${PROFILE_BANNER_URL})` }}
-          />
-          {isOwner && (
-            <Link
-              href="/dashboard"
-              className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur transition hover:bg-white active:scale-95"
-            >
-              {dict.editButton}
-            </Link>
-          )}
-        </div>
-
-        <div className="flex flex-col items-center px-6 pb-8 text-center">
-          <div className="relative -mt-14 h-28 w-28 overflow-hidden rounded-full bg-brand-100 shadow-lg ring-4 ring-white">
-            {profile.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt={profile.full_name ?? "Profile photo"}
-                width={112}
-                height={112}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-brand-700">
-                {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
-              </div>
-            )}
-          </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-brand-900">
-            {profile.full_name}
-          </h1>
-          {(profile.job_title || profile.company) && (
-            <p className="mt-1 text-slate-500">
-              {[profile.job_title, profile.company].filter(Boolean).join(" · ")}
-            </p>
-          )}
-          {profile.tagline && (
-            <p className="mt-1 text-sm italic text-slate-400">{profile.tagline}</p>
-          )}
-          {profile.bio && (
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">{profile.bio}</p>
-          )}
-
-          <div className="mt-6 flex w-full flex-col gap-3">
-            {profile.phone && (
-              <a
-                href={`tel:${profile.phone}`}
-                className="rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-center font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
-              >
-                {dict.call} {profile.phone}
-              </a>
-            )}
-            {profile.email && (
-              <a
-                href={`mailto:${profile.email}`}
-                className="rounded-2xl border-2 border-slate-200 px-4 py-3.5 text-center font-semibold text-slate-700 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
-              >
-                {dict.email} {profile.email}
-              </a>
-            )}
-            {profile.cta_label && profile.cta_url && (
-              <a
-                href={profile.cta_url}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-2xl bg-accent-500 px-4 py-3.5 text-center font-bold text-brand-900 shadow-lg shadow-accent-500/25 transition hover:bg-accent-500/90 active:scale-[0.98]"
-              >
-                {profile.cta_label}
-              </a>
-            )}
-            <a
-              href={`/t/${tagId}/vcard`}
-              className="rounded-2xl bg-brand-600 px-4 py-3.5 text-center font-bold text-white shadow-lg shadow-brand-600/25 transition hover:bg-brand-700 active:scale-[0.98]"
-            >
-              {dict.saveToContacts}
-            </a>
-            <ShareButton
-              title={profile.full_name ?? "Konek+ profile"}
-              label={dict.share}
-              copiedLabel={dict.copied}
-              className="flex items-center justify-center gap-1.5 rounded-2xl border-2 border-slate-200 px-4 py-3 text-center text-sm font-semibold text-slate-500 transition hover:border-brand-300 hover:text-brand-700 active:scale-[0.98]"
+    <main className="profile-ui flex-1 bg-ios-bg text-ios-label">
+      <div className="fade-up mx-auto w-full max-w-md">
+        <header>
+          <div className="relative h-40 overflow-hidden sm:mt-6 sm:rounded-4xl">
+            <div
+              className="absolute inset-0 bg-slate-300 bg-cover bg-center"
+              style={{ backgroundImage: `url(${PROFILE_BANNER_URL})` }}
+            />
+            <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/30 to-transparent" />
+            <HeroChips
+              {...props}
+              tone="photo"
+              className="absolute inset-x-0 top-0 p-4 pt-[max(1rem,env(safe-area-inset-top))]"
             />
           </div>
 
-          {socials.length > 0 && (
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              {socials.map(({ key, url, Icon, label }) => (
-                <a
-                  key={key}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200 hover:text-brand-700 active:scale-95"
-                >
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
+          <div className="flex flex-col items-center px-4 text-center">
+            <div className="relative -mt-14 size-28 overflow-hidden rounded-full bg-brand-100 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.4)] ring-4 ring-ios-bg">
+              {profile.avatar_url ? (
+                <Image
+                  src={profile.avatar_url}
+                  alt={profile.full_name ?? "Profile photo"}
+                  width={112}
+                  height={112}
+                  priority={!props.preview}
+                  className="size-full object-cover"
+                />
+              ) : (
+                <div className="flex size-full items-center justify-center text-4xl font-bold text-brand-700">
+                  {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
+                </div>
+              )}
             </div>
-          )}
+            <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.02em]">
+              {profile.full_name}
+            </h1>
+            {roleLine && <p className="mt-0.5 text-[15px] text-ios-label-2">{roleLine}</p>}
+            {profile.tagline && <p className="mt-0.5 text-[15px] text-ios-label-2">{profile.tagline}</p>}
+            <ActionBar {...props} variant="solid" className="mt-5 w-full" />
+          </div>
+        </header>
 
-          {profile.links.length > 0 && (
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              {profile.links.map((link) => (
-                <a
-                  key={link.url}
-                  href={link.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-brand-50 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100 active:scale-95"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          )}
-
-          <PortfolioGrid items={portfolioItems} heading={dict.portfolioHeading} />
-          <TestimonialsSection
-            profileId={profile.id}
-            ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
-            items={testimonials}
-            dict={dict}
-          />
-        </div>
+        <ProfileBody {...props} />
       </div>
     </main>
   );

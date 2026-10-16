@@ -9,9 +9,9 @@ import { UseTemplateButton } from "./use-template-button";
 export const dynamic = "force-dynamic";
 
 const TEMPLATE_DESCRIPTIONS: Record<ProfileTemplate, string> = {
-  classic: "Clean and dependable — a banner photo, centered avatar, and full-width actions.",
-  editorial: "Your photo as the hero, name overlaid magazine-style, sleek icon actions below.",
-  minimal: "Small centered portrait, one hero action, everything else tucked into a quiet icon row.",
+  classic: "Clean and dependable — a banner photo, centered portrait, and solid action tiles.",
+  editorial: "Your photo as a full-screen poster, name on top, frosted-glass actions over it.",
+  minimal: "Quiet and compact — a small portrait beside your name and round action buttons.",
 };
 
 export default async function TemplatePickerPage() {
@@ -83,6 +83,9 @@ export default async function TemplatePickerPage() {
                     testimonials={[]}
                     locale="en"
                     dict={en.profile}
+                    profileUrl=""
+                    qrSvg=""
+                    preview
                   />
                 </div>
                 <div className="absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-100 to-transparent" />

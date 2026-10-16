@@ -10,15 +10,25 @@ export function LanguageSwitcher({
   className = "",
 }: {
   locale: Locale;
-  variant?: "light" | "dark";
+  variant?: "light" | "dark" | "ios";
   className?: string;
 }) {
-  const activeClass = variant === "dark" ? "text-white" : "text-brand-900";
-  const inactiveClass =
-    variant === "dark"
-      ? "text-white/50 hover:text-white/80"
-      : "text-slate-400 hover:text-slate-600";
-  const dividerClass = variant === "dark" ? "text-white/30" : "text-slate-300";
+  // "ios" follows the public profile's light/dark tokens (.profile-ui).
+  const activeClass = {
+    light: "text-brand-900",
+    dark: "text-white",
+    ios: "text-ios-label",
+  }[variant];
+  const inactiveClass = {
+    light: "text-slate-400 hover:text-slate-600",
+    dark: "text-white/50 hover:text-white/80",
+    ios: "text-ios-label-3 hover:text-ios-label-2",
+  }[variant];
+  const dividerClass = {
+    light: "text-slate-300",
+    dark: "text-white/30",
+    ios: "text-ios-label-3",
+  }[variant];
 
   return (
     <div className={`inline-flex items-center gap-1.5 text-xs font-semibold ${className}`}>

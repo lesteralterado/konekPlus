@@ -1,20 +1,23 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import { CloseIcon, StarIcon } from "@/app/dashboard/icons";
+import { StarIcon } from "@/app/dashboard/icons";
 import type { ProfileTestimonial } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import { format } from "@/lib/i18n/format";
 import { submitTestimonial, type TestimonialFormState } from "../actions";
+import { GroupedList, IconTile, RowBody, RowText, SectionHeader } from "../ui/ios";
+import { Sheet } from "../ui/sheet";
 
 const initialState: TestimonialFormState = { error: null, resetToken: 0 };
 
+// 17px text: iOS Safari zooms the page when focusing inputs under 16px.
 const inputClass =
-  "w-full rounded-2xl bg-slate-50 px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200";
+  "w-full rounded-xl bg-ios-surface px-4 py-3 text-[17px] text-ios-label placeholder:text-ios-label-3 focus:outline-none focus:ring-2 focus:ring-ios-tint/40";
 
 function StarRow({ rating }: { rating: number }) {
   return (
-    <span className="flex items-center gap-0.5 text-accent-500">
+    <span className="flex items-center gap-0.5 text-accent-500" aria-label={`${rating}/5`}>
       {Array.from({ length: 5 }).map((_, i) => (
         <StarIcon key={i} filled={i < rating} className="h-3.5 w-3.5" />
       ))}
@@ -33,9 +36,10 @@ function StarPicker({ name }: { name: string }) {
           type="button"
           onClick={() => setValue(n)}
           aria-label={`${n} star${n > 1 ? "s" : ""}`}
-          className="p-0.5 text-accent-500 transition hover:scale-110"
+          aria-pressed={n <= value}
+          className="ios-press p-1 text-accent-500"
         >
-          <StarIcon filled={n <= value} className="h-5 w-5" />
+          <StarIcon filled={n <= value} className="h-6 w-6" />
         </button>
       ))}
     </div>
@@ -53,7 +57,7 @@ export function TestimonialsSection({
   items: ProfileTestimonial[];
   dict: Dictionary["profile"];
 }) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [open, setOpen] = useState(false);
   const [state, formAction, pending] = useActionState(submitTestimonial, initialState);
   const [justSubmitted, setJustSubmitted] = useState(false);
   const prevToken = useRef(initialState.resetToken);
@@ -65,131 +69,72 @@ export function TestimonialsSection({
     prevToken.current = state.resetToken;
   }, [state.resetToken, state.error]);
 
-  if (items.length === 0) {
-    return (
-      <div className="mt-6 w-full text-left">
-        <button
-          type="button"
-          onClick={() => dialogRef.current?.showModal()}
-          className="mx-auto block rounded-full border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-500 transition hover:border-brand-300 hover:text-brand-700"
-        >
-          {format(dict.leaveFeedbackFor, { name: ownerFirstName })}
-        </button>
-        <TestimonialDialog
-          dialogRef={dialogRef}
-          profileId={profileId}
-          formAction={formAction}
-          state={state}
-          pending={pending}
-          justSubmitted={justSubmitted}
-          onClose={() => setJustSubmitted(false)}
-          onSubmitAnother={() => setJustSubmitted(false)}
-          dict={dict}
-        />
-      </div>
-    );
+  function close() {
+    setOpen(false);
+    setJustSubmitted(false);
   }
 
-  return (
-    <div className="mt-6 w-full text-left">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xs font-bold uppercase tracking-wide text-slate-400">
-          {dict.feedbackHeading}
-        </h2>
-        <button
-          type="button"
-          onClick={() => dialogRef.current?.showModal()}
-          className="text-xs font-semibold text-brand-700 hover:text-brand-900"
-        >
-          {dict.leaveFeedback}
-        </button>
-      </div>
-      <div className="flex flex-col gap-2">
-        {items.map((t) => (
-          <div key={t.id} className="rounded-2xl bg-slate-50 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-semibold text-slate-700">
-                {t.author_name || dict.anonymous}
-              </span>
-              <StarRow rating={t.rating} />
-            </div>
-            <p className="mt-1.5 text-sm text-slate-500">{t.message}</p>
-          </div>
-        ))}
-      </div>
-      <TestimonialDialog
-        dialogRef={dialogRef}
-        profileId={profileId}
-        formAction={formAction}
-        state={state}
-        pending={pending}
-        justSubmitted={justSubmitted}
-        onClose={() => setJustSubmitted(false)}
-        onSubmitAnother={() => setJustSubmitted(false)}
-        dict={dict}
-      />
-    </div>
+  const leaveRow = (
+    <GroupedList>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-haspopup="dialog"
+        className="ios-row group/row flex w-full items-center pl-4"
+      >
+        <IconTile className="bg-accent-500 text-white">
+          <StarIcon filled className="h-4 w-4" />
+        </IconTile>
+        <RowBody className="pr-4">
+          <RowText title={format(dict.leaveFeedbackFor, { name: ownerFirstName })} />
+        </RowBody>
+      </button>
+    </GroupedList>
   );
-}
 
-function TestimonialDialog({
-  dialogRef,
-  profileId,
-  formAction,
-  state,
-  pending,
-  justSubmitted,
-  onClose,
-  onSubmitAnother,
-  dict,
-}: {
-  dialogRef: React.RefObject<HTMLDialogElement | null>;
-  profileId: string;
-  formAction: (formData: FormData) => void;
-  state: TestimonialFormState;
-  pending: boolean;
-  justSubmitted: boolean;
-  onClose: () => void;
-  onSubmitAnother: () => void;
-  dict: Dictionary["profile"];
-}) {
   return (
-    <dialog
-      ref={dialogRef}
-      onClose={onClose}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) dialogRef.current?.close();
-      }}
-      className="m-auto w-[92vw] max-w-sm rounded-3xl border-0 bg-transparent p-0 backdrop:bg-brand-900/40 backdrop:backdrop-blur-sm"
-    >
-      <div onClick={(e) => e.stopPropagation()} className="rounded-3xl bg-white p-6 shadow-2xl">
-        <div className="mb-4 flex items-start justify-between">
-          <h2 className="text-lg font-semibold text-brand-900">
-            {justSubmitted ? dict.testimonialThanksTitle : dict.leaveFeedback}
-          </h2>
-          <button
-            type="button"
-            onClick={() => dialogRef.current?.close()}
-            className="rounded-full p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600"
-            aria-label="Close"
-          >
-            <CloseIcon className="h-4 w-4" />
-          </button>
-        </div>
+    <>
+      {items.length > 0 && (
+        <section>
+          <SectionHeader>{dict.feedbackHeading}</SectionHeader>
+          <div className="flex flex-col gap-2">
+            {items.map((t) => (
+              <figure key={t.id} className="rounded-[22px] bg-ios-surface px-4 py-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <figcaption className="truncate text-[15px] font-semibold text-ios-label">
+                    {t.author_name || dict.anonymous}
+                  </figcaption>
+                  <StarRow rating={t.rating} />
+                </div>
+                <blockquote className="mt-1 text-[15px] leading-relaxed text-ios-label-2">
+                  {t.message}
+                </blockquote>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+      {leaveRow}
 
+      <Sheet
+        open={open}
+        onClose={close}
+        title={justSubmitted ? dict.testimonialThanksTitle : dict.leaveFeedback}
+        closeLabel={dict.close}
+      >
         {justSubmitted ? (
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-slate-600">{dict.testimonialThanksBody}</p>
+          <div className="flex flex-col gap-4 pb-2">
+            <p className="text-[15px] text-ios-label-2">{dict.testimonialThanksBody}</p>
             <button
               type="button"
-              onClick={onSubmitAnother}
-              className="self-start rounded-full bg-brand-50 px-5 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100"
+              onClick={() => setJustSubmitted(false)}
+              className="ios-press self-start rounded-full bg-ios-fill px-5 py-2.5 text-[15px] font-semibold text-ios-tint"
             >
               {dict.testimonialAnother}
             </button>
           </div>
         ) : (
-          <form action={formAction} key={state.resetToken} className="flex flex-col gap-3">
+          <form action={formAction} key={state.resetToken} className="flex flex-col gap-3 pb-2">
             {/* Honeypot — see src/app/feedback-actions.ts for why this field exists. */}
             <div className="absolute left-[-9999px]" aria-hidden="true">
               <label>
@@ -202,6 +147,7 @@ function TestimonialDialog({
             <input
               name="author_name"
               placeholder={dict.testimonialNamePlaceholder}
+              autoComplete="name"
               className={inputClass}
             />
             <textarea
@@ -211,25 +157,23 @@ function TestimonialDialog({
               placeholder={dict.testimonialMessagePlaceholder}
               className={inputClass}
             />
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-slate-500">
-                {dict.testimonialRatingLabel}
-              </span>
+            <div className="flex items-center justify-between rounded-xl bg-ios-surface py-1.5 pl-4 pr-2">
+              <span className="text-[15px] text-ios-label">{dict.testimonialRatingLabel}</span>
               <StarPicker name="rating" />
             </div>
 
-            {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+            {state.error && <p className="text-sm text-red-500">{state.error}</p>}
 
             <button
               type="submit"
               disabled={pending}
-              className="mt-1 self-start rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-brand-600/20 transition hover:bg-brand-700 active:scale-[0.98] disabled:opacity-60"
+              className="ios-press mt-1 h-12.5 rounded-full bg-ios-primary text-[17px] font-semibold text-ios-on-primary disabled:opacity-60"
             >
               {pending ? dict.testimonialSending : dict.testimonialSubmit}
             </button>
           </form>
         )}
-      </div>
-    </dialog>
+      </Sheet>
+    </>
   );
 }

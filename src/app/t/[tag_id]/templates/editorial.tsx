@@ -1,161 +1,61 @@
 import Image from "next/image";
-import Link from "next/link";
-import { PhoneIcon, MailIcon } from "@/app/dashboard/icons";
-import { LanguageSwitcher } from "@/app/language-switcher";
 import type { TemplateProps } from "./index";
-import { PortfolioGrid } from "./portfolio-grid";
-import { ShareButton } from "./share-button";
-import { getOrderedSocials } from "./social-list";
-import { TestimonialsSection } from "./testimonials-section";
+import { ActionBar } from "../ui/action-bar";
+import { HeroChips, ProfileBody } from "../ui/profile-body";
 
-export function EditorialTemplate({
-  profile,
-  tagId,
-  isOwner,
-  portfolioItems,
-  testimonials,
-  locale,
-  dict,
-}: TemplateProps) {
-  const socials = getOrderedSocials(profile.socials);
-  const initial = (profile.full_name ?? "?").slice(0, 1).toUpperCase();
+// iOS Contact Poster: full-bleed photo, large name over a soft blurred
+// fade, and a frosted action bar floating on the photo's bottom edge.
+export function EditorialTemplate(props: TemplateProps) {
+  const { profile, preview } = props;
+  const roleLine = [profile.job_title, profile.company].filter(Boolean).join(" · ");
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8 sm:px-6 sm:py-10">
-      <LanguageSwitcher locale={locale} className="mb-3 justify-center self-center" />
-      <div className="fade-up overflow-hidden rounded-[2.5rem] bg-white shadow-[0_8px_40px_-12px_rgba(15,23,42,0.18)]">
-        <div className="relative h-80 sm:h-96">
+    <main className="profile-ui flex-1 bg-ios-bg text-ios-label">
+      <div className="fade-up mx-auto w-full max-w-md">
+        <header
+          className={`relative overflow-hidden bg-brand-900 sm:mt-6 sm:rounded-4xl ${
+            preview ? "h-140" : "h-[64svh] max-h-170 min-h-110"
+          }`}
+        >
           {profile.avatar_url ? (
             <Image
               src={profile.avatar_url}
               alt={profile.full_name ?? "Profile photo"}
               fill
+              priority={!preview}
+              sizes="(min-width: 640px) 448px, 100vw"
               className="object-cover"
-              priority
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-700 to-brand-900 text-8xl font-bold text-white/25">
-              {initial}
+            <div className="flex size-full items-center justify-center bg-linear-to-br from-brand-600 to-brand-900 text-9xl font-bold text-white/20">
+              {(profile.full_name ?? "?").slice(0, 1).toUpperCase()}
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/10" />
 
-          {isOwner && (
-            <Link
-              href="/dashboard"
-              className="absolute right-4 top-4 rounded-full bg-white/90 px-4 py-1.5 text-xs font-bold text-brand-700 shadow-sm backdrop-blur transition hover:bg-white active:scale-95"
-            >
-              {dict.editButton}
-            </Link>
-          )}
+          {/* Top scrim for the chips, bottom progressive blur + scrim for the text. */}
+          <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-black/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-xl mask-[linear-gradient(to_top,black_35%,transparent)]" />
+          <div className="absolute inset-x-0 bottom-0 h-3/5 bg-linear-to-t from-black/75 via-black/30 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 px-6 pb-6">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+          <HeroChips
+            {...props}
+            tone="photo"
+            className="absolute inset-x-0 top-0 p-4 pt-[max(1rem,env(safe-area-inset-top))]"
+          />
+
+          <div className="absolute inset-x-0 bottom-0 px-4 pb-4">
+            <h1 className="px-1 text-[34px] font-bold leading-[1.08] tracking-[-0.02em] text-white">
               {profile.full_name}
             </h1>
-            {(profile.job_title || profile.company) && (
-              <p className="mt-1 text-sm font-medium text-white/75">
-                {[profile.job_title, profile.company].filter(Boolean).join(" · ")}
-              </p>
-            )}
+            {roleLine && <p className="mt-1 px-1 text-[15px] font-medium text-white/80">{roleLine}</p>}
             {profile.tagline && (
-              <p className="mt-1 text-sm italic text-white/60">{profile.tagline}</p>
+              <p className="mt-0.5 px-1 text-[15px] text-white/65">{profile.tagline}</p>
             )}
+            <ActionBar {...props} variant="glass" className="mt-4" />
           </div>
-        </div>
+        </header>
 
-        <div className="flex flex-col items-center px-6 py-7 text-center">
-          {profile.bio && (
-            <p className="mb-6 text-sm leading-relaxed text-slate-500">{profile.bio}</p>
-          )}
-
-          {socials.length > 0 && (
-            <div className="mb-6 flex flex-wrap justify-center gap-2.5">
-              {socials.map(({ key, url, Icon, label }) => (
-                <a
-                  key={key}
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  title={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-500/10 text-accent-500 transition hover:bg-accent-500/20 active:scale-95"
-                >
-                  <Icon className="h-[18px] w-[18px]" />
-                </a>
-              ))}
-            </div>
-          )}
-
-          <div className="flex w-full gap-3">
-            {profile.phone && (
-              <a
-                href={`tel:${profile.phone}`}
-                className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
-              >
-                <PhoneIcon className="h-5 w-5" />
-                <span className="text-xs font-semibold">{dict.call}</span>
-              </a>
-            )}
-            {profile.email && (
-              <a
-                href={`mailto:${profile.email}`}
-                className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
-              >
-                <MailIcon className="h-5 w-5" />
-                <span className="text-xs font-semibold">{dict.email}</span>
-              </a>
-            )}
-            <ShareButton
-              title={profile.full_name ?? "Konek+ profile"}
-              label={dict.share}
-              copiedLabel={dict.copied}
-              className="flex flex-1 flex-col items-center gap-1.5 rounded-2xl bg-slate-50 py-3.5 text-slate-700 transition hover:bg-slate-100 active:scale-[0.97]"
-            />
-          </div>
-
-          {profile.cta_label && profile.cta_url && (
-            <a
-              href={profile.cta_url}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-3 w-full rounded-2xl border-2 border-accent-500 px-4 py-3.5 text-center font-bold text-accent-500 transition hover:bg-accent-500/10 active:scale-[0.98]"
-            >
-              {profile.cta_label}
-            </a>
-          )}
-
-          <a
-            href={`/t/${tagId}/vcard`}
-            className="mt-3 w-full rounded-2xl bg-accent-500 px-4 py-3.5 text-center font-bold text-brand-900 shadow-lg shadow-accent-500/30 transition hover:bg-accent-500/90 active:scale-[0.98]"
-          >
-            {dict.saveToContacts}
-          </a>
-
-          {profile.links.length > 0 && (
-            <div className="mt-5 flex flex-wrap justify-center gap-2">
-              {profile.links.map((link) => (
-                <a
-                  key={link.url}
-                  href={link.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-full bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 active:scale-95"
-                >
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          )}
-
-          <PortfolioGrid items={portfolioItems} heading={dict.portfolioHeading} />
-          <TestimonialsSection
-            profileId={profile.id}
-            ownerFirstName={(profile.full_name ?? "them").split(" ")[0]}
-            items={testimonials}
-            dict={dict}
-          />
-        </div>
+        <ProfileBody {...props} />
       </div>
     </main>
   );
