@@ -23,6 +23,22 @@ export async function resetTag(tagId: string) {
   revalidatePath(`/t/${tagId}`);
 }
 
+// Records that a card's chip has been written (with NFC Tools) and tested —
+// or clears it to redo. Same admin UPDATE policy as setTagEnabled below.
+export async function setTagWritten(tagId: string, written: boolean) {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tags")
+    .update({ written_at: written ? new Date().toISOString() : null })
+    .eq("tag_id", tagId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/tags");
+  revalidatePath("/admin/orders");
+}
+
 // Lets an admin flip a claimed tag's visibility on the owner's behalf —
 // support cases where a customer wants their card hidden but can't do it
 // themselves. Uses the regular RLS-scoped client: the "Admins can reset any

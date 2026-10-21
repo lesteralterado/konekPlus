@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { courierTrackingUrl } from "@/lib/couriers";
+import { lockAmount } from "@/lib/order-amount";
 import { sendEmail } from "@/lib/email/send";
 import { shippedEmail } from "@/lib/email/templates";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -35,17 +36,39 @@ export async function setOrderStatus(id: string, status: CardOrderStatus) {
 
   const supabase = await createClient();
   const now = new Date().toISOString();
+
+  const { data: order, error: readError } = await supabase
+    .from("card_orders")
+    .select("finish, quantity, payment_method, payment_status, amount_due_php")
+    .eq("id", id)
+    .single();
+  if (readError) throw new Error(readError.message);
+
+  // Confirming = the price is agreed with the customer, so lock it here.
+  // Before this the UI shows a live estimate; afterwards price-config
+  // changes never touch this order (0020_payments.sql).
+  const lock = status === "confirmed" ? lockAmount(order) : {};
+
+  // Delivered COD: the courier now holds the cash until they remit it.
+  const cod =
+    status === "delivered" && order.payment_method === "cod" && order.payment_status === "unpaid"
+      ? { payment_status: "with_courier" as const }
+      : {};
+
   const { error } = await supabase
     .from("card_orders")
     .update({
       status,
       ...(status === "shipped" ? { shipped_at: now } : {}),
       ...(status === "delivered" ? { delivered_at: now } : {}),
+      ...lock,
+      ...cod,
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/admin/orders");
+  revalidatePath("/admin");
 }
 
 // Records the courier + tracking number, flips the order to shipped, stamps
@@ -65,6 +88,13 @@ export async function markShipped(
   const supabase = await createClient();
   const now = new Date().toISOString();
 
+  // Shipping without ever pressing "confirm" still locks the price.
+  const { data: current } = await supabase
+    .from("card_orders")
+    .select("finish, quantity, amount_due_php")
+    .eq("id", id)
+    .single();
+
   const { data: order, error } = await supabase
     .from("card_orders")
     .update({
@@ -72,6 +102,7 @@ export async function markShipped(
       courier,
       tracking_number: tracking,
       shipped_at: now,
+      ...(current ? lockAmount(current) : {}),
     })
     .eq("id", id)
     .select("full_name, email, quantity")

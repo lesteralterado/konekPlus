@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { cardUrl } from "@/lib/card-link";
 import { provisionBatch, type ProvisionState } from "./actions";
 import { DownloadIcon, PlusIcon } from "../icons";
 
@@ -16,7 +17,7 @@ export function ProvisionForm({ siteUrl }: { siteUrl: string }) {
   );
 
   function downloadCsv() {
-    const rows = state.codes.map((code) => `${code},${siteUrl}/t/${code}`);
+    const rows = state.codes.map((code) => `${code},${cardUrl(siteUrl, code)}`);
     const csv = ["tag_id,url", ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

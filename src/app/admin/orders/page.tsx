@@ -1,18 +1,31 @@
 import Link from "next/link";
-import { finishById, formatPrice, quote } from "@/lib/finishes";
+import { siteOrigin } from "@/lib/card-link";
+import { finishById, formatPrice } from "@/lib/finishes";
+import { amountFor } from "@/lib/order-amount";
 import { createClient } from "@/lib/supabase/server";
-import type { CardOrderStatus } from "@/lib/types";
+import type { CardOrderStatus, PaymentStatus } from "@/lib/types";
 import { BagIcon, MailIcon, PhoneIcon, SmsIcon } from "../icons";
 import { CopyButton } from "../ui/drawers";
 import { CARD, EmptyState, FilterChips, IconLink, PANEL, Pager } from "../ui/kit";
 import { AssignCards } from "./assign-cards";
 import { NextStep } from "./next-step";
+import { PaymentStep } from "./payment-step";
+import { PAYMENT_STATUS, StatusPill, paymentTone } from "../ui/status";
 import { ShipOrder } from "./ship-order";
 import { OrderStatusSelect } from "./status-select";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 20;
+
+const PAY_FILTERS: { value: PaymentStatus | ""; label: string }[] = [
+  { value: "", label: "Any payment" },
+  { value: "unpaid", label: "Unpaid" },
+  { value: "proof_submitted", label: "To verify" },
+  { value: "with_courier", label: "With courier" },
+  { value: "paid", label: "Paid" },
+  { value: "refunded", label: "Refunded" },
+];
 
 const STATUS_FILTERS: { value: CardOrderStatus | ""; label: string }[] = [
   { value: "", label: "All" },
@@ -29,12 +42,13 @@ const STATUS_FILTERS: { value: CardOrderStatus | ""; label: string }[] = [
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; pay?: string; page?: string }>;
 }) {
-  const { status: statusParam, page: pageParam } = await searchParams;
+  const { status: statusParam, pay: payParam, page: pageParam } = await searchParams;
   const page = Math.max(1, Number(pageParam) || 1);
   const offset = (page - 1) * PAGE_SIZE;
   const status = STATUS_FILTERS.find((f) => f.value === statusParam)?.value || undefined;
+  const pay = PAY_FILTERS.find((f) => f.value === payParam)?.value || undefined;
 
   const supabase = await createClient();
 
@@ -44,6 +58,7 @@ export default async function AdminOrdersPage({
     .order("created_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
   if (status) query = query.eq("status", status);
+  if (pay) query = query.eq("payment_status", pay);
 
   const [{ data: orders, count }, { count: newCount }] = await Promise.all([
     query,
@@ -52,16 +67,34 @@ export default async function AdminOrdersPage({
 
   const orderIds = (orders ?? []).map((o) => o.id);
   const { data: assignedTags } = orderIds.length
-    ? await supabase.from("tags").select("tag_id, order_id").in("order_id", orderIds)
+    ? await supabase
+        .from("tags")
+        .select("tag_id, order_id, written_at")
+        .in("order_id", orderIds)
+        .order("tag_id")
     : { data: [] };
-  const codesByOrder = new Map<string, string[]>();
+  const cardsByOrder = new Map<string, { tagId: string; writtenAt: string | null }[]>();
   for (const t of assignedTags ?? []) {
     if (!t.order_id) continue;
-    codesByOrder.set(t.order_id, [...(codesByOrder.get(t.order_id) ?? []), t.tag_id]);
+    cardsByOrder.set(t.order_id, [
+      ...(cardsByOrder.get(t.order_id) ?? []),
+      { tagId: t.tag_id, writtenAt: t.written_at },
+    ]);
   }
+  const origin = siteOrigin();
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
-  const baseParams: Record<string, string> = status ? { status } : {};
+  const baseParams: Record<string, string> = {
+    ...(status ? { status } : {}),
+    ...(pay ? { pay } : {}),
+  };
+  // Changing one filter keeps the other (and resets to page 1).
+  const filterHref = (next: { status?: string; pay?: string }) => {
+    const merged: Record<string, string | undefined> = { status, pay, ...next };
+    const params: Record<string, string> = {};
+    for (const [k, v] of Object.entries(merged)) if (v) params[k] = v;
+    return `/admin/orders?${new URLSearchParams(params)}`;
+  };
 
   return (
     <div className="flex flex-col gap-5 md:gap-6">
@@ -84,15 +117,23 @@ export default async function AdminOrdersPage({
         <FilterChips
           items={STATUS_FILTERS}
           active={status ?? ""}
-          hrefFor={(v) => `/admin/orders?${new URLSearchParams(v ? { status: v } : {})}`}
+          hrefFor={(v) => filterHref({ status: v || undefined })}
+        />
+        <FilterChips
+          items={PAY_FILTERS}
+          active={pay ?? ""}
+          hrefFor={(v) => filterHref({ pay: v || undefined })}
         />
 
         <div className="flex flex-col gap-3 md:gap-0 md:divide-y md:divide-slate-100">
           {(orders ?? []).map((order) => {
             // Recomputed from the live price config — the table deliberately
             // stores no prices (see 0015_card_orders.sql).
-            const q = quote(order.finish, order.quantity);
+            const amount = amountFor(order);
             const reference = `KP-${order.id.slice(0, 6).toUpperCase()}`;
+            const cards = cardsByOrder.get(order.id) ?? [];
+            const unwritten = cards.filter((c) => !c.writtenAt).length;
+            const payTone = paymentTone(order.payment_status, order.status);
             return (
               <article
                 key={order.id}
@@ -102,8 +143,18 @@ export default async function AdminOrdersPage({
                   {/* Ref + status (on phones the pill itself changes status) */}
                   <div className="flex items-center justify-between gap-2">
                     <span className="font-mono text-xs font-semibold text-slate-400">{reference}</span>
-                    <span className="md:hidden">
-                      <OrderStatusSelect id={order.id} status={order.status} />
+                    <span className="flex items-center gap-1.5">
+                      <StatusPill
+                        tone={payTone}
+                        label={
+                          order.payment_status === "paid"
+                            ? `Paid ${formatPrice(order.amount_received_php ?? amount.php)}`
+                            : PAYMENT_STATUS[order.payment_status].label
+                        }
+                      />
+                      <span className="md:hidden">
+                        <OrderStatusSelect id={order.id} status={order.status} />
+                      </span>
                     </span>
                   </div>
 
@@ -113,11 +164,16 @@ export default async function AdminOrdersPage({
                       {order.quantity} × {finishById(order.finish).name}
                     </span>
                     <span className="text-lg font-bold text-brand-900 md:text-base md:font-semibold">
-                      {formatPrice(q.totalPhp)}
+                      {formatPrice(amount.php)}
+                      {amount.estimate && (
+                        <span className="ml-1 text-xs font-medium text-slate-400" title="Estimate — locked when you confirm the order">
+                          est.
+                        </span>
+                      )}
                     </span>
-                    {q.discountPct > 0 && (
+                    {(order.discount_pct ?? 0) > 0 && (
                       <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
-                        −{q.discountPct}%
+                        −{order.discount_pct}%
                       </span>
                     )}
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
@@ -182,8 +238,28 @@ export default async function AdminOrdersPage({
                     />
                   </div>
 
-                  <div className="mt-3 md:mt-2">
-                    <NextStep orderId={order.id} status={order.status} hasEmail={!!order.email} />
+                  <div className="mt-3 flex flex-col gap-2 md:mt-2 md:flex-row md:flex-wrap">
+                    <NextStep
+                      orderId={order.id}
+                      status={order.status}
+                      hasEmail={!!order.email}
+                      unwrittenCards={unwritten}
+                    />
+                    <PaymentStep
+                      orderId={order.id}
+                      reference={reference}
+                      method={order.payment_method}
+                      status={order.payment_status}
+                      orderStatus={order.status}
+                      amountDue={amount.php}
+                      estimate={amount.estimate}
+                      amountReceived={order.amount_received_php}
+                      paidAt={order.paid_at}
+                      gcashRef={order.gcash_reference}
+                      proofPath={order.payment_proof_path}
+                      proofAt={order.proof_submitted_at}
+                      note={order.payment_note}
+                    />
                   </div>
 
                   {/* Desktop keeps the inline courier form; phones ship via Next step */}
@@ -197,7 +273,8 @@ export default async function AdminOrdersPage({
                       orderId={order.id}
                       reference={reference}
                       quantity={order.quantity}
-                      assignedCodes={codesByOrder.get(order.id) ?? []}
+                      assigned={cards}
+                      origin={origin}
                     />
                   )}
                 </div>

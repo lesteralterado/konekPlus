@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { courierTrackingUrl } from "@/lib/couriers";
 import { finishById, isFinishId } from "@/lib/finishes";
 import { type TrackState, trackOrder } from "./actions";
+import { PaymentPanel } from "./payment-panel";
 
 const initialState: TrackState = { error: null, order: null };
 
@@ -125,6 +126,14 @@ export function TrackForm() {
               )}
             </div>
           )}
+
+          <PaymentPanel
+            key={`${state.reference}-${order.payment_status}`}
+            order={order}
+            reference={state.reference ?? ""}
+            phone={state.phone ?? ""}
+            gcash={state.gcash ?? null}
+          />
 
           {order.status !== "cancelled" && current >= 3 && (
             <p className="mt-5 text-sm text-slate-500">

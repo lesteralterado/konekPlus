@@ -26,10 +26,13 @@ export function NextStep({
   orderId,
   status,
   hasEmail,
+  unwrittenCards = 0,
 }: {
   orderId: string;
   status: CardOrderStatus;
   hasEmail: boolean;
+  // Assigned cards not yet marked written — a soft warning before shipping.
+  unwrittenCards?: number;
 }) {
   const [isPending, startTransition] = useTransition();
   const [shipOpen, setShipOpen] = useState(false);
@@ -67,6 +70,12 @@ export function NextStep({
           scopeClass="admin-ui"
         >
           <div className="pb-2">
+            {unwrittenCards > 0 && (
+              <p className="mb-3 rounded-2xl bg-amber-50 p-3 text-sm text-amber-800">
+                {unwrittenCards} card{unwrittenCards === 1 ? " isn’t" : "s aren’t"} marked written yet.
+                Ship anyway only if you’ve written and tested {unwrittenCards === 1 ? "it" : "them"}.
+              </p>
+            )}
             <ShipOrder orderId={orderId} hasEmail={hasEmail} stacked onDone={() => setShipOpen(false)} />
           </div>
         </Sheet>

@@ -315,3 +315,13 @@ export function CloseIcon(props: IconProps) {
     </Svg>
   );
 }
+
+export function WalletIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1" />
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path d="M16 13.5h2" />
+    </Svg>
+  );
+}

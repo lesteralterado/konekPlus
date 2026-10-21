@@ -28,16 +28,21 @@ export default async function AdminLayout({
 }) {
   await requireAdmin();
 
-  // Badges on the Orders tab / Feedback row — what's waiting on someone.
+  // Badges on the Orders tab (new orders + GCash proofs to verify) and the
+  // Feedback row — what's waiting on someone.
   const supabase = await createClient();
-  const [{ count: newOrders }, { count: newFeedback }] = await Promise.all([
+  const [{ count: newOrders }, { count: toVerify }, { count: newFeedback }] = await Promise.all([
     supabase.from("card_orders").select("id", { count: "exact", head: true }).eq("status", "new"),
+    supabase
+      .from("card_orders")
+      .select("id", { count: "exact", head: true })
+      .eq("payment_status", "proof_submitted"),
     supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
   ]);
 
   return (
     <div className="admin-ui flex min-h-full flex-1 flex-col bg-slate-50 md:flex-row">
-      <AdminNav newOrders={newOrders ?? 0} newFeedback={newFeedback ?? 0} />
+      <AdminNav newOrders={(newOrders ?? 0) + (toVerify ?? 0)} newFeedback={newFeedback ?? 0} />
       <main className="min-w-0 flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 md:py-8">
         {children}
       </main>

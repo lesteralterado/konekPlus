@@ -60,6 +60,8 @@ export type CardOrderStatus =
   | "shipped"
   | "delivered";
 export type PaymentMethod = "cod" | "gcash";
+// See supabase/migrations/0020_payments.sql for the lifecycle.
+export type PaymentStatus = "unpaid" | "proof_submitted" | "with_courier" | "paid" | "refunded";
 
 export type CardOrder = {
   id: string;
@@ -79,6 +81,16 @@ export type CardOrder = {
   delivered_at: string | null;
   activation_reminder_sent_at: string | null;
   created_at: string;
+  amount_due_php: number | null;
+  discount_pct: number | null;
+  payment_status: PaymentStatus;
+  amount_received_php: number | null;
+  paid_at: string | null;
+  paid_confirmed_by: string | null;
+  gcash_reference: string | null;
+  payment_proof_path: string | null;
+  proof_submitted_at: string | null;
+  payment_note: string | null;
 };
 
 export type LandingTestimonial = {
@@ -232,6 +244,16 @@ export type Database = {
           | "shipped_at"
           | "delivered_at"
           | "activation_reminder_sent_at"
+          | "amount_due_php"
+          | "discount_pct"
+          | "payment_status"
+          | "amount_received_php"
+          | "paid_at"
+          | "paid_confirmed_by"
+          | "gcash_reference"
+          | "payment_proof_path"
+          | "proof_submitted_at"
+          | "payment_note"
         > & { id?: string };
         Update: Partial<CardOrder>;
         Relationships: [];
@@ -291,7 +313,15 @@ export type Database = {
           created_at: string;
           shipped_at: string | null;
           delivered_at: string | null;
+          payment_method: PaymentMethod;
+          payment_status: PaymentStatus;
+          amount_due_php: number | null;
+          payment_note: string | null;
         }[];
+      };
+      submit_payment_proof: {
+        Args: { p_reference: string; p_phone: string; p_gcash_ref: string; p_proof_path: string | null };
+        Returns: string | null;
       };
       set_tag_enabled: {
         Args: { p_tag_id: string; p_enabled: boolean };

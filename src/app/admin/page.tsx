@@ -1,7 +1,17 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ActivationFunnel } from "./activation-funnel";
-import { BagIcon, ChevronRightIcon, CreditCardIcon, KeyIcon, MessageIcon, UsersIcon } from "./icons";
+import { formatPrice } from "@/lib/finishes";
+import { amountFor } from "@/lib/order-amount";
+import {
+  BagIcon,
+  ChevronRightIcon,
+  CreditCardIcon,
+  KeyIcon,
+  MessageIcon,
+  UsersIcon,
+  WalletIcon,
+} from "./icons";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +39,46 @@ function StatTile({
       {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
     </div>
   );
+}
+
+function MoneyTile({
+  href,
+  label,
+  value,
+  sub,
+  tone = "text-brand-900",
+}: {
+  href: string;
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="ios-press rounded-3xl bg-white p-4 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-5"
+    >
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+        <WalletIcon className="size-3.5" />
+        {label}
+      </p>
+      <p className={`mt-1.5 text-2xl font-bold sm:text-3xl sm:font-semibold ${tone}`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
+    </Link>
+  );
+}
+
+// Start of the current month in Philippine time, as an ISO timestamp.
+function manilaMonthStartIso(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const y = parts.find((p) => p.type === "year")!.value;
+  const m = parts.find((p) => p.type === "month")!.value;
+  return new Date(`${y}-${m}-01T00:00:00+08:00`).toISOString();
 }
 
 function daysAgoIso(days: number): string {
@@ -136,9 +186,39 @@ export default async function AdminDashboardPage() {
       supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     ]);
 
+  // Money: everything that isn't cancelled or refunded. Small table, so one
+  // read and sum here rather than several aggregate queries.
+  const { data: moneyRows } = await supabase
+    .from("card_orders")
+    .select("status, payment_method, payment_status, amount_due_php, amount_received_php, paid_at, finish, quantity")
+    .neq("status", "cancelled")
+    .neq("payment_status", "refunded");
+  const monthStart = manilaMonthStartIso();
+  const money = { paidMonth: 0, verify: { n: 0, php: 0 }, gcash: { n: 0, php: 0 }, courier: { n: 0, php: 0 } };
+  for (const o of moneyRows ?? []) {
+    const due = amountFor(o).php;
+    if (o.payment_status === "paid" && o.paid_at && o.paid_at >= monthStart) {
+      money.paidMonth += o.amount_received_php ?? due;
+    } else if (o.payment_status === "proof_submitted") {
+      money.verify.n += 1;
+      money.verify.php += due;
+    } else if (o.payment_status === "with_courier") {
+      money.courier.n += 1;
+      money.courier.php += due;
+    } else if (
+      o.payment_status === "unpaid" &&
+      o.payment_method === "gcash" &&
+      !["new", "contacted"].includes(o.status)
+    ) {
+      money.gcash.n += 1;
+      money.gcash.php += due;
+    }
+  }
+
   // "Needs you": only what's waiting on a person, each a deep link to the
   // filtered list. Hidden entirely when everything's handled.
   const todo = [
+    { count: money.verify.n, label: "GCash proofs to verify", href: "/admin/orders?pay=proof_submitted", icon: WalletIcon, tile: "bg-emerald-500" },
     { count: newOrders ?? 0, label: "new orders", href: "/admin/orders?status=new", icon: BagIcon, tile: "bg-accent-500" },
     { count: toVerify ?? 0, label: "keychains to verify", href: "/admin/keychains?status=social_links_submitted", icon: KeyIcon, tile: "bg-violet-500" },
     { count: toHandOver ?? 0, label: "keychains to hand over", href: "/admin/keychains?status=ready_for_handover", icon: KeyIcon, tile: "bg-brand-600" },
@@ -181,6 +261,40 @@ export default async function AdminDashboardPage() {
           </div>
         </section>
       )}
+
+      <section aria-label="Money">
+        <h2 className="mb-1.5 px-1 text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+          Money
+        </h2>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+          <MoneyTile
+            href="/admin/orders?pay=paid"
+            label="Paid this month"
+            value={formatPrice(money.paidMonth)}
+            tone="text-emerald-600"
+          />
+          <MoneyTile
+            href="/admin/orders?pay=proof_submitted"
+            label="To verify"
+            value={formatPrice(money.verify.php)}
+            sub={`${money.verify.n} GCash proof${money.verify.n === 1 ? "" : "s"}`}
+            tone={money.verify.n ? "text-amber-600" : "text-brand-900"}
+          />
+          <MoneyTile
+            href="/admin/orders?pay=unpaid"
+            label="Awaiting GCash"
+            value={formatPrice(money.gcash.php)}
+            sub={`${money.gcash.n} confirmed order${money.gcash.n === 1 ? "" : "s"}`}
+          />
+          <MoneyTile
+            href="/admin/orders?pay=with_courier"
+            label="COD with courier"
+            value={formatPrice(money.courier.php)}
+            sub={`${money.courier.n} to remit`}
+            tone="text-sky-600"
+          />
+        </div>
+      </section>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         <StatTile icon={CreditCardIcon} label="Total cards" value={total.toLocaleString()} />

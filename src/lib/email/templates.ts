@@ -143,6 +143,9 @@ export function orderConfirmationEmail(o: OrderConfirmationDetails): Omit<EmailM
       summary,
       "",
       "We'll message you to confirm your order and payment. Nothing is charged until then.",
+      ...(o.payment === "GCash"
+        ? ["After we confirm, pay via GCash and send your proof on the Track page."]
+        : []),
       `Track your order anytime: ${o.trackUrl}`,
       "(You'll need your reference and the mobile number you ordered with.)",
     ].join("\n"),
@@ -153,6 +156,7 @@ export function orderConfirmationEmail(o: OrderConfirmationDetails): Omit<EmailM
       <p style="margin:0 0 16px;font-size:22px;font-weight:bold;font-family:'Courier New',monospace;">${escapeHtml(o.reference)}</p>
       <p style="margin:0 0 16px;">${escapeHtml(summary)}</p>
       <p style="margin:0;color:${MUTED};font-size:13px;">We'll message you to confirm your order and payment. Nothing is charged until then.</p>
+      ${o.payment === "GCash" ? `<p style="margin:8px 0 0;color:${MUTED};font-size:13px;">After we confirm, pay via GCash and send your proof on the Track page.</p>` : ""}
       ${button(o.trackUrl, "Track my order")}
       <p style="margin:12px 0 0;color:${MUTED};font-size:12px;">You'll need your reference and the mobile number you ordered with.</p>
     `),
@@ -271,6 +275,62 @@ export function activationReminderEmail(o: ActivationReminderDetails): Omit<Emai
       </ol>
       ${button(o.guideUrl, "See the quick guide")}
       <p style="margin:16px 0 0;color:${MUTED};font-size:13px;">Haven't received it yet, or lost the PIN? Just reply to this email.</p>
+    `),
+  };
+}
+
+export type PaymentProofAlertDetails = {
+  reference: string;
+  fullName: string;
+  amountDue: string;
+  gcashReference: string;
+  hasScreenshot: boolean;
+  adminUrl: string;
+};
+
+// To the owner: a customer sent GCash proof on /track — verify it.
+export function paymentProofAlertEmail(p: PaymentProofAlertDetails): Omit<EmailMessage, "to"> {
+  return {
+    subject: `Payment proof for ${p.reference} — please verify`,
+    text: [
+      `${p.fullName} sent GCash payment proof for ${p.reference}.`,
+      `Amount due: ${p.amountDue}`,
+      `GCash ref: ${p.gcashReference}${p.hasScreenshot ? " (screenshot attached in admin)" : ""}`,
+      "",
+      `Verify: ${p.adminUrl}`,
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Payment proof to verify</p>
+      <p style="margin:0 0 16px;color:${MUTED};">${escapeHtml(p.fullName)} · ${escapeHtml(p.reference)}</p>
+      <p style="margin:0 0 4px;">Amount due: <strong>${escapeHtml(p.amountDue)}</strong></p>
+      <p style="margin:0 0 4px;">GCash ref: <strong style="font-family:'Courier New',monospace;">${escapeHtml(p.gcashReference)}</strong></p>
+      ${p.hasScreenshot ? `<p style="margin:0;color:${MUTED};font-size:13px;">Screenshot attached — view it in admin.</p>` : ""}
+      ${button(p.adminUrl, "Verify payment")}
+    `),
+  };
+}
+
+export type PaymentReceivedDetails = {
+  fullName: string;
+  reference: string;
+  amount: string;
+  trackUrl: string;
+};
+
+// To the customer: we confirmed their payment.
+export function paymentReceivedEmail(p: PaymentReceivedDetails): Omit<EmailMessage, "to"> {
+  return {
+    subject: `Payment received for ${p.reference}`,
+    text: [
+      `Hi ${p.fullName},`,
+      "",
+      `We received your payment of ${p.amount} for order ${p.reference}. Thank you!`,
+      `Track your order: ${p.trackUrl}`,
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Payment received ✓</p>
+      <p style="margin:0 0 16px;">Hi ${escapeHtml(p.fullName)}, we received your payment of <strong>${escapeHtml(p.amount)}</strong> for order <strong>${escapeHtml(p.reference)}</strong>. Thank you!</p>
+      ${button(p.trackUrl, "Track my order")}
     `),
   };
 }

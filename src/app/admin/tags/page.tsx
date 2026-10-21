@@ -1,10 +1,11 @@
 import Link from "next/link";
+import { cardUrl, siteOrigin } from "@/lib/card-link";
 import { createClient } from "@/lib/supabase/server";
 import { EnabledToggle } from "./enabled-toggle";
 import { ProvisionForm } from "./provision-form";
 import { ResetButton } from "./reset-button";
 import { ExternalIcon } from "../icons";
-import { Fab } from "../ui/drawers";
+import { CopyButton, Fab } from "../ui/drawers";
 import { CARD, EmptyState, IconLink, PANEL, Pager, SearchBar } from "../ui/kit";
 import { StatusPill } from "../ui/status";
 
@@ -25,7 +26,7 @@ export default async function AdminTagsPage({
 
   let tagsQuery = supabase
     .from("tags")
-    .select("tag_id, claimed, enabled, profile_id, claimed_at, created_at", { count: "exact" })
+    .select("tag_id, claimed, enabled, profile_id, claimed_at, created_at, written_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
   if (q) tagsQuery = tagsQuery.ilike("tag_id", `%${q}%`);
@@ -49,7 +50,8 @@ export default async function AdminTagsPage({
   const ownerById = new Map((owners ?? []).map((o) => [o.id, o]));
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
-  const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
+  const siteUrl = siteOrigin();
+  const host = siteUrl.replace(/^https?:\/\//, "");
 
   const recentBatches = batches && batches.length > 0 && (
     <div className="mt-5 border-t border-slate-100 pt-4">
@@ -71,9 +73,16 @@ export default async function AdminTagsPage({
 
   return (
     <div className="flex flex-col gap-5 md:gap-6">
-      <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
-        Cards
-      </h1>
+      <div>
+        <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+          Cards
+        </h1>
+        {/* Chips are permanent — make sure this is the final domain before
+            writing cards in bulk (SITE_URL, src/lib/card-link.ts). */}
+        <p className="mt-0.5 text-sm text-slate-500">
+          Links are written as <span className="font-mono text-slate-700">{host}/t/…</span>
+        </p>
+      </div>
 
       {/* Desktop: provisioning inline. Phones: behind the + button. */}
       <section className="hidden rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] md:block">
@@ -117,13 +126,13 @@ export default async function AdminTagsPage({
                   ) : (
                     <p className="mt-0.5 text-sm text-slate-400">No owner yet</p>
                   )}
-                  {tag.claimed_at && (
-                    <p className="text-xs text-slate-400">
-                      Claimed {new Date(tag.claimed_at).toLocaleDateString()}
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-400">
+                    {tag.written_at ? "✓ Written" : "Not written"}
+                    {tag.claimed_at && ` · Claimed ${new Date(tag.claimed_at).toLocaleDateString()}`}
+                  </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  <CopyButton text={cardUrl(siteUrl, tag.tag_id)} label={`Copy link for ${tag.tag_id}`} />
                   <IconLink href={`/t/${tag.tag_id}`} label={`Open ${tag.tag_id}`}>
                     <ExternalIcon className="size-4.5" />
                   </IconLink>
@@ -150,6 +159,7 @@ export default async function AdminTagsPage({
                 <th className="pb-2 pr-4 font-medium">Visibility</th>
                 <th className="pb-2 pr-4 font-medium">Owner</th>
                 <th className="pb-2 pr-4 font-medium">Claimed</th>
+                <th className="pb-2 pr-4 font-medium">Written</th>
                 <th className="pb-2 font-medium"></th>
               </tr>
             </thead>
@@ -200,20 +210,26 @@ export default async function AdminTagsPage({
                     <td className="py-3 pr-4 text-slate-500">
                       {tag.claimed_at ? new Date(tag.claimed_at).toLocaleDateString() : "—"}
                     </td>
+                    <td className="py-3 pr-4 text-slate-500">
+                      {tag.written_at ? new Date(tag.written_at).toLocaleDateString() : "—"}
+                    </td>
                     <td className="py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <CopyButton text={cardUrl(siteUrl, tag.tag_id)} label={`Copy link for ${tag.tag_id}`} />
                       {tag.claimed && (
-                        <div className="flex items-center justify-end gap-1">
+                        <>
                           <EnabledToggle tagId={tag.tag_id} enabled={tag.enabled} />
                           <ResetButton tagId={tag.tag_id} />
-                        </div>
+                        </>
                       )}
+                      </div>
                     </td>
                   </tr>
                 );
               })}
               {(tags ?? []).length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">
+                  <td colSpan={7} className="py-8 text-center text-slate-400">
                     No tags found.
                   </td>
                 </tr>

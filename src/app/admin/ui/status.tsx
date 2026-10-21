@@ -2,6 +2,7 @@ import type {
   CardOrderStatus,
   FeedbackStatus,
   KeychainOrderStatus,
+  PaymentStatus,
 } from "@/lib/types";
 
 // One colour language for every status in admin, so a glance at the dot
@@ -57,6 +58,23 @@ export const FEEDBACK_STATUS: Record<FeedbackStatus, { label: string; tone: Tone
   reviewed: { label: "Reviewed", tone: "teal" },
   resolved: { label: "Resolved", tone: "green" },
 };
+
+export const PAYMENT_STATUS: Record<PaymentStatus, { label: string; tone: Tone }> = {
+  unpaid: { label: "Unpaid", tone: "grey" },
+  proof_submitted: { label: "To verify", tone: "amber" },
+  with_courier: { label: "With courier", tone: "sky" },
+  paid: { label: "Paid", tone: "green" },
+  refunded: { label: "Refunded", tone: "grey" },
+};
+
+// Unpaid only becomes "needs you" (amber) once the order is confirmed and
+// the customer has been asked to pay.
+export function paymentTone(status: PaymentStatus, orderStatus: CardOrderStatus): Tone {
+  if (status === "unpaid" && !["new", "contacted", "cancelled"].includes(orderStatus)) {
+    return "amber";
+  }
+  return PAYMENT_STATUS[status].tone;
+}
 
 export function StatusPill({ tone, label }: { tone: Tone; label: string }) {
   return (
