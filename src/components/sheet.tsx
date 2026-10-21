@@ -5,22 +5,26 @@ import { createPortal } from "react-dom";
 import { useEffect, useRef } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { CloseIcon } from "@/app/dashboard/icons";
-import { useIsClient } from "./toast";
+import { useIsClient } from "@/components/toast";
 
 // iOS-style bottom sheet: springs up, dims the page, drag the grabber/header
 // down (or tap outside / Escape / ✕) to dismiss. Portals to <body> because
-// the profile's .fade-up transform would otherwise trap position:fixed.
+// a transformed ancestor (e.g. the profile's .fade-up) would otherwise trap
+// position:fixed. Shared by the public profile and the admin drawers.
 export function Sheet({
   open,
   onClose,
   title,
   closeLabel,
+  scopeClass = "profile-ui",
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
   closeLabel: string;
+  // Token scope (.profile-ui follows dark mode; .admin-ui is light-only).
+  scopeClass?: string;
   children: React.ReactNode;
 }) {
   const reduce = usePrefersReducedMotion();
@@ -58,7 +62,7 @@ export function Sheet({
   return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="profile-ui fixed inset-0 z-50">
+        <div className={`${scopeClass} fixed inset-0 z-50`}>
           <motion.div
             aria-hidden="true"
             onClick={onClose}

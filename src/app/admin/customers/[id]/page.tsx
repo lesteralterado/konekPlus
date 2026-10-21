@@ -39,7 +39,7 @@ export default async function AdminCustomerDetailPage({
         Back to customers
       </Link>
 
-      <section className="rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
+      <section className="rounded-3xl bg-white p-5 sm:p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
         <div className="flex items-center gap-4">
           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-brand-100">
             {profile.avatar_url ? (
@@ -112,7 +112,7 @@ export default async function AdminCustomerDetailPage({
         </dl>
       </section>
 
-      <section className="rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
+      <section className="rounded-3xl bg-white p-5 sm:p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
         <h2 className="mb-4 text-sm font-semibold text-brand-900">
           Linked cards ({tags?.length ?? 0})
         </h2>

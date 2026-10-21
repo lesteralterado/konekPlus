@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { createPortal } from "react-dom";
 import { useSyncExternalStore } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
-import { CheckIcon } from "./icons";
+import { CheckIcon } from "@/app/t/[tag_id]/ui/icons";
 
 // Tiny module-level store so any island on the profile (copy rows, share
 // sheet) can raise the same glass "Copied" pill without a context provider.
@@ -56,7 +56,7 @@ export async function copyText(text: string, message: string) {
   }
 }
 
-export function Toaster() {
+export function Toaster({ scopeClass = "profile-ui" }: { scopeClass?: string }) {
   const toast = useSyncExternalStore(
     subscribe,
     () => current,
@@ -69,7 +69,7 @@ export function Toaster() {
   return createPortal(
     <div
       aria-live="polite"
-      className="profile-ui pointer-events-none fixed inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-[60] flex justify-center px-4"
+      className={`${scopeClass} pointer-events-none fixed inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-[60] flex justify-center px-4`}
     >
       <AnimatePresence>
         {toast && (

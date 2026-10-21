@@ -1,15 +1,28 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { ActivationFunnel } from "./activation-funnel";
+import { BagIcon, ChevronRightIcon, CreditCardIcon, KeyIcon, MessageIcon, UsersIcon } from "./icons";
 
 export const dynamic = "force-dynamic";
 
 const DAYS = 30;
 const BAR_COLOR = "var(--color-brand-600)";
 
-function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatTile({
+  label,
+  value,
+  sub,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  icon: typeof BagIcon;
+}) {
   return (
-    <div className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+    <div className="rounded-3xl bg-white p-4 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-5">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-slate-400">
+        <Icon className="size-3.5" />
         {label}
       </p>
       <p className="mt-1.5 text-3xl font-semibold text-brand-900">{value}</p>
@@ -93,8 +106,16 @@ function DailyClaimsChart({ buckets }: { buckets: { date: Date; count: number }[
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
-  const [{ count: totalTags }, { count: claimedTags }, { count: totalCustomers }, { data: recentClaims }] =
-    await Promise.all([
+  const [
+    { count: totalTags },
+    { count: claimedTags },
+    { count: totalCustomers },
+    { data: recentClaims },
+    { count: newOrders },
+    { count: toVerify },
+    { count: toHandOver },
+    { count: newFeedback },
+  ] = await Promise.all([
       supabase.from("tags").select("*", { count: "exact", head: true }),
       supabase.from("tags").select("*", { count: "exact", head: true }).eq("claimed", true),
       supabase.from("profiles").select("*", { count: "exact", head: true }),
@@ -103,7 +124,26 @@ export default async function AdminDashboardPage() {
         .select("claimed_at")
         .eq("claimed", true)
         .gte("claimed_at", daysAgoIso(DAYS)),
+      supabase.from("card_orders").select("id", { count: "exact", head: true }).eq("status", "new"),
+      supabase
+        .from("keychain_orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "social_links_submitted"),
+      supabase
+        .from("keychain_orders")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "ready_for_handover"),
+      supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
     ]);
+
+  // "Needs you": only what's waiting on a person, each a deep link to the
+  // filtered list. Hidden entirely when everything's handled.
+  const todo = [
+    { count: newOrders ?? 0, label: "new orders", href: "/admin/orders?status=new", icon: BagIcon, tile: "bg-accent-500" },
+    { count: toVerify ?? 0, label: "keychains to verify", href: "/admin/keychains?status=social_links_submitted", icon: KeyIcon, tile: "bg-violet-500" },
+    { count: toHandOver ?? 0, label: "keychains to hand over", href: "/admin/keychains?status=ready_for_handover", icon: KeyIcon, tile: "bg-brand-600" },
+    { count: newFeedback ?? 0, label: "new feedback", href: "/admin/feedback", icon: MessageIcon, tile: "bg-amber-500" },
+  ].filter((t) => t.count > 0);
 
   const total = totalTags ?? 0;
   const claimed = claimedTags ?? 0;
@@ -115,14 +155,38 @@ export default async function AdminDashboardPage() {
   const buckets = dayBuckets((recentClaims ?? []).map((r) => r.claimed_at!).filter(Boolean));
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-brand-900">Dashboard</h1>
+    <div className="flex flex-col gap-5 md:gap-6">
+      <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+        Dashboard
+      </h1>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="Total cards" value={total.toLocaleString()} />
-        <StatTile label="Claimed" value={claimed.toLocaleString()} sub={`${claimRate}% of total`} />
-        <StatTile label="Unclaimed" value={unclaimed.toLocaleString()} />
-        <StatTile label="Customers" value={customers.toLocaleString()} sub={`${avgCardsPerCustomer} cards/customer avg`} />
+      {todo.length > 0 && (
+        <section aria-label="Needs you">
+          <h2 className="mb-1.5 px-1 text-[13px] font-semibold uppercase tracking-wide text-slate-500">
+            Needs you
+          </h2>
+          <div className="overflow-hidden rounded-[22px] bg-white shadow-[0_1px_3px_rgba(15,23,42,0.06)] md:max-w-md">
+            {todo.map(({ count, label, href, icon: Icon, tile }) => (
+              <Link key={href} href={href} className="ios-row group/row flex items-center pl-4">
+                <span className={`grid size-8 shrink-0 place-items-center rounded-lg text-white ${tile}`}>
+                  <Icon className="size-4.5" />
+                </span>
+                <span className="ml-3 flex min-h-13 flex-1 items-center gap-2 border-b border-slate-200/70 pr-4 group-last/row:border-b-0">
+                  <span className="text-xl font-bold text-brand-900">{count}</span>
+                  <span className="flex-1 text-[15px] text-slate-600">{label}</span>
+                  <ChevronRightIcon className="size-4 text-slate-300" />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+        <StatTile icon={CreditCardIcon} label="Total cards" value={total.toLocaleString()} />
+        <StatTile icon={CreditCardIcon} label="Claimed" value={claimed.toLocaleString()} sub={`${claimRate}% of total`} />
+        <StatTile icon={CreditCardIcon} label="Unclaimed" value={unclaimed.toLocaleString()} />
+        <StatTile icon={UsersIcon} label="Customers" value={customers.toLocaleString()} sub={`${avgCardsPerCustomer} cards each`} />
       </div>
 
       <ActivationFunnel />

@@ -11,10 +11,18 @@ export const PROFILE_BANNER_URL = cloudinary(
 // The Konek+ mark — landing nav/footer, site chrome, and favicon all
 // reference this asset, preloaded in layout.tsx so it's ready by the time
 // the preloader lifts.
-export const LOGO_URL = cloudinary(
-  "https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png",
-  160,
-);
+export const LOGO_SOURCE_URL =
+  "https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png";
+export const LOGO_URL = cloudinary(LOGO_SOURCE_URL, 160);
+
+// Square, opaque PNG of the mark for home-screen icons (PWA / iOS), padded
+// on white so the OS icon mask doesn't crop it.
+export function appIconUrl(size: number): string {
+  return LOGO_SOURCE_URL.replace(
+    "/image/upload/",
+    `/image/upload/c_pad,b_white,w_${size},h_${size},f_png/`,
+  );
+}
 
 // Placeholder support inbox referenced by the Privacy Policy and Terms of
 // Service (src/app/(legal)/) — swap for a real, monitored inbox before

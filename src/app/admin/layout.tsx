@@ -1,27 +1,25 @@
-import Link from "next/link";
+import type { Metadata, Viewport } from "next";
+import { Toaster } from "@/components/toast";
 import { requireAdmin } from "@/lib/admin-auth";
-import { signOut } from "@/app/dashboard/actions";
-import {
-  ArrowLeftIcon,
-  BagIcon,
-  GridIcon,
-  CreditCardIcon,
-  KeyIcon,
-  LogOutIcon,
-  MessageIcon,
-  StarIcon,
-  UsersIcon,
-} from "./icons";
+import { appIconUrl } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/server";
+import { AdminNav } from "./ui/admin-nav";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: GridIcon },
-  { href: "/admin/orders", label: "Orders", icon: BagIcon },
-  { href: "/admin/tags", label: "Tags", icon: CreditCardIcon },
-  { href: "/admin/keychains", label: "Keychains", icon: KeyIcon },
-  { href: "/admin/customers", label: "Customers", icon: UsersIcon },
-  { href: "/admin/feedback", label: "Feedback", icon: MessageIcon },
-  { href: "/admin/testimonials", label: "Testimonials", icon: StarIcon },
-];
+// Installable on a phone's home screen ("Add to Home Screen"), opening
+// full-screen like a native app. See src/app/konek-admin.webmanifest.
+export const metadata: Metadata = {
+  title: "Konek+ Admin",
+  manifest: "/konek-admin.webmanifest",
+  appleWebApp: { capable: true, title: "Konek+ Admin", statusBarStyle: "default" },
+  icons: { apple: appIconUrl(180) },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f8fafc",
+  // Makes env(safe-area-inset-*) real so the bottom tab bar clears the
+  // iPhone home indicator.
+  viewportFit: "cover",
+};
 
 export default async function AdminLayout({
   children,
@@ -30,44 +28,20 @@ export default async function AdminLayout({
 }) {
   await requireAdmin();
 
+  // Badges on the Orders tab / Feedback row — what's waiting on someone.
+  const supabase = await createClient();
+  const [{ count: newOrders }, { count: newFeedback }] = await Promise.all([
+    supabase.from("card_orders").select("id", { count: "exact", head: true }).eq("status", "new"),
+    supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
+  ]);
+
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-slate-50 md:flex-row">
-      <aside className="flex shrink-0 flex-col gap-1 border-b border-slate-200 bg-white p-4 md:w-56 md:border-b-0 md:border-r md:p-6">
-        <div className="mb-4 px-2 text-lg font-semibold text-brand-900">
-          Konek+ Admin
-        </div>
-        <nav className="flex flex-1 flex-row gap-1 md:flex-col">
-          {navItems.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-600 transition hover:bg-brand-50 hover:text-brand-700"
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-4 flex flex-col gap-1 border-t border-slate-100 pt-4">
-          <Link
-            href="/dashboard"
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-500 transition hover:bg-slate-100"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            Back to site
-          </Link>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-500 transition hover:bg-slate-100"
-            >
-              <LogOutIcon className="h-4 w-4" />
-              Sign out
-            </button>
-          </form>
-        </div>
-      </aside>
-      <main className="flex-1 p-4 sm:p-8">{children}</main>
+    <div className="admin-ui flex min-h-full flex-1 flex-col bg-slate-50 md:flex-row">
+      <AdminNav newOrders={newOrders ?? 0} newFeedback={newFeedback ?? 0} />
+      <main className="min-w-0 flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 md:py-8">
+        {children}
+      </main>
+      <Toaster scopeClass="admin-ui" />
     </div>
   );
 }

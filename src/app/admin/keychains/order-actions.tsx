@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { ConfirmButton } from "../ui/drawers";
 import {
   markCompleted,
   markHandedOver,
@@ -9,8 +10,9 @@ import {
   verifyLinks,
 } from "./actions";
 
+// Full-width thumb-sized button on phones, compact pill from md up.
 const buttonClass =
-  "rounded-full bg-brand-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60";
+  "ios-press h-12 w-full rounded-full bg-brand-600 px-4 text-[15px] font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60 md:h-auto md:w-auto md:py-2 md:text-xs";
 
 function ActionButton({
   label,
@@ -25,14 +27,28 @@ function ActionButton({
 }) {
   const [isPending, startTransition] = useTransition();
 
+  // Irreversible steps confirm in a drawer instead of window.confirm().
+  if (confirmMessage) {
+    return (
+      <ConfirmButton
+        title={label}
+        message={confirmMessage}
+        confirmLabel={label}
+        destructive={false}
+        triggerLabel={label}
+        triggerClassName={buttonClass}
+        onConfirm={onRun}
+      >
+        {label}
+      </ConfirmButton>
+    );
+  }
+
   return (
     <button
       type="button"
       disabled={isPending}
-      onClick={() => {
-        if (confirmMessage && !confirm(confirmMessage)) return;
-        startTransition(onRun);
-      }}
+      onClick={() => startTransition(onRun)}
       className={buttonClass}
     >
       {isPending ? pendingLabel : label}

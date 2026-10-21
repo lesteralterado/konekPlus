@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { CopyIcon } from "./icons";
 import { IconTile, RowBody } from "./ios";
-import { copyText } from "./toast";
+import { copyText } from "@/components/toast";
 
 const LONG_PRESS_MS = 450;
 const MOVE_TOLERANCE = 10;

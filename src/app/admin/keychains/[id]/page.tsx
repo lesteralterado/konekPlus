@@ -65,7 +65,7 @@ export default async function AdminKeychainOrderDetailPage({
         Back to keychains
       </Link>
 
-      <section className="rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
+      <section className="rounded-3xl bg-white p-5 sm:p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold text-brand-900">
@@ -106,7 +106,7 @@ export default async function AdminKeychainOrderDetailPage({
         </div>
       </section>
 
-      <section className="rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
+      <section className="rounded-3xl bg-white p-5 sm:p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]">
         <h2 className="mb-4 text-sm font-semibold text-brand-900">
           Keychains ({allItems.length})
         </h2>

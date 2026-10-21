@@ -1,8 +1,8 @@
 import Image from "next/image";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { FeedbackCategory } from "@/lib/types";
-import { StarIcon } from "../icons";
+import { BugIcon, BulbIcon, MessageIcon, StarIcon } from "../icons";
+import { CARD, EmptyState, FilterChips, PANEL, Pager } from "../ui/kit";
 import { FeedbackStatusSelect } from "./status-select";
 
 export const dynamic = "force-dynamic";
@@ -15,16 +15,17 @@ const CATEGORY_LABEL: Record<FeedbackCategory, string> = {
   general: "General",
 };
 
-const CATEGORY_CLASS: Record<FeedbackCategory, string> = {
-  bug: "bg-red-50 text-red-600",
-  feature: "bg-brand-50 text-brand-700",
-  general: "bg-slate-100 text-slate-500",
+// Icon tiles so the kind of feedback reads before the text does.
+const CATEGORY_ICON: Record<FeedbackCategory, { icon: typeof BugIcon; tile: string }> = {
+  bug: { icon: BugIcon, tile: "bg-red-50 text-red-500" },
+  feature: { icon: BulbIcon, tile: "bg-amber-50 text-amber-600" },
+  general: { icon: MessageIcon, tile: "bg-brand-50 text-brand-700" },
 };
 
 const CATEGORY_FILTERS: { value: FeedbackCategory | ""; label: string }[] = [
   { value: "", label: "All" },
   { value: "bug", label: "Bugs" },
-  { value: "feature", label: "Feature requests" },
+  { value: "feature", label: "Ideas" },
   { value: "general", label: "General" },
 ];
 
@@ -72,112 +73,79 @@ export default async function AdminFeedbackPage({
   const baseParams = { ...(category ? { category } : {}), ...(status ? { status } : {}) };
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-brand-900">Feedback</h1>
+    <div className="flex flex-col gap-5 md:gap-6">
+      <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+        Feedback
+      </h1>
 
-      <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6">
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {CATEGORY_FILTERS.map((f) => (
-            <Link
-              key={f.value}
-              href={`/admin/feedback?${new URLSearchParams({
-                ...(status ? { status } : {}),
-                ...(f.value ? { category: f.value } : {}),
-              })}`}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                (category ?? "") === f.value
-                  ? "bg-brand-600 text-white"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-              }`}
-            >
-              {f.label}
-            </Link>
-          ))}
-        </div>
+      <section className={PANEL}>
+        <FilterChips
+          items={CATEGORY_FILTERS}
+          active={category ?? ""}
+          hrefFor={(v) =>
+            `/admin/feedback?${new URLSearchParams({ ...(status ? { status } : {}), ...(v ? { category: v } : {}) })}`
+          }
+        />
 
-        <div className="flex flex-col divide-y divide-slate-100">
+        <div className="flex flex-col gap-3 md:gap-0 md:divide-y md:divide-slate-100">
           {(entries ?? []).map((entry) => {
             const submitter = entry.user_id ? profileByUserId.get(entry.user_id) : null;
+            const { icon: CatIcon, tile } = CATEGORY_ICON[entry.category];
             return (
-              <div
+              <article
                 key={entry.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
+                className={`${CARD} flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-4 md:rounded-none md:px-0 md:py-4 md:shadow-none md:ring-0`}
               >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${CATEGORY_CLASS[entry.category]}`}
-                    >
-                      {CATEGORY_LABEL[entry.category]}
-                    </span>
-                    {entry.rating && (
-                      <span className="flex items-center gap-0.5 text-accent-500">
-                        {Array.from({ length: entry.rating }).map((_, i) => (
-                          <StarIcon key={i} filled className="h-3.5 w-3.5" />
-                        ))}
+                <div className="flex min-w-0 flex-1 gap-3">
+                  <span
+                    className={`grid size-10 shrink-0 place-items-center rounded-xl ${tile}`}
+                    title={CATEGORY_LABEL[entry.category]}
+                    aria-label={CATEGORY_LABEL[entry.category]}
+                  >
+                    <CatIcon className="size-5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                      <span className="text-sm font-semibold text-slate-800">
+                        {submitter?.full_name ?? "Anonymous"}
                       </span>
-                    )}
-                    <span className="text-xs text-slate-400">
-                      {submitter?.full_name ?? "Anonymous"} ·{" "}
-                      {new Date(entry.created_at).toLocaleString()}
+                      {entry.rating && (
+                        <span className="flex items-center gap-0.5 text-accent-500" aria-label={`${entry.rating} of 5`}>
+                          {Array.from({ length: entry.rating }).map((_, i) => (
+                            <StarIcon key={i} filled className="h-3.5 w-3.5" />
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {new Date(entry.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
                       {entry.page_path ? ` · ${entry.page_path}` : ""}
-                    </span>
+                    </p>
+                    <p className="mt-1.5 line-clamp-4 whitespace-pre-wrap text-[15px] text-slate-700 md:line-clamp-none md:text-sm">
+                      {entry.message}
+                    </p>
+                    {entry.screenshot_url && (
+                      <a href={entry.screenshot_url} target="_blank" rel="noreferrer" className="mt-2 block w-fit">
+                        <div className="relative h-24 w-36 overflow-hidden rounded-xl bg-slate-100 md:h-20 md:w-32">
+                          <Image src={entry.screenshot_url} alt="Feedback screenshot" fill className="object-cover" />
+                        </div>
+                      </a>
+                    )}
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">
-                    {entry.message}
-                  </p>
-                  {entry.screenshot_url && (
-                    <a
-                      href={entry.screenshot_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 block"
-                    >
-                      <div className="relative h-20 w-32 overflow-hidden rounded-xl bg-slate-100">
-                        <Image
-                          src={entry.screenshot_url}
-                          alt="Feedback screenshot"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </a>
-                  )}
                 </div>
                 <FeedbackStatusSelect id={entry.id} status={entry.status} />
-              </div>
+              </article>
             );
           })}
-          {(entries ?? []).length === 0 && (
-            <p className="py-8 text-center text-slate-400">No feedback yet.</p>
-          )}
+          {(entries ?? []).length === 0 && <EmptyState>No feedback yet.</EmptyState>}
         </div>
 
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-            <span>
-              Page {page} of {totalPages} ({count} total)
-            </span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/feedback?${new URLSearchParams({ ...baseParams, page: String(page - 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/feedback?${new URLSearchParams({ ...baseParams, page: String(page + 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          count={count}
+          hrefFor={(n) => `/admin/feedback?${new URLSearchParams({ ...baseParams, page: String(n) })}`}
+        />
       </section>
     </div>
   );

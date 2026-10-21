@@ -7,7 +7,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import { format } from "@/lib/i18n/format";
 import { submitTestimonial, type TestimonialFormState } from "../actions";
 import { GroupedList, IconTile, RowBody, RowText, SectionHeader } from "../ui/ios";
-import { Sheet } from "../ui/sheet";
+import { Sheet } from "@/components/sheet";
 
 const initialState: TestimonialFormState = { error: null, resetToken: 0 };
 

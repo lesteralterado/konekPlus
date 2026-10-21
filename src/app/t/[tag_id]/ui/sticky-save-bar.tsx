@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { UserPlusIcon } from "./icons";
-import { useIsClient } from "./toast";
+import { useIsClient } from "@/components/toast";
 
 // Keeps the #1 action one tap away: once the main "Save to contacts"
 // button (targetId) has scrolled up out of view, a slim glass bar pins it

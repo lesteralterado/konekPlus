@@ -60,8 +60,10 @@ html.lenis {
    .profile-ui so only the profile follows the visitor's dark mode; the rest
    of the site stays light. Tints stay on-brand (navy/teal + orange) rather
    than iOS blue. Sheets, toasts and the sticky bar portal to <body>, so they
-   add the class themselves to pick these up. */
-.profile-ui {
+   add the class themselves to pick these up. The admin area (.admin-ui)
+   reuses the same kit but stays light — it's a work tool, not a profile. */
+.profile-ui,
+.admin-ui {
   --ios-bg: #f2f2f7;
   --ios-surface: #ffffff;
   --ios-raised: #ffffff;
@@ -129,6 +131,16 @@ body:has(> main.profile-ui) {
 }
 .ios-row:active {
   background-color: var(--ios-fill);
+}
+
+/* Admin on phones: iOS Safari zooms the page when focusing a field whose
+   text is under 16px — force 16px for every admin input (incl. drawers). */
+@media (max-width: 767px) {
+  .admin-ui input,
+  .admin-ui select,
+  .admin-ui textarea {
+    font-size: 16px;
+  }
 }
 
 /* Continuous (squircle) corners where the browser supports them. */

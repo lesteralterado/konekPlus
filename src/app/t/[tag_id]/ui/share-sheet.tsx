@@ -15,8 +15,8 @@ import {
   RowText,
   type ActionVariant,
 } from "./ios";
-import { Sheet } from "./sheet";
-import { copyText } from "./toast";
+import { Sheet } from "@/components/sheet";
+import { copyText } from "@/components/toast";
 
 // The Share action: opens a sheet with a scannable QR of this profile (so
 // someone can show their card to a person without NFC), Copy link, and the

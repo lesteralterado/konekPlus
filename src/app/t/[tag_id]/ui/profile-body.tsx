@@ -11,7 +11,7 @@ import { ArrowUpRightIcon, UserPlusIcon } from "./icons";
 import { glassChipClass, GroupedList, ListRow } from "./ios";
 import { linkSubtitle, socialSubtitle } from "./link-meta";
 import { StickySaveBar } from "./sticky-save-bar";
-import { Toaster } from "./toast";
+import { Toaster } from "@/components/toast";
 
 const SAVE_ID = "save-contact";
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { SearchIcon } from "../icons";
+import { ChevronRightIcon, CreditCardIcon } from "../icons";
+import { CARD, EmptyState, PANEL, Pager, SearchBar } from "../ui/kit";
 
 export const dynamic = "force-dynamic";
 
@@ -42,29 +43,46 @@ export default async function AdminCustomersPage({
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-brand-900">Customers</h1>
+    <div className="flex flex-col gap-5 md:gap-6">
+      <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+        Customers
+      </h1>
 
-      <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6">
-        <form className="mb-4 flex items-center gap-2" action="/admin/customers">
-          <div className="relative max-w-xs flex-1">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="Search by name or email"
-              className="w-full rounded-2xl bg-slate-50 py-2.5 pl-9 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
-            />
-          </div>
-          <button
-            type="submit"
-            className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200"
-          >
-            Search
-          </button>
-        </form>
+      <section className={PANEL}>
+        <SearchBar action="/admin/customers" q={q} placeholder="Search name or email" />
 
-        <div className="overflow-x-auto">
+        {/* Phones: one card per customer, whole card taps through */}
+        <ul className="flex flex-col gap-3 md:hidden">
+          {(profiles ?? []).map((p) => (
+            <li key={p.id}>
+              <Link href={`/admin/customers/${p.id}`} className={`${CARD} ios-press flex items-center gap-3`}>
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-brand-50 text-lg font-bold text-brand-700">
+                  {(p.full_name || p.email || "?").slice(0, 1).toUpperCase()}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-[15px] font-semibold text-slate-800">
+                    {p.full_name || "—"}
+                  </span>
+                  <span className="block truncate text-sm text-slate-500">
+                    {[p.email, p.company].filter(Boolean).join(" · ") || "—"}
+                  </span>
+                </span>
+                <span
+                  className="flex shrink-0 items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-sm font-semibold text-slate-600"
+                  aria-label={`${cardCountByProfile.get(p.id) ?? 0} cards`}
+                >
+                  <CreditCardIcon className="size-4" />
+                  {cardCountByProfile.get(p.id) ?? 0}
+                </span>
+                <ChevronRightIcon className="size-4 shrink-0 text-slate-300" />
+              </Link>
+            </li>
+          ))}
+          {(profiles ?? []).length === 0 && <EmptyState>No customers found.</EmptyState>}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wide text-slate-400">
@@ -88,12 +106,8 @@ export default async function AdminCustomersPage({
                   </td>
                   <td className="py-3 pr-4 text-slate-600">{p.email || "—"}</td>
                   <td className="py-3 pr-4 text-slate-600">{p.company || "—"}</td>
-                  <td className="py-3 pr-4 text-slate-600">
-                    {cardCountByProfile.get(p.id) ?? 0}
-                  </td>
-                  <td className="py-3 text-slate-500">
-                    {new Date(p.updated_at).toLocaleDateString()}
-                  </td>
+                  <td className="py-3 pr-4 text-slate-600">{cardCountByProfile.get(p.id) ?? 0}</td>
+                  <td className="py-3 text-slate-500">{new Date(p.updated_at).toLocaleDateString()}</td>
                 </tr>
               ))}
               {(profiles ?? []).length === 0 && (
@@ -107,31 +121,14 @@ export default async function AdminCustomersPage({
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-            <span>
-              Page {page} of {totalPages} ({count} total)
-            </span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), page: String(page - 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), page: String(page + 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          count={count}
+          hrefFor={(n) =>
+            `/admin/customers?${new URLSearchParams({ ...(q ? { q } : {}), page: String(n) })}`
+          }
+        />
       </section>
     </div>
   );

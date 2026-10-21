@@ -3,7 +3,10 @@ import { createClient } from "@/lib/supabase/server";
 import { EnabledToggle } from "./enabled-toggle";
 import { ProvisionForm } from "./provision-form";
 import { ResetButton } from "./reset-button";
-import { SearchIcon } from "../icons";
+import { ExternalIcon } from "../icons";
+import { Fab } from "../ui/drawers";
+import { CARD, EmptyState, IconLink, PANEL, Pager, SearchBar } from "../ui/kit";
+import { StatusPill } from "../ui/status";
 
 export const dynamic = "force-dynamic";
 
@@ -48,56 +51,97 @@ export default async function AdminTagsPage({
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
 
+  const recentBatches = batches && batches.length > 0 && (
+    <div className="mt-5 border-t border-slate-100 pt-4">
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
+        Recent batches
+      </p>
+      <ul className="flex flex-col gap-1 text-sm text-slate-600">
+        {batches.map((b) => (
+          <li key={b.id} className="flex justify-between gap-3">
+            <span>
+              {b.count} tags{b.note ? ` — ${b.note}` : ""}
+            </span>
+            <span className="text-slate-400">{new Date(b.created_at).toLocaleDateString()}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-brand-900">Tags</h1>
+    <div className="flex flex-col gap-5 md:gap-6">
+      <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+        Cards
+      </h1>
 
-      <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6">
-        <h2 className="mb-4 text-sm font-semibold text-brand-900">
-          Provision a new batch
-        </h2>
+      {/* Desktop: provisioning inline. Phones: behind the + button. */}
+      <section className="hidden rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] md:block">
+        <h2 className="mb-4 text-sm font-semibold text-brand-900">Provision a new batch</h2>
         <ProvisionForm siteUrl={siteUrl} />
-        {batches && batches.length > 0 && (
-          <div className="mt-5 border-t border-slate-100 pt-4">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">
-              Recent batches
-            </p>
-            <ul className="flex flex-col gap-1 text-sm text-slate-600">
-              {batches.map((b) => (
-                <li key={b.id} className="flex justify-between gap-3">
-                  <span>
-                    {b.count} tags{b.note ? ` — ${b.note}` : ""}
-                  </span>
-                  <span className="text-slate-400">
-                    {new Date(b.created_at).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        {recentBatches}
       </section>
+      <Fab label="New card batch">
+        <ProvisionForm siteUrl={siteUrl} />
+        {recentBatches}
+      </Fab>
 
-      <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6">
-        <form className="mb-4 flex items-center gap-2" action="/admin/tags">
-          <div className="relative flex-1 max-w-xs">
-            <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="Search by code"
-              className="w-full rounded-2xl bg-slate-50 py-2.5 pl-9 pr-4 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200"
-            />
-          </div>
-          <button
-            type="submit"
-            className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-200"
-          >
-            Search
-          </button>
-        </form>
+      <section className={PANEL}>
+        <SearchBar action="/admin/tags" q={q} placeholder="Search card code" />
 
-        <div className="overflow-x-auto">
+        {/* Phones: one card per tag */}
+        <ul className="flex flex-col gap-3 md:hidden">
+          {(tags ?? []).map((tag) => {
+            const owner = tag.profile_id ? ownerById.get(tag.profile_id) : null;
+            const ownerName = owner ? owner.full_name || owner.email : null;
+            return (
+              <li key={tag.tag_id} className={`${CARD} flex items-center gap-3`}>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[15px] font-semibold text-slate-800">{tag.tag_id}</span>
+                    {!tag.claimed ? (
+                      <StatusPill tone="grey" label="Unclaimed" />
+                    ) : tag.enabled ? (
+                      <StatusPill tone="green" label="Live" />
+                    ) : (
+                      <StatusPill tone="amber" label="Off" />
+                    )}
+                  </div>
+                  {ownerName ? (
+                    <Link
+                      href={`/admin/customers/${tag.profile_id}`}
+                      className="mt-0.5 block truncate text-sm font-medium text-brand-700"
+                    >
+                      {ownerName}
+                    </Link>
+                  ) : (
+                    <p className="mt-0.5 text-sm text-slate-400">No owner yet</p>
+                  )}
+                  {tag.claimed_at && (
+                    <p className="text-xs text-slate-400">
+                      Claimed {new Date(tag.claimed_at).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <IconLink href={`/t/${tag.tag_id}`} label={`Open ${tag.tag_id}`}>
+                    <ExternalIcon className="size-4.5" />
+                  </IconLink>
+                  {tag.claimed && (
+                    <>
+                      <EnabledToggle tagId={tag.tag_id} enabled={tag.enabled} compact />
+                      <ResetButton tagId={tag.tag_id} compact />
+                    </>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+          {(tags ?? []).length === 0 && <EmptyState>No cards found.</EmptyState>}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="hidden overflow-x-auto md:block">
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wide text-slate-400">
@@ -125,9 +169,7 @@ export default async function AdminTagsPage({
                     <td className="py-3 pr-4">
                       <span
                         className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                          tag.claimed
-                            ? "bg-brand-50 text-brand-700"
-                            : "bg-slate-100 text-slate-500"
+                          tag.claimed ? "bg-brand-50 text-brand-700" : "bg-slate-100 text-slate-500"
                         }`}
                       >
                         {tag.claimed ? "Claimed" : "Unclaimed"}
@@ -137,9 +179,7 @@ export default async function AdminTagsPage({
                       {tag.claimed ? (
                         <span
                           className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                            tag.enabled
-                              ? "bg-brand-50 text-brand-700"
-                              : "bg-amber-50 text-amber-700"
+                            tag.enabled ? "bg-brand-50 text-brand-700" : "bg-amber-50 text-amber-700"
                           }`}
                         >
                           {tag.enabled ? "Enabled" : "Disabled"}
@@ -150,10 +190,7 @@ export default async function AdminTagsPage({
                     </td>
                     <td className="py-3 pr-4 text-slate-600">
                       {owner ? (
-                        <Link
-                          href={`/admin/customers/${tag.profile_id}`}
-                          className="hover:text-brand-700"
-                        >
+                        <Link href={`/admin/customers/${tag.profile_id}`} className="hover:text-brand-700">
                           {owner.full_name || owner.email || "—"}
                         </Link>
                       ) : (
@@ -185,31 +222,14 @@ export default async function AdminTagsPage({
           </table>
         </div>
 
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-            <span>
-              Page {page} of {totalPages} ({count} total)
-            </span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/tags?${new URLSearchParams({ ...(q ? { q } : {}), page: String(page - 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/tags?${new URLSearchParams({ ...(q ? { q } : {}), page: String(page + 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          count={count}
+          hrefFor={(p) =>
+            `/admin/tags?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`
+          }
+        />
       </section>
     </div>
   );

@@ -2,7 +2,11 @@ import Link from "next/link";
 import { finishById, formatPrice, quote } from "@/lib/finishes";
 import { createClient } from "@/lib/supabase/server";
 import type { CardOrderStatus } from "@/lib/types";
+import { BagIcon, MailIcon, PhoneIcon, SmsIcon } from "../icons";
+import { CopyButton } from "../ui/drawers";
+import { CARD, EmptyState, FilterChips, IconLink, PANEL, Pager } from "../ui/kit";
 import { AssignCards } from "./assign-cards";
+import { NextStep } from "./next-step";
 import { ShipOrder } from "./ship-order";
 import { OrderStatusSelect } from "./status-select";
 
@@ -18,11 +22,9 @@ const STATUS_FILTERS: { value: CardOrderStatus | ""; label: string }[] = [
   { value: "preparing", label: "Preparing" },
   { value: "shipped", label: "Shipped" },
   { value: "delivered", label: "Delivered" },
-  { value: "fulfilled", label: "Fulfilled (legacy)" },
+  { value: "fulfilled", label: "Fulfilled" },
   { value: "cancelled", label: "Cancelled" },
 ];
-
-const PAYMENT_LABEL = { cod: "Cash on delivery", gcash: "GCash" } as const;
 
 export default async function AdminOrdersPage({
   searchParams,
@@ -62,135 +64,158 @@ export default async function AdminOrdersPage({
   const baseParams: Record<string, string> = status ? { status } : {};
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-2xl font-semibold text-brand-900">Orders</h1>
+    <div className="flex flex-col gap-5 md:gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
+          Orders
+        </h1>
         {(newCount ?? 0) > 0 && (
-          <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">
-            {newCount} new — waiting to be contacted
-          </span>
+          <Link
+            href="/admin/orders?status=new"
+            className="ios-press inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700"
+          >
+            <span className="size-2 rounded-full bg-amber-500" aria-hidden="true" />
+            {newCount} new
+          </Link>
         )}
       </div>
 
-      <section className="rounded-3xl bg-white p-5 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] sm:p-6">
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          {STATUS_FILTERS.map((f) => (
-            <Link
-              key={f.value}
-              href={`/admin/orders?${new URLSearchParams(f.value ? { status: f.value } : {})}`}
-              className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                (status ?? "") === f.value
-                  ? "bg-brand-600 text-white"
-                  : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-              }`}
-            >
-              {f.label}
-            </Link>
-          ))}
-        </div>
+      <section className={PANEL}>
+        <FilterChips
+          items={STATUS_FILTERS}
+          active={status ?? ""}
+          hrefFor={(v) => `/admin/orders?${new URLSearchParams(v ? { status: v } : {})}`}
+        />
 
-        <div className="flex flex-col divide-y divide-slate-100">
+        <div className="flex flex-col gap-3 md:gap-0 md:divide-y md:divide-slate-100">
           {(orders ?? []).map((order) => {
             // Recomputed from the live price config — the table deliberately
             // stores no prices (see 0015_card_orders.sql).
             const q = quote(order.finish, order.quantity);
+            const reference = `KP-${order.id.slice(0, 6).toUpperCase()}`;
             return (
-              <div
+              <article
                 key={order.id}
-                className="flex flex-col gap-3 py-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6"
+                className={`${CARD} md:flex md:items-start md:justify-between md:gap-6 md:rounded-none md:px-0 md:py-4 md:shadow-none md:ring-0`}
               >
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-semibold text-slate-400">
-                      KP-{order.id.slice(0, 6).toUpperCase()}
-                    </span>
-                    <span className="font-semibold text-brand-900">
-                      {order.quantity} × {finishById(order.finish).name}
-                    </span>
-                    <span className="font-semibold text-brand-900">{formatPrice(q.totalPhp)}</span>
-                    {q.discountPct > 0 && (
-                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
-                        −{q.discountPct}% bulk
-                      </span>
-                    )}
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
-                      {PAYMENT_LABEL[order.payment_method]}
+                  {/* Ref + status (on phones the pill itself changes status) */}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-semibold text-slate-400">{reference}</span>
+                    <span className="md:hidden">
+                      <OrderStatusSelect id={order.id} status={order.status} />
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-700">
-                    {order.full_name} ·{" "}
-                    <a href={`tel:${order.phone}`} className="text-brand-700 hover:underline">
-                      {order.phone}
-                    </a>
-                    {order.email && (
-                      <>
-                        {" · "}
-                        <a href={`mailto:${order.email}`} className="text-brand-700 hover:underline">
-                          {order.email}
-                        </a>
-                      </>
+
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="flex items-center gap-1.5 font-semibold text-brand-900">
+                      <BagIcon className="size-4 text-slate-400" />
+                      {order.quantity} × {finishById(order.finish).name}
+                    </span>
+                    <span className="text-lg font-bold text-brand-900 md:text-base md:font-semibold">
+                      {formatPrice(q.totalPhp)}
+                    </span>
+                    {q.discountPct > 0 && (
+                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                        −{q.discountPct}%
+                      </span>
                     )}
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
+                      {order.payment_method === "cod" ? "COD" : "GCash"}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-[15px] font-medium text-slate-800 md:text-sm md:font-normal md:text-slate-700">
+                    {order.full_name}
+                    <span className="hidden md:inline">
+                      {" · "}
+                      <a href={`tel:${order.phone}`} className="text-brand-700 hover:underline">
+                        {order.phone}
+                      </a>
+                      {order.email && (
+                        <>
+                          {" · "}
+                          <a href={`mailto:${order.email}`} className="text-brand-700 hover:underline">
+                            {order.email}
+                          </a>
+                        </>
+                      )}
+                    </span>
                   </p>
-                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-500">{order.address}</p>
+                  <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap text-sm text-slate-500 md:line-clamp-none">
+                    {order.address}
+                  </p>
                   {order.notes && (
-                    <p className="mt-1 whitespace-pre-wrap text-sm italic text-slate-500">
+                    <p className="mt-1 line-clamp-2 whitespace-pre-wrap text-sm italic text-slate-500 md:line-clamp-none">
                       “{order.notes}”
                     </p>
                   )}
                   <p className="mt-1 text-xs text-slate-400">
-                    {new Date(order.created_at).toLocaleString()}
+                    {new Date(order.created_at).toLocaleString(undefined, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                    {order.tracking_number && (
+                      <>
+                        {" · "}
+                        {order.courier}: <span className="font-mono">{order.tracking_number}</span>
+                      </>
+                    )}
                   </p>
-                  {order.tracking_number && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      {order.courier}: <span className="font-mono">{order.tracking_number}</span>
-                    </p>
-                  )}
+
+                  {/* Phones: one-tap contact icons */}
+                  <div className="mt-3 flex items-center gap-2 md:hidden">
+                    <IconLink href={`tel:${order.phone}`} label={`Call ${order.full_name}`}>
+                      <PhoneIcon className="size-4.5" />
+                    </IconLink>
+                    <IconLink href={`sms:${order.phone}`} label={`Text ${order.full_name}`}>
+                      <SmsIcon className="size-4.5" />
+                    </IconLink>
+                    {order.email && (
+                      <IconLink href={`mailto:${order.email}`} label={`Email ${order.full_name}`}>
+                        <MailIcon className="size-4.5" />
+                      </IconLink>
+                    )}
+                    <CopyButton
+                      text={`${order.full_name}\n${order.phone}\n${order.address}`}
+                      label="Copy name, phone & address"
+                    />
+                  </div>
+
+                  <div className="mt-3 md:mt-2">
+                    <NextStep orderId={order.id} status={order.status} hasEmail={!!order.email} />
+                  </div>
+
+                  {/* Desktop keeps the inline courier form; phones ship via Next step */}
                   {!["shipped", "delivered", "fulfilled", "cancelled"].includes(order.status) && (
-                    <ShipOrder orderId={order.id} hasEmail={!!order.email} />
+                    <div className="hidden md:block">
+                      <ShipOrder orderId={order.id} hasEmail={!!order.email} />
+                    </div>
                   )}
                   {order.status !== "cancelled" && (
                     <AssignCards
                       orderId={order.id}
-                      reference={`KP-${order.id.slice(0, 6).toUpperCase()}`}
+                      reference={reference}
                       quantity={order.quantity}
                       assignedCodes={codesByOrder.get(order.id) ?? []}
                     />
                   )}
                 </div>
-                <OrderStatusSelect id={order.id} status={order.status} />
-              </div>
+                <div className="hidden md:block">
+                  <OrderStatusSelect id={order.id} status={order.status} />
+                </div>
+              </article>
             );
           })}
-          {(orders ?? []).length === 0 && (
-            <p className="py-8 text-center text-slate-400">No orders yet.</p>
-          )}
+          {(orders ?? []).length === 0 && <EmptyState>No orders yet.</EmptyState>}
         </div>
 
-        {totalPages > 1 && (
-          <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-            <span>
-              Page {page} of {totalPages} ({count} total)
-            </span>
-            <div className="flex gap-2">
-              {page > 1 && (
-                <Link
-                  href={`/admin/orders?${new URLSearchParams({ ...baseParams, page: String(page - 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Previous
-                </Link>
-              )}
-              {page < totalPages && (
-                <Link
-                  href={`/admin/orders?${new URLSearchParams({ ...baseParams, page: String(page + 1) })}`}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 hover:bg-slate-200"
-                >
-                  Next
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        <Pager
+          page={page}
+          totalPages={totalPages}
+          count={count}
+          hrefFor={(p) => `/admin/orders?${new URLSearchParams({ ...baseParams, page: String(p) })}`}
+        />
       </section>
     </div>
   );
