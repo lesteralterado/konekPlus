@@ -66,6 +66,67 @@ export async function markCompleted(orderId: string) {
   return setOrderStatus(orderId, "completed");
 }
 
+// Staff write chips with the NFC Tools app (no Konek+ Staff app), then tap
+// the keychain on a phone to test it and report back here:
+//   works  → programmed + tested + QC passed in one tap
+//   failed → flagged so it gets re-written
+//   reset  → back to "pending programming" to redo a chip
+// Once every item works, the detail page offers "Mark ready for handover"
+// (left as a deliberate manual step).
+export async function setItemNfcResult(
+  itemId: string,
+  orderId: string,
+  result: "works" | "failed" | "reset",
+) {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const now = new Date().toISOString();
+  const by = user?.id ?? null;
+
+  const update =
+    result === "works"
+      ? {
+          nfc_status: "tested" as const,
+          programmed_at: now,
+          programmed_by: by,
+          tested_at: now,
+          qc_passed: true,
+          qc_passed_at: now,
+          qc_passed_by: by,
+        }
+      : result === "failed"
+        ? {
+            nfc_status: "failed" as const,
+            tested_at: now,
+            qc_passed: false,
+            qc_passed_at: null,
+            qc_passed_by: null,
+          }
+        : {
+            nfc_status: "pending_programming" as const,
+            programmed_at: null,
+            programmed_by: null,
+            tested_at: null,
+            qc_passed: false,
+            qc_passed_at: null,
+            qc_passed_by: null,
+          };
+
+  const { error } = await supabase
+    .from("keychain_items")
+    .update(update)
+    .eq("id", itemId)
+    .eq("order_id", orderId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/keychains");
+  revalidatePath(`/admin/keychains/${orderId}`);
+}
+
 // Manual QC override from the web dashboard — the primary QC flow runs on
 // the mobile app right after programming/testing (brief §14), but staff can
 // flip this here too (e.g. a physical re-inspection without re-scanning).
