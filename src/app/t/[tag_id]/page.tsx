@@ -71,13 +71,21 @@ export default async function TagPage({
     case null:
     case undefined:
       return <InvalidCard t={dict.tagStatus} locale={locale} />;
-    case "unclaimed":
+    case "unclaimed": {
+      const { data: needsPin } = await supabase.rpc("tag_needs_pin", {
+        p_tag_id: tag_id,
+      });
       return (
         <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-6 py-12">
           <LanguageSwitcher locale={locale} className="mb-4 justify-center" />
-          <ClaimForm tagId={tag_id} dict={dict.claimForm} />
+          <ClaimForm
+            tagId={tag_id}
+            needsPin={needsPin === true}
+            dict={dict.claimForm}
+          />
         </main>
       );
+    }
     case "disabled":
       return <CardUnavailable t={dict.tagStatus} locale={locale} />;
   }

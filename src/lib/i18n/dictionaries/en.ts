@@ -348,6 +348,8 @@ export const en = {
     submitNewPending: "Setting up your card…",
     submitExisting: "Log in & link this card",
     submitExistingPending: "Linking this card…",
+    pin: "Activation PIN",
+    pinHint: "6 digits, printed on the sleeve your card came in.",
   },
   profile: {
     saveToContacts: "Save to contacts",

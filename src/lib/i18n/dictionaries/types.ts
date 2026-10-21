@@ -201,6 +201,8 @@ export type Dictionary = {
     submitNewPending: string;
     submitExisting: string;
     submitExistingPending: string;
+    pin: string;
+    pinHint: string;
   };
   profile: {
     saveToContacts: string;

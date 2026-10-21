@@ -368,6 +368,8 @@ export const fil = {
     submitNewPending: "Sine-set up ang iyong card…",
     submitExisting: "Mag-log in at i-link ang card na ito",
     submitExistingPending: "Nililink ang card na ito…",
+    pin: "Activation PIN",
+    pinHint: "6 na digit, nakasulat sa sleeve na kasama ng card mo.",
   },
   profile: {
     saveToContacts: "I-save sa contacts",

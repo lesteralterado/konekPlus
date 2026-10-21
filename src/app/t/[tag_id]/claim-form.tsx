@@ -14,11 +14,31 @@ const initialClaimState: ClaimState = { error: null };
 const inputClass =
   "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
 
+function PinField({ dict }: { dict: Dictionary["claimForm"] }) {
+  return (
+    <div>
+      <input
+        name="pin"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        pattern="[0-9]{6}"
+        maxLength={6}
+        placeholder={dict.pin}
+        required
+        className={inputClass}
+      />
+      <p className="mt-1 text-xs text-slate-500">{dict.pinHint}</p>
+    </div>
+  );
+}
+
 export function ClaimForm({
   tagId,
+  needsPin,
   dict,
 }: {
   tagId: string;
+  needsPin: boolean;
   dict: Dictionary["claimForm"];
 }) {
   const [tab, setTab] = useState<"new" | "existing">("new");
@@ -66,6 +86,7 @@ export function ClaimForm({
       {tab === "new" ? (
         <form action={newAction} className="flex flex-col gap-3">
           <input type="hidden" name="tag_id" value={tagId} />
+          {needsPin && <PinField dict={dict} />}
           <input
             name="full_name"
             placeholder={dict.fullName}
@@ -109,6 +130,7 @@ export function ClaimForm({
       ) : (
         <form action={existingAction} className="flex flex-col gap-3">
           <input type="hidden" name="tag_id" value={tagId} />
+          {needsPin && <PinField dict={dict} />}
           <input
             name="email"
             type="email"

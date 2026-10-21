@@ -9,6 +9,10 @@ const STATUS_CLASS: Record<CardOrderStatus, string> = {
   contacted: "bg-brand-50 text-brand-700",
   fulfilled: "bg-emerald-50 text-emerald-700",
   cancelled: "bg-slate-100 text-slate-500",
+  confirmed: "bg-brand-50 text-brand-700",
+  preparing: "bg-brand-50 text-brand-700",
+  shipped: "bg-sky-50 text-sky-700",
+  delivered: "bg-emerald-50 text-emerald-700",
 };
 
 export function OrderStatusSelect({ id, status }: { id: string; status: CardOrderStatus }) {
@@ -25,7 +29,11 @@ export function OrderStatusSelect({ id, status }: { id: string; status: CardOrde
     >
       <option value="new">New</option>
       <option value="contacted">Contacted</option>
-      <option value="fulfilled">Fulfilled</option>
+      <option value="confirmed">Confirmed</option>
+      <option value="preparing">Preparing</option>
+      <option value="shipped">Shipped</option>
+      <option value="delivered">Delivered</option>
+      <option value="fulfilled">Fulfilled (legacy)</option>
       <option value="cancelled">Cancelled</option>
     </select>
   );

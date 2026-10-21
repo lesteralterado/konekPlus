@@ -50,7 +50,15 @@ export type Feedback = {
   created_at: string;
 };
 
-export type CardOrderStatus = "new" | "contacted" | "fulfilled" | "cancelled";
+export type CardOrderStatus =
+  | "new"
+  | "contacted"
+  | "fulfilled"
+  | "cancelled"
+  | "confirmed"
+  | "preparing"
+  | "shipped"
+  | "delivered";
 export type PaymentMethod = "cod" | "gcash";
 
 export type CardOrder = {
@@ -64,6 +72,11 @@ export type CardOrder = {
   payment_method: PaymentMethod;
   notes: string | null;
   status: CardOrderStatus;
+  user_id: string | null;
+  courier: string | null;
+  tracking_number: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
   created_at: string;
 };
 
@@ -95,6 +108,11 @@ export type Tag = {
   profile_id: string | null;
   claimed_at: string | null;
   created_at: string;
+  order_id: string | null;
+  tag_uid: string | null;
+  written_at: string | null;
+  shipped_at: string | null;
+  activated_at: string | null;
 };
 
 export type TagBatch = {
@@ -202,7 +220,17 @@ export type Database = {
       };
       card_orders: {
         Row: CardOrder;
-        Insert: Omit<CardOrder, "id" | "status" | "created_at"> & { id?: string };
+        Insert: Omit<
+          CardOrder,
+          | "id"
+          | "status"
+          | "created_at"
+          | "user_id"
+          | "courier"
+          | "tracking_number"
+          | "shipped_at"
+          | "delivered_at"
+        > & { id?: string };
         Update: Partial<CardOrder>;
         Relationships: [];
       };
@@ -235,8 +263,29 @@ export type Database = {
         Returns: string | null;
       };
       claim_tag: {
-        Args: { p_tag_id: string };
+        Args: { p_tag_id: string; p_pin?: string | null };
         Returns: boolean;
+      };
+      tag_needs_pin: {
+        Args: { p_tag_id: string };
+        Returns: boolean | null;
+      };
+      assign_tags_to_order: {
+        Args: { p_order_id: string; p_count: number };
+        Returns: { tag_id: string; pin: string }[];
+      };
+      lookup_order: {
+        Args: { p_reference: string; p_phone: string };
+        Returns: {
+          status: string;
+          finish: string;
+          quantity: number;
+          courier: string | null;
+          tracking_number: string | null;
+          created_at: string;
+          shipped_at: string | null;
+          delivered_at: string | null;
+        }[];
       };
       set_tag_enabled: {
         Args: { p_tag_id: string; p_enabled: boolean };

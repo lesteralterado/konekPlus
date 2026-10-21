@@ -10,6 +10,11 @@ import { createClient } from "@/lib/supabase/server";
 
 export type ClaimState = { error: string | null };
 
+// claim_tag returns false for a wrong PIN, a locked tag and an already-claimed
+// tag alike (see 0017_order_cards.sql), so the copy has to cover all three.
+const CLAIM_FAILED =
+  "We couldn't activate this card. Check the PIN on your card sleeve, or it may already be linked. Too many wrong tries pause it for 15 minutes.";
+
 // Shared by both claim paths below so a card claim never becomes a second,
 // inconsistent way for a device to end up trusted — same check /login uses.
 // See supabase/migrations/0009_device_verification.sql. Deliberately runs
@@ -41,6 +46,7 @@ export async function signUpAndClaim(
   formData: FormData,
 ): Promise<ClaimState> {
   const tagId = String(formData.get("tag_id") ?? "");
+  const pin = String(formData.get("pin") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "").trim();
@@ -88,14 +94,10 @@ export async function signUpAndClaim(
 
   const { data: claimed, error: claimError } = await supabase.rpc(
     "claim_tag",
-    { p_tag_id: tagId },
+    { p_tag_id: tagId, p_pin: pin || null },
   );
   if (claimError) return { error: claimError.message };
-  if (!claimed) {
-    return {
-      error: "This card was just claimed by someone else. Refresh and try again.",
-    };
-  }
+  if (!claimed) return { error: CLAIM_FAILED };
 
   return redirectAfterClaim(supabase, email, `/t/${tagId}`);
 }
@@ -152,6 +154,7 @@ export async function linkExistingAndClaim(
   formData: FormData,
 ): Promise<ClaimState> {
   const tagId = String(formData.get("tag_id") ?? "");
+  const pin = String(formData.get("pin") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
@@ -170,15 +173,10 @@ export async function linkExistingAndClaim(
 
   const { data: claimed, error: claimError } = await supabase.rpc(
     "claim_tag",
-    { p_tag_id: tagId },
+    { p_tag_id: tagId, p_pin: pin || null },
   );
   if (claimError) return { error: claimError.message };
-  if (!claimed) {
-    return {
-      error:
-        "This card couldn't be linked — it may already belong to another profile. Refresh and try again.",
-    };
-  }
+  if (!claimed) return { error: CLAIM_FAILED };
 
   return redirectAfterClaim(supabase, email, `/t/${tagId}`);
 }

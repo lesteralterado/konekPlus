@@ -2,6 +2,7 @@ import Link from "next/link";
 import { finishById, formatPrice, quote } from "@/lib/finishes";
 import { createClient } from "@/lib/supabase/server";
 import type { CardOrderStatus } from "@/lib/types";
+import { AssignCards } from "./assign-cards";
 import { OrderStatusSelect } from "./status-select";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,11 @@ const STATUS_FILTERS: { value: CardOrderStatus | ""; label: string }[] = [
   { value: "", label: "All" },
   { value: "new", label: "New" },
   { value: "contacted", label: "Contacted" },
-  { value: "fulfilled", label: "Fulfilled" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "preparing", label: "Preparing" },
+  { value: "shipped", label: "Shipped" },
+  { value: "delivered", label: "Delivered" },
+  { value: "fulfilled", label: "Fulfilled (legacy)" },
   { value: "cancelled", label: "Cancelled" },
 ];
 
@@ -41,6 +46,16 @@ export default async function AdminOrdersPage({
     query,
     supabase.from("card_orders").select("id", { count: "exact", head: true }).eq("status", "new"),
   ]);
+
+  const orderIds = (orders ?? []).map((o) => o.id);
+  const { data: assignedTags } = orderIds.length
+    ? await supabase.from("tags").select("tag_id, order_id").in("order_id", orderIds)
+    : { data: [] };
+  const codesByOrder = new Map<string, string[]>();
+  for (const t of assignedTags ?? []) {
+    if (!t.order_id) continue;
+    codesByOrder.set(t.order_id, [...(codesByOrder.get(t.order_id) ?? []), t.tag_id]);
+  }
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const baseParams: Record<string, string> = status ? { status } : {};
@@ -124,6 +139,14 @@ export default async function AdminOrdersPage({
                   <p className="mt-1 text-xs text-slate-400">
                     {new Date(order.created_at).toLocaleString()}
                   </p>
+                  {order.status !== "cancelled" && (
+                    <AssignCards
+                      orderId={order.id}
+                      reference={`KP-${order.id.slice(0, 6).toUpperCase()}`}
+                      quantity={order.quantity}
+                      assignedCodes={codesByOrder.get(order.id) ?? []}
+                    />
+                  )}
                 </div>
                 <OrderStatusSelect id={order.id} status={order.status} />
               </div>

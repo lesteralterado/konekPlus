@@ -153,13 +153,17 @@ export async function addTagByCode(
     return { error: "Enter the code printed on your card." };
   }
 
+  const pin = String(formData.get("pin") ?? "").trim();
+
   const { data: claimed, error } = await supabase.rpc("claim_tag", {
     p_tag_id: code,
+    p_pin: pin || null,
   });
   if (error) return { error: error.message };
   if (!claimed) {
     return {
-      error: "That code doesn't match an unclaimed card. Double-check it and try again.",
+      error:
+        "That code and PIN don't match an unclaimed card. Double-check them and try again.",
     };
   }
 
