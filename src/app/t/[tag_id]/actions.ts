@@ -60,9 +60,10 @@ export async function verifyTagPin(
   formData: FormData,
 ): Promise<VerifyPinState> {
   const tagId = String(formData.get("tag_id") ?? "");
-  const pin = String(formData.get("pin") ?? "").trim();
+  // Digits only, so a pasted "581 706" or "581-706" still works.
+  const pin = String(formData.get("pin") ?? "").replace(/\D/g, "");
   if (!tagId) return { error: "Missing card code.", verified: null };
-  if (!/^d{6}$/.test(pin)) {
+  if (!/^\d{6}$/.test(pin)) {
     return { error: "Enter the 6-digit PIN from the sleeve.", verified: null };
   }
 
