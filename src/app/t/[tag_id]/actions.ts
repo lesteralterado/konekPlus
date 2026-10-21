@@ -39,6 +39,43 @@ async function redirectAfterClaim(
   redirect(next);
 }
 
+export type VerifyPinState = {
+  error: string | null;
+  verified: {
+    pin: string;
+    full_name: string | null;
+    email: string | null;
+    phone: string | null;
+  } | null;
+};
+
+// Step 1 of activation. Checks the sleeve PIN and returns the contact details
+// from the order for prefilling; claim_tag() re-checks the PIN at the end, so
+// the client carrying it forward grants nothing by itself.
+export async function verifyTagPin(
+  _prevState: VerifyPinState,
+  formData: FormData,
+): Promise<VerifyPinState> {
+  const tagId = String(formData.get("tag_id") ?? "");
+  const pin = String(formData.get("pin") ?? "").trim();
+  if (!tagId) return { error: "Missing card code.", verified: null };
+  if (!/^d{6}$/.test(pin)) {
+    return { error: "Enter the 6-digit PIN from the sleeve.", verified: null };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("verify_tag_pin", {
+    p_tag_id: tagId,
+    p_pin: pin,
+  });
+  if (error) return { error: error.message, verified: null };
+
+  const row = data?.[0];
+  if (!row) return { error: CLAIM_FAILED, verified: null };
+
+  return { error: null, verified: { pin, ...row } };
+}
+
 // New owner: create the Auth user, create their one profiles row, then link
 // this tag to it. See supabase/migrations/0001_init.sql for claim_tag().
 export async function signUpAndClaim(
@@ -78,7 +115,7 @@ export async function signUpAndClaim(
     // is null for the rest of this request.
     return {
       error:
-        "Check your email to confirm your account, then tap this card again to finish linking it.",
+        "Check your email to confirm your account, then tap this card again and enter your PIN to finish linking it.",
     };
   }
 
@@ -99,7 +136,7 @@ export async function signUpAndClaim(
   if (claimError) return { error: claimError.message };
   if (!claimed) return { error: CLAIM_FAILED };
 
-  return redirectAfterClaim(supabase, email, `/t/${tagId}`);
+  return redirectAfterClaim(supabase, email, `/t/${tagId}?activated=1`);
 }
 
 // resetToken only changes on success — the dialog form uses it as a React
@@ -178,5 +215,5 @@ export async function linkExistingAndClaim(
   if (claimError) return { error: claimError.message };
   if (!claimed) return { error: CLAIM_FAILED };
 
-  return redirectAfterClaim(supabase, email, `/t/${tagId}`);
+  return redirectAfterClaim(supabase, email, `/t/${tagId}?activated=1`);
 }

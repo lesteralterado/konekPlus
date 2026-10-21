@@ -266,6 +266,10 @@ export type Database = {
         Args: { p_tag_id: string; p_pin?: string | null };
         Returns: boolean;
       };
+      verify_tag_pin: {
+        Args: { p_tag_id: string; p_pin: string };
+        Returns: { full_name: string | null; email: string | null; phone: string | null }[];
+      };
       tag_needs_pin: {
         Args: { p_tag_id: string };
         Returns: boolean | null;

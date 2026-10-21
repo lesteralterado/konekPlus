@@ -7,16 +7,36 @@ import {
   type ClaimState,
   linkExistingAndClaim,
   signUpAndClaim,
+  type VerifyPinState,
+  verifyTagPin,
 } from "./actions";
 
 const initialClaimState: ClaimState = { error: null };
+const initialVerifyState: VerifyPinState = { error: null, verified: null };
 
 const inputClass =
   "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
 
-function PinField({ dict }: { dict: Dictionary["claimForm"] }) {
+function PinStep({
+  tagId,
+  dict,
+  state,
+  action,
+  pending,
+}: {
+  tagId: string;
+  dict: Dictionary["claimForm"];
+  state: VerifyPinState;
+  action: (formData: FormData) => void;
+  pending: boolean;
+}) {
   return (
-    <div>
+    <form action={action} className="flex flex-col gap-3">
+      <div className="mb-3 text-center">
+        <h1 className="text-2xl font-semibold text-brand-900">{dict.pinStepTitle}</h1>
+        <p className="mt-1 text-sm text-slate-500">{dict.pinStepBody}</p>
+      </div>
+      <input type="hidden" name="tag_id" value={tagId} />
       <input
         name="pin"
         inputMode="numeric"
@@ -25,10 +45,20 @@ function PinField({ dict }: { dict: Dictionary["claimForm"] }) {
         maxLength={6}
         placeholder={dict.pin}
         required
-        className={inputClass}
+        autoFocus
+        className={`${inputClass} text-center font-mono text-lg tracking-[0.4em]`}
       />
-      <p className="mt-1 text-xs text-slate-500">{dict.pinHint}</p>
-    </div>
+      <p className="text-center text-xs text-slate-500">{dict.pinHint}</p>
+      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      <button
+        type="submit"
+        disabled={pending}
+        className="mt-1 rounded-lg bg-brand-600 px-4 py-2.5 font-medium text-white transition hover:bg-brand-700 disabled:opacity-60"
+      >
+        {pending ? dict.pinChecking : dict.pinContinue}
+      </button>
+      <p className="mt-2 text-center text-xs text-slate-400">{dict.pinNoSleeve}</p>
+    </form>
   );
 }
 
@@ -42,6 +72,11 @@ export function ClaimForm({
   dict: Dictionary["claimForm"];
 }) {
   const [tab, setTab] = useState<"new" | "existing">("new");
+  const [verifyState, verifyAction, verifyPending] = useActionState(
+    verifyTagPin,
+    initialVerifyState,
+  );
+  const verified = verifyState.verified;
   const [newState, newAction, newPending] = useActionState(
     signUpAndClaim,
     initialClaimState,
@@ -51,11 +86,27 @@ export function ClaimForm({
     initialClaimState,
   );
 
+  // Cards that ship with a PIN start with a PIN step; the signup/login forms
+  // only appear once it's accepted, prefilled from the order.
+  if (needsPin && !verified) {
+    return (
+      <PinStep
+        tagId={tagId}
+        dict={dict}
+        state={verifyState}
+        action={verifyAction}
+        pending={verifyPending}
+      />
+    );
+  }
+
   return (
     <div>
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-semibold text-brand-900">{dict.title}</h1>
-        <p className="mt-1 text-sm text-slate-500">{dict.subtitle}</p>
+        <p className="mt-1 text-sm text-slate-500">
+          {verified ? dict.pinAccepted : dict.subtitle}
+        </p>
       </div>
 
       <div className="mb-6 grid grid-cols-2 gap-1 rounded-full bg-slate-100 p-1 text-sm font-medium">
@@ -86,10 +137,11 @@ export function ClaimForm({
       {tab === "new" ? (
         <form action={newAction} className="flex flex-col gap-3">
           <input type="hidden" name="tag_id" value={tagId} />
-          {needsPin && <PinField dict={dict} />}
+          {verified && <input type="hidden" name="pin" value={verified.pin} />}
           <input
             name="full_name"
             placeholder={dict.fullName}
+            defaultValue={verified?.full_name ?? ""}
             required
             className={inputClass}
           />
@@ -99,6 +151,7 @@ export function ClaimForm({
             name="phone"
             type="tel"
             placeholder={dict.phone}
+            defaultValue={verified?.phone ?? ""}
             className={inputClass}
           />
           <hr className="my-1 border-slate-100" />
@@ -106,6 +159,7 @@ export function ClaimForm({
             name="email"
             type="email"
             placeholder={dict.email}
+            defaultValue={verified?.email ?? ""}
             required
             className={inputClass}
           />
@@ -130,11 +184,12 @@ export function ClaimForm({
       ) : (
         <form action={existingAction} className="flex flex-col gap-3">
           <input type="hidden" name="tag_id" value={tagId} />
-          {needsPin && <PinField dict={dict} />}
+          {verified && <input type="hidden" name="pin" value={verified.pin} />}
           <input
             name="email"
             type="email"
             placeholder={dict.email}
+            defaultValue={verified?.email ?? ""}
             required
             className={inputClass}
           />

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import { AddTagForm } from "./add-tag-form";
 import { ProfileForm } from "./profile-form";
+import { SetupChecklist } from "./setup-checklist";
 import { signOut, toggleTagEnabled } from "./actions";
 import { ChevronRightIcon, CreditCardIcon, LogOutIcon } from "./icons";
 
@@ -79,6 +80,7 @@ export default async function DashboardPage({
         </p>
       ) : (
         <>
+          <SetupChecklist profile={profile} firstTagId={tags?.[0]?.tag_id ?? null} />
           <ProfileForm profile={profile} feedback={feedback} />
           <Link
             href="/dashboard/template"

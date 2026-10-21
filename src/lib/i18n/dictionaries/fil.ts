@@ -217,7 +217,7 @@ export const fil = {
       paymentGcash: "GCash",
       nameLabel: "Buong pangalan",
       phoneLabel: "Mobile number",
-      emailLabel: "Email (opsyonal)",
+      emailLabel: "Email",
       addressLabel: "Delivery address",
       notesLabel: "Tala (opsyonal)",
       notesPlaceholder: "Mga bilin sa delivery, o anumang dapat naming malaman",
@@ -229,6 +229,7 @@ export const fil = {
       successBody:
         "Ang reference mo ay {reference}. Ime-message ka namin sa {phone} para kumpirmahin ang order at bayad.",
       orderAnother: "Mag-order ulit",
+      trackOrder: "I-track ang order ko",
       errors: {
         finish: "Pumili ng finish.",
         quantity: "Pumili ng 1 hanggang 100 na card.",
@@ -370,6 +371,18 @@ export const fil = {
     submitExistingPending: "Nililink ang card na ito…",
     pin: "Activation PIN",
     pinHint: "6 na digit, nakasulat sa sleeve na kasama ng card mo.",
+    pinStepTitle: "I-activate ang card mo",
+    pinStepBody:
+      "Handa na ang card mo. Ilagay ang 6-digit na PIN na nakasulat sa sleeve nito para magsimula. Isang minuto lang.",
+    pinContinue: "Ituloy",
+    pinChecking: "Sinusuri…",
+    pinNoSleeve: "Nawala ang sleeve o walang PIN? I-message kami at aayusin namin.",
+    pinAccepted: "Tanggap ang PIN. Tapusin ang setup ng profile mo.",
+    activatedTitle: "Live na ang card mo!",
+    activatedBody:
+      "Na-activate na ang card mo. Isara ito at i-tap ulit ang phone mo sa card para subukan.",
+    activatedDashboard: "I-edit ang profile ko",
+    activatedClose: "Isara",
   },
   profile: {
     saveToContacts: "I-save sa contacts",

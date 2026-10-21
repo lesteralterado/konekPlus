@@ -140,6 +140,7 @@ export type Dictionary = {
       /** {reference} and {phone} placeholders */
       successBody: string;
       orderAnother: string;
+      trackOrder: string;
       errors: Record<
         "finish" | "quantity" | "name" | "phone" | "email" | "address" | "payment" | "server",
         string
@@ -203,6 +204,16 @@ export type Dictionary = {
     submitExistingPending: string;
     pin: string;
     pinHint: string;
+    pinStepTitle: string;
+    pinStepBody: string;
+    pinContinue: string;
+    pinChecking: string;
+    pinNoSleeve: string;
+    pinAccepted: string;
+    activatedTitle: string;
+    activatedBody: string;
+    activatedDashboard: string;
+    activatedClose: string;
   };
   profile: {
     saveToContacts: string;

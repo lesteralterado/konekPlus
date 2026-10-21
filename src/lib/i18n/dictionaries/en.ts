@@ -200,7 +200,7 @@ export const en = {
       paymentGcash: "GCash",
       nameLabel: "Full name",
       phoneLabel: "Mobile number",
-      emailLabel: "Email (optional)",
+      emailLabel: "Email",
       addressLabel: "Delivery address",
       notesLabel: "Notes (optional)",
       notesPlaceholder: "Delivery instructions, or anything we should know",
@@ -209,8 +209,9 @@ export const en = {
       guarantee: "Every card is covered by our replacement guarantee.",
       noPaymentNow: "Nothing is charged now.",
       successTitle: "Order received!",
-      successBody: "Your reference is {reference}. We'll message you at {phone} to confirm your order and payment.",
+      successBody: "Your reference is {reference}. We'll message you at {phone} to confirm your order and payment, and email you the updates.",
       orderAnother: "Place another order",
+      trackOrder: "Track my order",
       errors: {
         finish: "Pick a finish.",
         quantity: "Choose between 1 and 100 cards.",
@@ -350,6 +351,18 @@ export const en = {
     submitExistingPending: "Linking this card…",
     pin: "Activation PIN",
     pinHint: "6 digits, printed on the sleeve your card came in.",
+    pinStepTitle: "Activate your card",
+    pinStepBody:
+      "Your card is ready. Enter the 6-digit PIN printed on its sleeve to start. It takes about a minute.",
+    pinContinue: "Continue",
+    pinChecking: "Checking…",
+    pinNoSleeve: "Lost the sleeve or no PIN? Message us and we'll sort it out.",
+    pinAccepted: "PIN accepted. Finish setting up your profile.",
+    activatedTitle: "You're live!",
+    activatedBody:
+      "Your card is activated. Close this and tap your phone on the card again to test it.",
+    activatedDashboard: "Edit my profile",
+    activatedClose: "Close",
   },
   profile: {
     saveToContacts: "Save to contacts",

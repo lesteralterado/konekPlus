@@ -54,12 +54,44 @@ function CardUnavailable({ t, locale }: { t: Dictionary["tagStatus"]; locale: Lo
   );
 }
 
+function ActivatedBanner({
+  t,
+  tagId,
+}: {
+  t: Dictionary["claimForm"];
+  tagId: string;
+}) {
+  return (
+    <div
+      role="status"
+      className="fixed inset-x-3 top-3 z-50 mx-auto max-w-md rounded-2xl bg-emerald-600 p-4 text-white shadow-lg"
+    >
+      <p className="font-semibold">{t.activatedTitle}</p>
+      <p className="mt-0.5 text-sm text-emerald-50">{t.activatedBody}</p>
+      <div className="mt-3 flex gap-2 text-sm font-medium">
+        <a href="/dashboard" className="rounded-full bg-white px-4 py-1.5 text-emerald-700">
+          {t.activatedDashboard}
+        </a>
+        <a
+          href={`/t/${encodeURIComponent(tagId)}`}
+          className="rounded-full bg-emerald-700 px-4 py-1.5"
+        >
+          {t.activatedClose}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export default async function TagPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tag_id: string }>;
+  searchParams: Promise<{ activated?: string }>;
 }) {
   const { tag_id } = await params;
+  const { activated } = await searchParams;
   const supabase = await createClient();
   const [locale, dict] = await Promise.all([getLocale(), getDictionary()]);
 
@@ -146,16 +178,21 @@ export default async function TagPage({
   });
 
   return (
-    <ProfileTemplateView
-      profile={profile}
-      tagId={tag_id}
-      isOwner={isOwner}
-      portfolioItems={portfolioItems ?? []}
-      testimonials={testimonials ?? []}
-      locale={locale}
-      dict={dict.profile}
-      profileUrl={profileUrl}
-      qrSvg={qrSvg}
-    />
+    <>
+      {isOwner && activated === "1" && (
+        <ActivatedBanner t={dict.claimForm} tagId={tag_id} />
+      )}
+      <ProfileTemplateView
+        profile={profile}
+        tagId={tag_id}
+        isOwner={isOwner}
+        portfolioItems={portfolioItems ?? []}
+        testimonials={testimonials ?? []}
+        locale={locale}
+        dict={dict.profile}
+        profileUrl={profileUrl}
+        qrSvg={qrSvg}
+      />
+    </>
   );
 }
