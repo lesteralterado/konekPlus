@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ActivationFunnel } from "./activation-funnel";
 
 export const dynamic = "force-dynamic";
 
@@ -123,6 +124,8 @@ export default async function AdminDashboardPage() {
         <StatTile label="Unclaimed" value={unclaimed.toLocaleString()} />
         <StatTile label="Customers" value={customers.toLocaleString()} sub={`${avgCardsPerCustomer} cards/customer avg`} />
       </div>
+
+      <ActivationFunnel />
 
       <DailyClaimsChart buckets={buckets} />
     </div>

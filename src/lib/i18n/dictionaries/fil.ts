@@ -327,6 +327,28 @@ export const fil = {
       "Karamihan ng Android phone ay may NFC. Sa iPhone, siguraduhing naka-on ang NFC at gumagamit ka ng sinusuportahang modelo (iPhone 7 pataas).",
     proTip:
       "Pro tip: puwede mo ring i-save ang contact sa iyong phone, o ibahagi ito, sa isang tap lang.",
+    activate: {
+      heading: "Unang beses? I-activate ang card mo",
+      intro: "Bawat bagong card ay kailangang i-activate ng isang minuto bago lumabas ang profile mo.",
+      steps: [
+        {
+          title: "Hanapin ang PIN",
+          body: "Ang 6-digit na activation PIN ay nakasulat sa sleeve na kasama ng card mo. Itabi ang sleeve hanggang matapos ka.",
+        },
+        {
+          title: "I-tap ang card",
+          body: "Idikit ang card sa itaas ng phone mo, o i-scan ang QR code sa likod nito, para mabuksan ang activation page.",
+        },
+        {
+          title: "Ilagay ang PIN",
+          body: "I-type ang PIN. Awtomatikong mapupunan ang pangalan, email at phone mo mula sa order.",
+        },
+        {
+          title: "I-setup ang profile",
+          body: "Gumawa ng account, tapos idagdag ang litrato, titulo at links. I-tap ulit ang card para makita itong live.",
+        },
+      ],
+    },
     noAppNeeded: "Hindi kailangan ng app. I-tap o i-scan lang!",
     viewFullGuide: "Buksan ang buong gabay",
     backToDashboard: "← Bumalik sa dashboard",

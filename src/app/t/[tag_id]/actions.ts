@@ -1,6 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
+import { sendEmail } from "@/lib/email/send";
+import { welcomeEmail } from "@/lib/email/templates";
 import {
   getOrCreateDeviceId,
   isDeviceVerificationEnabled,
@@ -135,6 +138,14 @@ export async function signUpAndClaim(
   );
   if (claimError) return { error: claimError.message };
   if (!claimed) return { error: CLAIM_FAILED };
+
+  const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
+  const welcome = welcomeEmail({
+    fullName,
+    dashboardUrl: `${siteUrl}/dashboard`,
+    profileUrl: `${siteUrl}/t/${encodeURIComponent(tagId)}`,
+  });
+  after(() => sendEmail({ to: email, ...welcome }));
 
   return redirectAfterClaim(supabase, email, `/t/${tagId}?activated=1`);
 }

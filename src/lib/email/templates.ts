@@ -204,3 +204,73 @@ export function shippedEmail(o: ShippedDetails): Omit<EmailMessage, "to"> {
     `),
   };
 }
+
+export type WelcomeDetails = {
+  fullName: string;
+  dashboardUrl: string;
+  profileUrl: string;
+};
+
+export function welcomeEmail(o: WelcomeDetails): Omit<EmailMessage, "to"> {
+  return {
+    subject: "Your Konek+ card is live",
+    text: [
+      `Hi ${o.fullName},`,
+      "",
+      "Your card is activated. To make the most of it:",
+      "- Add a photo, your job title and a short bio.",
+      "- Link your socials, website or a call-to-action button.",
+      "- Tap your card on a friend's phone to see what they see.",
+      "",
+      `Edit your profile: ${o.dashboardUrl}`,
+      `Your public profile: ${o.profileUrl}`,
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">You're live, ${escapeHtml(o.fullName)}!</p>
+      <p style="margin:0 0 16px;color:${MUTED};">Your card is activated. A few quick wins:</p>
+      <ul style="margin:0;padding-left:20px;color:${NAVY};">
+        <li>Add a photo, your job title and a short bio.</li>
+        <li>Link your socials, website or a call-to-action button.</li>
+        <li>Tap your card on a friend's phone to see what they see.</li>
+      </ul>
+      ${button(o.dashboardUrl, "Edit my profile")}
+      <p style="margin:16px 0 0;color:${MUTED};font-size:13px;">Your public profile: <a href="${escapeHtml(o.profileUrl)}" style="color:${NAVY};">${escapeHtml(o.profileUrl)}</a></p>
+    `),
+  };
+}
+
+export type ActivationReminderDetails = {
+  fullName: string;
+  reference: string;
+  cardCount: number;
+  guideUrl: string;
+};
+
+export function activationReminderEmail(o: ActivationReminderDetails): Omit<EmailMessage, "to"> {
+  const yourCard = o.cardCount === 1 ? "your Konek+ card" : `your ${o.cardCount} Konek+ cards`;
+  return {
+    subject: `Ready to activate ${yourCard}?`,
+    text: [
+      `Hi ${o.fullName},`,
+      "",
+      `${yourCard[0].toUpperCase()}${yourCard.slice(1)} (order ${o.reference}) should have arrived. It still needs a one-minute activation:`,
+      "1. Find the 6-digit PIN on the sleeve it came in.",
+      "2. Tap the back of your phone on the card (or scan its QR code).",
+      "3. Enter the PIN and set up your profile.",
+      "",
+      `Need a hand? See the guide: ${o.guideUrl}`,
+      "Haven't received it yet, or lost the PIN? Just reply to this email.",
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Ready to activate, ${escapeHtml(o.fullName)}?</p>
+      <p style="margin:0 0 16px;color:${MUTED};">${escapeHtml(yourCard[0].toUpperCase() + yourCard.slice(1))} (order ${escapeHtml(o.reference)}) should have arrived. It still needs a one-minute activation:</p>
+      <ol style="margin:0;padding-left:20px;color:${NAVY};">
+        <li>Find the <b>6-digit PIN</b> on the sleeve it came in.</li>
+        <li>Tap the back of your phone on the card (or scan its QR code).</li>
+        <li>Enter the PIN and set up your profile.</li>
+      </ol>
+      ${button(o.guideUrl, "See the quick guide")}
+      <p style="margin:16px 0 0;color:${MUTED};font-size:13px;">Haven't received it yet, or lost the PIN? Just reply to this email.</p>
+    `),
+  };
+}

@@ -177,6 +177,27 @@ export function GuideSection({
           </p>
         </div>
 
+        {isPage && (
+          <section className="mt-14">
+            <h3 className="text-xl font-semibold text-brand-900">{t.activate.heading}</h3>
+            <p className="mt-1 text-sm text-slate-500">{t.activate.intro}</p>
+            <ol className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {t.activate.steps.map((step, i) => (
+                <li
+                  key={step.title}
+                  className="rounded-3xl bg-slate-50 p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-500 text-sm font-semibold text-brand-900">
+                    {i + 1}
+                  </span>
+                  <p className="mt-4 font-semibold text-brand-900">{step.title}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
+
         <p className="mt-6 text-center text-sm font-medium text-brand-700">{t.noAppNeeded}</p>
 
         {!isPage && (

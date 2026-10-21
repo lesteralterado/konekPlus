@@ -171,6 +171,7 @@ export type Dictionary = {
     androidNote: string;
     proTip: string;
     noAppNeeded: string;
+    activate: { heading: string; intro: string; steps: { title: string; body: string }[] };
     viewFullGuide: string;
     backToDashboard: string;
     pageTitle: string;

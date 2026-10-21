@@ -77,6 +77,7 @@ export type CardOrder = {
   tracking_number: string | null;
   shipped_at: string | null;
   delivered_at: string | null;
+  activation_reminder_sent_at: string | null;
   created_at: string;
 };
 
@@ -230,6 +231,7 @@ export type Database = {
           | "tracking_number"
           | "shipped_at"
           | "delivered_at"
+          | "activation_reminder_sent_at"
         > & { id?: string };
         Update: Partial<CardOrder>;
         Relationships: [];

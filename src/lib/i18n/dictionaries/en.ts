@@ -308,6 +308,28 @@ export const en = {
       "Most Android phones have NFC enabled. On iPhone, make sure NFC is on and you're using a supported model (iPhone 7 and newer).",
     proTip: "Pro tip: you can also save the contact to your phone, or share it, with just one tap.",
     noAppNeeded: "No app needed. Just tap or scan!",
+    activate: {
+      heading: "First time? Activate your card",
+      intro: "Every new card needs a one-minute activation before it shows your profile.",
+      steps: [
+        {
+          title: "Find your PIN",
+          body: "The 6-digit activation PIN is printed on the sleeve your card came in. Keep the sleeve until you're done.",
+        },
+        {
+          title: "Tap your card",
+          body: "Hold the card to the top of your phone, or scan the QR code on its back, to open the activation page.",
+        },
+        {
+          title: "Enter the PIN",
+          body: "Type the PIN. Your name, email and phone are filled in from your order.",
+        },
+        {
+          title: "Set up your profile",
+          body: "Create your account, then add your photo, title and links. Tap the card again to see it live.",
+        },
+      ],
+    },
     viewFullGuide: "Open the full guide",
     backToDashboard: "← Back to dashboard",
     pageTitle: "Your Konek+ quick guide",
