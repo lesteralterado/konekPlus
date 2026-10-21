@@ -2,7 +2,7 @@
 
 import { after } from "next/server";
 import { sendEmail } from "@/lib/email/send";
-import { orderAlertEmail } from "@/lib/email/templates";
+import { orderAlertEmail, orderConfirmationEmail } from "@/lib/email/templates";
 import {
   finishById,
   formatPrice,
@@ -65,7 +65,9 @@ export async function placeOrder(
   if (phoneDigits.length < 7 || phoneDigits.length > 15 || phone.length > 30) {
     return fail("phone");
   }
-  if (email && (email.length > 200 || !EMAIL_PATTERN.test(email))) return fail("email");
+  // Required: the confirmation, shipping updates and activation guidance all
+  // go by email.
+  if (email.length > 200 || !EMAIL_PATTERN.test(email)) return fail("email");
   if (address.length < 3 || address.length > 500) return fail("address");
   if (!PAYMENT_METHODS.has(payment)) return fail("payment");
 
@@ -88,6 +90,21 @@ export async function placeOrder(
   if (error) return fail("server");
 
   const reference = `KP-${id.slice(0, 6).toUpperCase()}`;
+
+  // Confirmation to the customer — same after() treatment as the owner alert.
+  {
+    const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
+    const message = orderConfirmationEmail({
+      fullName,
+      reference,
+      finishName: finishById(finish).name,
+      quantity,
+      total: formatPrice(quote(finish, quantity).totalPhp),
+      payment: payment === "cod" ? "Cash on delivery" : "GCash",
+      trackUrl: `${siteUrl}/track`,
+    });
+    after(() => sendEmail({ to: email, ...message }));
+  }
 
   // Alert the owner — after the response, so the customer never waits on
   // it, and a failed alert never affects their order. Skipped when

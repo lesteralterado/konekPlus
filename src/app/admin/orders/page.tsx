@@ -3,6 +3,7 @@ import { finishById, formatPrice, quote } from "@/lib/finishes";
 import { createClient } from "@/lib/supabase/server";
 import type { CardOrderStatus } from "@/lib/types";
 import { AssignCards } from "./assign-cards";
+import { ShipOrder } from "./ship-order";
 import { OrderStatusSelect } from "./status-select";
 
 export const dynamic = "force-dynamic";
@@ -139,6 +140,14 @@ export default async function AdminOrdersPage({
                   <p className="mt-1 text-xs text-slate-400">
                     {new Date(order.created_at).toLocaleString()}
                   </p>
+                  {order.tracking_number && (
+                    <p className="mt-1 text-xs text-slate-500">
+                      {order.courier}: <span className="font-mono">{order.tracking_number}</span>
+                    </p>
+                  )}
+                  {!["shipped", "delivered", "fulfilled", "cancelled"].includes(order.status) && (
+                    <ShipOrder orderId={order.id} hasEmail={!!order.email} />
+                  )}
                   {order.status !== "cancelled" && (
                     <AssignCards
                       orderId={order.id}

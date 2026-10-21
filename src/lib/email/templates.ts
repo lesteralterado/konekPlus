@@ -117,3 +117,90 @@ export function orderAlertEmail(order: OrderAlertDetails): Omit<EmailMessage, "t
     `),
   };
 }
+
+function button(href: string, label: string): string {
+  return `<p style="margin:24px 0 0;"><a href="${escapeHtml(href)}" style="display:inline-block;background:${ACCENT};color:${NAVY};font-weight:bold;text-decoration:none;padding:12px 22px;border-radius:999px;">${escapeHtml(label)}</a></p>`;
+}
+
+export type OrderConfirmationDetails = {
+  fullName: string;
+  reference: string;
+  finishName: string;
+  quantity: number;
+  total: string;
+  payment: string;
+  trackUrl: string;
+};
+
+export function orderConfirmationEmail(o: OrderConfirmationDetails): Omit<EmailMessage, "to"> {
+  const summary = `${o.quantity} × ${o.finishName} · ${o.total} · ${o.payment}`;
+  return {
+    subject: `We got your Konek+ order ${o.reference}`,
+    text: [
+      `Hi ${o.fullName},`,
+      "",
+      `Thanks for ordering! Your reference is ${o.reference}.`,
+      summary,
+      "",
+      "We'll message you to confirm your order and payment. Nothing is charged until then.",
+      `Track your order anytime: ${o.trackUrl}`,
+      "(You'll need your reference and the mobile number you ordered with.)",
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Thanks, ${escapeHtml(o.fullName)}!</p>
+      <p style="margin:0 0 16px;color:${MUTED};">We received your order.</p>
+      <p style="margin:0 0 4px;font-size:13px;color:${MUTED};">Reference</p>
+      <p style="margin:0 0 16px;font-size:22px;font-weight:bold;font-family:'Courier New',monospace;">${escapeHtml(o.reference)}</p>
+      <p style="margin:0 0 16px;">${escapeHtml(summary)}</p>
+      <p style="margin:0;color:${MUTED};font-size:13px;">We'll message you to confirm your order and payment. Nothing is charged until then.</p>
+      ${button(o.trackUrl, "Track my order")}
+      <p style="margin:12px 0 0;color:${MUTED};font-size:12px;">You'll need your reference and the mobile number you ordered with.</p>
+    `),
+  };
+}
+
+export type ShippedDetails = {
+  fullName: string;
+  reference: string;
+  quantity: number;
+  courier: string;
+  trackingNumber: string;
+  courierUrl: string | null;
+  trackUrl: string;
+};
+
+export function shippedEmail(o: ShippedDetails): Omit<EmailMessage, "to"> {
+  const yourCards = o.quantity === 1 ? "Your card is" : `Your ${o.quantity} cards are`;
+  return {
+    subject: `Your Konek+ order ${o.reference} is on its way`,
+    text: [
+      `Hi ${o.fullName},`,
+      "",
+      `Good news: ${yourCards.toLowerCase()} on its way via ${o.courier}.`,
+      `Tracking number: ${o.trackingNumber}`,
+      o.courierUrl ? `Track the parcel: ${o.courierUrl}` : null,
+      `Order status: ${o.trackUrl}`,
+      "",
+      "When it arrives:",
+      "1. Find the 6-digit PIN on the sleeve your card came in.",
+      "2. Tap the back of your phone on the card (or scan its QR code).",
+      "3. Enter the PIN and set up your profile. It takes about a minute.",
+    ]
+      .filter((line) => line !== null)
+      .join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">It's on its way, ${escapeHtml(o.fullName)}!</p>
+      <p style="margin:0 0 16px;color:${MUTED};">${escapeHtml(yourCards)} shipping with ${escapeHtml(o.courier)}.</p>
+      <p style="margin:0 0 4px;font-size:13px;color:${MUTED};">Tracking number</p>
+      <p style="margin:0 0 16px;font-size:20px;font-weight:bold;font-family:'Courier New',monospace;">${escapeHtml(o.trackingNumber)}</p>
+      ${o.courierUrl ? button(o.courierUrl, "Track the parcel") : ""}
+      <p style="margin:24px 0 8px;font-weight:bold;">When it arrives</p>
+      <ol style="margin:0;padding-left:20px;color:${NAVY};">
+        <li>Find the <b>6-digit PIN</b> on the sleeve your card came in.</li>
+        <li>Tap the back of your phone on the card (or scan its QR code).</li>
+        <li>Enter the PIN and set up your profile. It takes about a minute.</li>
+      </ol>
+      <p style="margin:20px 0 0;color:${MUTED};font-size:13px;">Order ${escapeHtml(o.reference)} · <a href="${escapeHtml(o.trackUrl)}" style="color:${NAVY};">see status</a></p>
+    `),
+  };
+}

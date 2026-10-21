@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
 import { useActionState, useEffect, useRef, useState } from "react";
 import {
@@ -86,6 +87,13 @@ function OrderFormInner({
         <p className="mt-4 text-white/70">
           {format(t.successBody, { reference: state.reference, phone: submittedPhone })}
         </p>
+        <Link
+          href="/track"
+          className="mt-6 inline-block rounded-full bg-accent-500 px-5 py-2.5 text-sm font-semibold text-brand-900 transition hover:brightness-95"
+        >
+          {t.trackOrder}
+        </Link>
+        <br />
         <button
           type="button"
           onClick={onReset}
@@ -290,7 +298,7 @@ function OrderFormInner({
           </label>
           <label>
             <span className={LABEL}>{t.emailLabel}</span>
-            <input name="email" type="email" maxLength={200} autoComplete="email" className={INPUT} />
+            <input name="email" type="email" required maxLength={200} autoComplete="email" className={INPUT} />
           </label>
         </div>
         <label>
