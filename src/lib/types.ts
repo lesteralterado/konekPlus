@@ -59,7 +59,9 @@ export type CardOrderStatus =
   | "preparing"
   | "shipped"
   | "delivered";
-export type PaymentMethod = "cod" | "gcash";
+export type PaymentMethod = "cod" | "gcash" | "cash";
+// How the money actually arrived (0021).
+export type PaidVia = "cash" | "gcash" | "bank" | "courier";
 // See supabase/migrations/0020_payments.sql for the lifecycle.
 export type PaymentStatus = "unpaid" | "proof_submitted" | "with_courier" | "paid" | "refunded";
 
@@ -87,6 +89,7 @@ export type CardOrder = {
   amount_received_php: number | null;
   paid_at: string | null;
   paid_confirmed_by: string | null;
+  paid_via: PaidVia | null;
   gcash_reference: string | null;
   payment_proof_path: string | null;
   proof_submitted_at: string | null;
@@ -250,6 +253,7 @@ export type Database = {
           | "amount_received_php"
           | "paid_at"
           | "paid_confirmed_by"
+          | "paid_via"
           | "gcash_reference"
           | "payment_proof_path"
           | "proof_submitted_at"
@@ -317,6 +321,18 @@ export type Database = {
           payment_status: PaymentStatus;
           amount_due_php: number | null;
           payment_note: string | null;
+        }[];
+      };
+      reset_tag_pin: {
+        Args: { p_tag_id: string };
+        Returns: string;
+      };
+      tag_pin_state: {
+        Args: { p_tag_id: string };
+        Returns: {
+          state: "claimed" | "no_pin" | "locked" | "ok";
+          attempts_left: number;
+          locked_minutes: number;
         }[];
       };
       submit_payment_proof: {

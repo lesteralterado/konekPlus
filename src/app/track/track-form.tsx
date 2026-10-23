@@ -9,6 +9,8 @@ import { PaymentPanel } from "./payment-panel";
 const initialState: TrackState = { error: null, order: null };
 
 const STEPS = ["Order received", "Confirmed", "Preparing", "Shipped", "Delivered"] as const;
+// Cash orders are handed over in person — no shipping step.
+const CASH_STEPS = ["Order received", "Confirmed", "Preparing", "Handed over"] as const;
 
 const STEP_INDEX: Record<string, number> = {
   new: 0,
@@ -30,7 +32,11 @@ function formatDate(iso: string | null) {
 export function TrackForm() {
   const [state, action, pending] = useActionState(trackOrder, initialState);
   const order = state.order;
-  const current = order ? (STEP_INDEX[order.status] ?? 0) : 0;
+  const isCash = order?.payment_method === "cash";
+  const steps: readonly string[] = isCash ? CASH_STEPS : STEPS;
+  const rawIndex = order ? (STEP_INDEX[order.status] ?? 0) : 0;
+  // Delivered (4) is the last of the 4 cash steps (index 3).
+  const current = isCash ? Math.min(rawIndex, 3) : rawIndex;
   const parcelUrl = order ? courierTrackingUrl(order.courier, order.tracking_number) : null;
 
   return (
@@ -74,7 +80,7 @@ export function TrackForm() {
             </p>
           ) : (
             <ol className="mt-5 flex flex-col gap-3">
-              {STEPS.map((label, i) => {
+              {steps.map((label, i) => {
                 const done = i <= current;
                 return (
                   <li key={label} className="flex items-center gap-3 text-sm">
@@ -95,10 +101,10 @@ export function TrackForm() {
                       }
                     >
                       {label}
-                      {i === 3 && formatDate(order.shipped_at)
+                      {!isCash && i === 3 && formatDate(order.shipped_at)
                         ? ` · ${formatDate(order.shipped_at)}`
                         : ""}
-                      {i === 4 && formatDate(order.delivered_at)
+                      {(isCash ? i === 3 : i === 4) && formatDate(order.delivered_at)
                         ? ` · ${formatDate(order.delivered_at)}`
                         : ""}
                     </span>

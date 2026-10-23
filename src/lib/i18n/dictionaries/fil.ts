@@ -27,7 +27,7 @@ export const fil = {
       ctaHowItWorks: "Tingnan kung paano ito gumagana",
       ctaOrder: "Kunin ang iyong card · mula {price}",
       ratingText: "{rating}/5 ang rating mula sa {count}+ na feedback",
-      trustPayment: "Cash on delivery o GCash",
+      trustPayment: "COD, GCash o cash",
       trustGuarantee: "May replacement guarantee",
       trustCompatibility: "Gumagana sa lahat ng phone (NFC + QR)",
     },
@@ -112,7 +112,7 @@ export const fil = {
     marquee: [
       "Walang app na kailangan",
       "I-edit nang minsan, updated ang bawat card",
-      "Cash on delivery o GCash",
+      "COD, GCash o cash sa meet-up",
       "May replacement guarantee",
       "Gumagana sa lahat ng phone",
       "I-off agad ang nawalang card",
@@ -197,14 +197,14 @@ export const fil = {
     cta: {
       headingPrefix: "Handa ka na bang gawin ang iyong card na",
       headingSuffix: "mas magagawa pa?",
-      body: "Pumili ng finish, magbayad pagdating o sa GCash, at magsimulang magbahagi sa isang tap — walang app, walang paulit-ulit na pag-type.",
+      body: "Pumili ng finish, magbayad pagdating, sa GCash o cash, at magsimulang magbahagi sa isang tap — walang app, walang paulit-ulit na pag-type.",
       button: "Kunin ang iyong card",
     },
     order: {
       kicker: "• Mag-order",
       heading: "Piliin ang finish mo. Kami na ang bahala sa iba.",
       subtitle:
-        "Walang bayad ngayon — kinukumpirma muna namin sa iyo ang bawat order, saka ka magbabayad pagdating o sa GCash.",
+        "Walang bayad ngayon — kinukumpirma muna namin sa iyo ang bawat order, saka ka magbabayad pagdating, sa GCash, o cash pagkikita natin.",
       finishLabel: "Finish",
       quantityLabel: "Dami",
       decrease: "Bawasan",
@@ -215,6 +215,9 @@ export const fil = {
       paymentLabel: "Paraan ng pagbabayad",
       paymentCod: "Cash on delivery",
       paymentGcash: "GCash",
+      paymentCash: "Cash (meet-up)",
+      meetupLabel: "Lugar ng meet-up o pick-up notes",
+      meetupHint: "Ime-message ka namin para pag-usapan ang oras at lugar.",
       nameLabel: "Buong pangalan",
       phoneLabel: "Mobile number",
       emailLabel: "Email",
@@ -252,7 +255,7 @@ export const fil = {
         },
         {
           q: "Paano ako magbabayad?",
-          a: "Walang sisingilin kapag nag-order ka. Kinukumpirma muna namin ang detalye sa iyo, saka ka magbabayad ng cash pagdating o sa GCash.",
+          a: "Walang sisingilin kapag nag-order ka. Kinukumpirma muna namin ang detalye sa iyo, saka ka magbabayad ng cash pagdating, sa GCash, o cash pagkikita natin.",
         },
         {
           q: "Paano kung huminto sa paggana ang card ko?",
@@ -400,6 +403,12 @@ export const fil = {
     pinChecking: "Sinusuri…",
     pinNoSleeve: "Nawala ang sleeve o walang PIN? I-message kami at aayusin namin.",
     pinAccepted: "Tanggap ang PIN. Tapusin ang setup ng profile mo.",
+    pinWrong: "Hindi tugma ang PIN — {n} subok pa.",
+    pinWrongLast: "Hindi tugma ang PIN. Isa pang maling subok, ipo-pause ang card nang 15 minuto.",
+    pinLocked: "Sobrang daming subok. Subukan ulit sa loob ng {m} min.",
+    pinClaimed: "Naka-activate na ang card na ito.",
+    pinLogin: "Mag-log in para i-manage ito",
+    pinDigit: "Digit {n} ng 6",
     activatedTitle: "Live na ang card mo!",
     activatedBody:
       "Na-activate na ang card mo. Isara ito at i-tap ulit ang phone mo sa card para subukan.",

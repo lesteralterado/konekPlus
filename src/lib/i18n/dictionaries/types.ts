@@ -125,6 +125,9 @@ export type Dictionary = {
       paymentLabel: string;
       paymentCod: string;
       paymentGcash: string;
+      paymentCash: string;
+      meetupLabel: string;
+      meetupHint: string;
       nameLabel: string;
       phoneLabel: string;
       emailLabel: string;
@@ -211,6 +214,12 @@ export type Dictionary = {
     pinChecking: string;
     pinNoSleeve: string;
     pinAccepted: string;
+    pinWrong: string;
+    pinWrongLast: string;
+    pinLocked: string;
+    pinClaimed: string;
+    pinLogin: string;
+    pinDigit: string;
     activatedTitle: string;
     activatedBody: string;
     activatedDashboard: string;

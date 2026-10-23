@@ -3,6 +3,8 @@
 import { useActionState, useState } from "react";
 import { PasswordInput } from "@/components/password-input";
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { format } from "@/lib/i18n/format";
+import { PinInput } from "./pin-input";
 import {
   type ClaimState,
   linkExistingAndClaim,
@@ -37,19 +39,30 @@ function PinStep({
         <p className="mt-1 text-sm text-slate-500">{dict.pinStepBody}</p>
       </div>
       <input type="hidden" name="tag_id" value={tagId} />
-      <input
-        name="pin"
-        inputMode="numeric"
-        autoComplete="one-time-code"
-        pattern="[0-9]{6}"
-        maxLength={6}
-        placeholder={dict.pin}
-        required
-        autoFocus
-        className={`${inputClass} text-center font-mono text-lg tracking-[0.4em]`}
-      />
+      <PinInput name="pin" digitLabel={dict.pinDigit} disabled={pending} invalid={!!state.error} />
       <p className="text-center text-xs text-slate-500">{dict.pinHint}</p>
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      {state.error && (
+        <p role="alert" className="text-center text-sm text-red-600">
+          {state.reason?.kind === "wrong" ? (
+            state.reason.triesLeft <= 1 ? (
+              dict.pinWrongLast
+            ) : (
+              format(dict.pinWrong, { n: String(state.reason.triesLeft) })
+            )
+          ) : state.reason?.kind === "locked" ? (
+            format(dict.pinLocked, { m: String(state.reason.minutes) })
+          ) : state.reason?.kind === "claimed" ? (
+            <>
+              {dict.pinClaimed}{" "}
+              <a href="/login" className="font-semibold underline">
+                {dict.pinLogin}
+              </a>
+            </>
+          ) : (
+            state.error
+          )}
+        </p>
+      )}
       <button
         type="submit"
         disabled={pending}

@@ -39,6 +39,21 @@ export async function setTagWritten(tagId: string, written: boolean) {
   revalidatePath("/admin/orders");
 }
 
+// New sleeve PIN for an unclaimed card whose slip was lost (reset_tag_pin,
+// 0021). The old PIN stops working; the new one is returned once.
+export async function resetCardPin(
+  tagId: string,
+): Promise<{ pin: string | null; error: string | null }> {
+  await requireAdmin();
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("reset_tag_pin", { p_tag_id: tagId });
+  if (error) return { pin: null, error: error.message };
+
+  revalidatePath("/admin/orders");
+  return { pin: data, error: null };
+}
+
 // Lets an admin flip a claimed tag's visibility on the owner's behalf —
 // support cases where a customer wants their card hidden but can't do it
 // themselves. Uses the regular RLS-scoped client: the "Admins can reset any

@@ -32,7 +32,12 @@ export type OrderFormState =
   // confirmation screen shows the customer exactly what we'll fulfil.
   | { status: "success"; reference: string; finish: FinishId; quantity: number };
 
-const PAYMENT_METHODS = new Set<PaymentMethod>(["cod", "gcash"]);
+const PAYMENT_METHODS = new Set<PaymentMethod>(["cod", "gcash", "cash"]);
+const PAYMENT_LABEL: Record<PaymentMethod, string> = {
+  cod: "Cash on delivery",
+  gcash: "GCash",
+  cash: "Cash (meet-up)",
+};
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function placeOrder(
@@ -100,7 +105,7 @@ export async function placeOrder(
       finishName: finishById(finish).name,
       quantity,
       total: formatPrice(quote(finish, quantity).totalPhp),
-      payment: payment === "cod" ? "Cash on delivery" : "GCash",
+      payment: PAYMENT_LABEL[payment],
       trackUrl: `${siteUrl}/track`,
     });
     after(() => sendEmail({ to: email, ...message }));
@@ -126,7 +131,7 @@ export async function placeOrder(
           phone,
           email: email || null,
           address,
-          payment: payment === "cod" ? "Cash on delivery" : "GCash",
+          payment: PAYMENT_LABEL[payment],
           notes: notes.slice(0, 1000) || null,
           adminUrl: `${siteUrl}/admin/orders`,
         }),

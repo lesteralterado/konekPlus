@@ -42,8 +42,16 @@ async function redirectAfterClaim(
   redirect(next);
 }
 
+// Why a PIN attempt failed, so the form can say it plainly (and in FIL).
+// Comes from tag_pin_state (0021); absent if that RPC isn't available.
+export type PinFailure =
+  | { kind: "wrong"; triesLeft: number }
+  | { kind: "locked"; minutes: number }
+  | { kind: "claimed" };
+
 export type VerifyPinState = {
   error: string | null;
+  reason?: PinFailure;
   verified: {
     pin: string;
     full_name: string | null;
@@ -75,7 +83,18 @@ export async function verifyTagPin(
   if (error) return { error: error.message, verified: null };
 
   const row = data?.[0];
-  if (!row) return { error: CLAIM_FAILED, verified: null };
+  if (!row) {
+    const { data: pinState } = await supabase.rpc("tag_pin_state", { p_tag_id: tagId });
+    const st = pinState?.[0];
+    if (st?.state === "claimed") return { error: CLAIM_FAILED, reason: { kind: "claimed" }, verified: null };
+    if (st?.state === "locked") {
+      return { error: CLAIM_FAILED, reason: { kind: "locked", minutes: Math.max(1, st.locked_minutes) }, verified: null };
+    }
+    if (st?.state === "ok") {
+      return { error: CLAIM_FAILED, reason: { kind: "wrong", triesLeft: st.attempts_left }, verified: null };
+    }
+    return { error: CLAIM_FAILED, verified: null };
+  }
 
   return { error: null, verified: { pin, ...row } };
 }

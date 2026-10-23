@@ -248,16 +248,17 @@ function OrderFormInner({
       <div className="flex flex-col gap-5">
         <fieldset>
           <legend className={LABEL}>{t.paymentLabel}</legend>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 gap-2 min-[380px]:grid-cols-3">
             {(
               [
                 ["cod", t.paymentCod],
                 ["gcash", t.paymentGcash],
+                ["cash", t.paymentCash],
               ] as const
             ).map(([value, label]) => (
               <label
                 key={value}
-                className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${OPTION_FOCUS} ${
+                className={`flex cursor-pointer items-center justify-center gap-2 rounded-2xl border px-3 py-3 text-center text-sm font-semibold leading-tight transition ${OPTION_FOCUS} ${
                   payment === value
                     ? "border-brand-600 bg-brand-50 text-brand-900 ring-1 ring-brand-600"
                     : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
@@ -302,15 +303,17 @@ function OrderFormInner({
           </label>
         </div>
         <label>
-          <span className={LABEL}>{t.addressLabel}</span>
+          {/* Cash = meet-up / pick-up, so ask where rather than a full address. */}
+          <span className={LABEL}>{payment === "cash" ? t.meetupLabel : t.addressLabel}</span>
           <textarea
             name="address"
             required
             rows={2}
             maxLength={500}
-            autoComplete="street-address"
+            autoComplete={payment === "cash" ? "off" : "street-address"}
             className={INPUT}
           />
+          {payment === "cash" && <span className="mt-1 block text-xs text-slate-500">{t.meetupHint}</span>}
         </label>
         <label>
           <span className={LABEL}>{t.notesLabel}</span>

@@ -8,6 +8,9 @@ import { paymentReceivedEmail } from "@/lib/email/templates";
 import { formatPrice } from "@/lib/finishes";
 import { lockAmount } from "@/lib/order-amount";
 import { createClient } from "@/lib/supabase/server";
+import type { PaidVia } from "@/lib/types";
+
+const PAID_VIA = new Set<PaidVia>(["cash", "gcash", "bank", "courier"]);
 
 // Payment side of a card order (lifecycle in 0020_payments.sql). Every
 // action is admin-only; customers can only *submit* GCash proof, via the
@@ -31,10 +34,12 @@ export async function markPaid(
   id: string,
   amountReceived: string,
   gcashRef: string,
+  via: string,
 ): Promise<PaymentResult> {
   await requireAdmin();
   const amount = parsePhp(amountReceived);
   if (amount === null) return { error: "Enter the amount received." };
+  if (!PAID_VIA.has(via as PaidVia)) return { error: "Pick how the money came in." };
 
   const supabase = await createClient();
   const {
@@ -56,6 +61,7 @@ export async function markPaid(
       amount_received_php: amount,
       paid_at: new Date().toISOString(),
       paid_confirmed_by: user?.id ?? null,
+      paid_via: via as PaidVia,
       gcash_reference: ref || current.gcash_reference,
       payment_note: null,
       ...lockAmount(current),
@@ -133,6 +139,7 @@ export async function undoPayment(id: string): Promise<PaymentResult> {
       amount_received_php: null,
       paid_at: null,
       paid_confirmed_by: null,
+      paid_via: null,
     })
     .eq("id", id);
   if (error) return { error: error.message };

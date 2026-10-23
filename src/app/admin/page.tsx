@@ -41,6 +41,13 @@ function StatTile({
   );
 }
 
+const VIA_LABEL: Record<string, string> = {
+  cash: "Cash",
+  gcash: "GCash",
+  bank: "Bank",
+  courier: "Courier",
+};
+
 function MoneyTile({
   href,
   label,
@@ -190,15 +197,24 @@ export default async function AdminDashboardPage() {
   // read and sum here rather than several aggregate queries.
   const { data: moneyRows } = await supabase
     .from("card_orders")
-    .select("status, payment_method, payment_status, amount_due_php, amount_received_php, paid_at, finish, quantity")
+    .select("status, payment_method, payment_status, paid_via, amount_due_php, amount_received_php, paid_at, finish, quantity")
     .neq("status", "cancelled")
     .neq("payment_status", "refunded");
   const monthStart = manilaMonthStartIso();
-  const money = { paidMonth: 0, verify: { n: 0, php: 0 }, gcash: { n: 0, php: 0 }, courier: { n: 0, php: 0 } };
+  const money = {
+    paidMonth: 0,
+    byVia: {} as Record<string, number>,
+    verify: { n: 0, php: 0 },
+    awaiting: { n: 0, php: 0, gcash: 0, cash: 0 },
+    courier: { n: 0, php: 0 },
+  };
   for (const o of moneyRows ?? []) {
     const due = amountFor(o).php;
     if (o.payment_status === "paid" && o.paid_at && o.paid_at >= monthStart) {
-      money.paidMonth += o.amount_received_php ?? due;
+      const got = o.amount_received_php ?? due;
+      money.paidMonth += got;
+      const via = o.paid_via ?? "other";
+      money.byVia[via] = (money.byVia[via] ?? 0) + got;
     } else if (o.payment_status === "proof_submitted") {
       money.verify.n += 1;
       money.verify.php += due;
@@ -207,11 +223,12 @@ export default async function AdminDashboardPage() {
       money.courier.php += due;
     } else if (
       o.payment_status === "unpaid" &&
-      o.payment_method === "gcash" &&
+      (o.payment_method === "gcash" || o.payment_method === "cash") &&
       !["new", "contacted"].includes(o.status)
     ) {
-      money.gcash.n += 1;
-      money.gcash.php += due;
+      money.awaiting.n += 1;
+      money.awaiting.php += due;
+      money.awaiting[o.payment_method] += 1;
     }
   }
 
@@ -271,6 +288,12 @@ export default async function AdminDashboardPage() {
             href="/admin/orders?pay=paid"
             label="Paid this month"
             value={formatPrice(money.paidMonth)}
+            sub={
+              Object.entries(money.byVia)
+                .filter(([, php]) => php > 0)
+                .map(([via, php]) => `${VIA_LABEL[via] ?? "Other"} ${formatPrice(php)}`)
+                .join(" · ") || undefined
+            }
             tone="text-emerald-600"
           />
           <MoneyTile
@@ -282,9 +305,16 @@ export default async function AdminDashboardPage() {
           />
           <MoneyTile
             href="/admin/orders?pay=unpaid"
-            label="Awaiting GCash"
-            value={formatPrice(money.gcash.php)}
-            sub={`${money.gcash.n} confirmed order${money.gcash.n === 1 ? "" : "s"}`}
+            label="Awaiting payment"
+            value={formatPrice(money.awaiting.php)}
+            sub={
+              [
+                money.awaiting.gcash && `${money.awaiting.gcash} GCash`,
+                money.awaiting.cash && `${money.awaiting.cash} cash`,
+              ]
+                .filter(Boolean)
+                .join(" · ") || "None waiting"
+            }
           />
           <MoneyTile
             href="/admin/orders?pay=with_courier"

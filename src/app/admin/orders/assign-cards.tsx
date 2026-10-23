@@ -15,7 +15,7 @@ export function AssignCards({
   orderId: string;
   reference: string;
   quantity: number;
-  assigned: { tagId: string; writtenAt: string | null }[];
+  assigned: { tagId: string; writtenAt: string | null; claimed: boolean }[];
   // SITE_URL — the domain written onto each chip (src/lib/card-link.ts).
   origin: string;
 }) {
@@ -59,7 +59,7 @@ export function AssignCards({
         <div className="print:hidden">
           <CardChips
             origin={origin}
-            cards={result.cards.map((c) => ({ tagId: c.tag_id, writtenAt: null }))}
+            cards={result.cards.map((c) => ({ tagId: c.tag_id, writtenAt: null, claimed: false }))}
           />
         </div>
       </>

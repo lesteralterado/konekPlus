@@ -72,7 +72,11 @@ export function PaymentPanel({
     return (
       <p className="mt-5 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
         We&apos;re finalising your total — check back here soon to pay
-        {order.payment_method === "gcash" ? " via GCash." : ", or pay the courier on delivery."}
+        {order.payment_method === "gcash"
+          ? " via GCash."
+          : order.payment_method === "cash"
+            ? " in cash when we meet."
+            : ", or pay the courier on delivery."}
       </p>
     );
   }
@@ -80,8 +84,20 @@ export function PaymentPanel({
     return (
       <p className="mt-5 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
         We&apos;ll confirm your order with you first — then you can pay
-        {order.payment_method === "gcash" ? " via GCash right here." : " the courier on delivery."}
+        {order.payment_method === "gcash"
+          ? " via GCash right here."
+          : order.payment_method === "cash"
+            ? " in cash when we meet."
+            : " the courier on delivery."}
       </p>
+    );
+  }
+  if (order.payment_method === "cash") {
+    return (
+      <div className="mt-5 rounded-xl bg-brand-50/60 px-4 py-3 text-sm text-slate-700">
+        Pay <strong className="text-brand-900">{due}</strong> in cash when we meet. We&apos;ll
+        message you to agree on a time and place.
+      </div>
     );
   }
   if (order.payment_method === "cod") {

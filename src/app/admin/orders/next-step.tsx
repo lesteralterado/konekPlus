@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import { Sheet } from "@/components/sheet";
 import { showToast } from "@/components/toast";
-import type { CardOrderStatus } from "@/lib/types";
-import { BoxIcon, CheckIcon, TruckIcon } from "../icons";
+import type { CardOrderStatus, PaymentMethod } from "@/lib/types";
+import { BoxIcon, CheckIcon, HandIcon, TruckIcon } from "../icons";
 import { ORDER_STATUS } from "../ui/status";
 import { setOrderStatus } from "./actions";
 import { ShipOrder } from "./ship-order";
@@ -27,16 +27,22 @@ export function NextStep({
   status,
   hasEmail,
   unwrittenCards = 0,
+  paymentMethod = "cod",
 }: {
   orderId: string;
   status: CardOrderStatus;
   hasEmail: boolean;
   // Assigned cards not yet marked written — a soft warning before shipping.
   unwrittenCards?: number;
+  // Cash orders are met in person: Preparing → Hand over (→ delivered), no courier.
+  paymentMethod?: PaymentMethod;
 }) {
   const [isPending, startTransition] = useTransition();
   const [shipOpen, setShipOpen] = useState(false);
-  const step = NEXT[status];
+  const step =
+    paymentMethod === "cash" && status === "preparing"
+      ? { to: "delivered" as const, label: "Hand over", icon: HandIcon }
+      : NEXT[status];
   if (!step) return null;
   const Icon = step.icon;
 

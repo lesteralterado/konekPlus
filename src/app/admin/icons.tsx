@@ -325,3 +325,33 @@ export function WalletIcon(props: IconProps) {
     </Svg>
   );
 }
+
+// Hand-over (cash meet-up orders).
+export function HandIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14" />
+      <path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" />
+      <path d="m2 13 6 6" />
+    </Svg>
+  );
+}
+
+export function BankIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M3 10 12 4l9 6" />
+      <path d="M5 10v8M9 10v8M15 10v8M19 10v8M3 21h18" />
+    </Svg>
+  );
+}
+
+export function CashIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <circle cx="12" cy="12" r="2.5" />
+      <path d="M6 12h.01M18 12h.01" />
+    </Svg>
+  );
+}

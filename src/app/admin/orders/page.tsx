@@ -69,16 +69,19 @@ export default async function AdminOrdersPage({
   const { data: assignedTags } = orderIds.length
     ? await supabase
         .from("tags")
-        .select("tag_id, order_id, written_at")
+        .select("tag_id, order_id, written_at, claimed")
         .in("order_id", orderIds)
         .order("tag_id")
     : { data: [] };
-  const cardsByOrder = new Map<string, { tagId: string; writtenAt: string | null }[]>();
+  const cardsByOrder = new Map<
+    string,
+    { tagId: string; writtenAt: string | null; claimed: boolean }[]
+  >();
   for (const t of assignedTags ?? []) {
     if (!t.order_id) continue;
     cardsByOrder.set(t.order_id, [
       ...(cardsByOrder.get(t.order_id) ?? []),
-      { tagId: t.tag_id, writtenAt: t.written_at },
+      { tagId: t.tag_id, writtenAt: t.written_at, claimed: t.claimed },
     ]);
   }
   const origin = siteOrigin();
@@ -177,7 +180,7 @@ export default async function AdminOrdersPage({
                       </span>
                     )}
                     <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
-                      {order.payment_method === "cod" ? "COD" : "GCash"}
+                      {order.payment_method === "cod" ? "COD" : order.payment_method === "cash" ? "Cash" : "GCash"}
                     </span>
                   </div>
 
@@ -244,6 +247,7 @@ export default async function AdminOrdersPage({
                       status={order.status}
                       hasEmail={!!order.email}
                       unwrittenCards={unwritten}
+                      paymentMethod={order.payment_method}
                     />
                     <PaymentStep
                       orderId={order.id}
@@ -255,6 +259,7 @@ export default async function AdminOrdersPage({
                       estimate={amount.estimate}
                       amountReceived={order.amount_received_php}
                       paidAt={order.paid_at}
+                      paidVia={order.paid_via}
                       gcashRef={order.gcash_reference}
                       proofPath={order.payment_proof_path}
                       proofAt={order.proof_submitted_at}
@@ -263,7 +268,8 @@ export default async function AdminOrdersPage({
                   </div>
 
                   {/* Desktop keeps the inline courier form; phones ship via Next step */}
-                  {!["shipped", "delivered", "fulfilled", "cancelled"].includes(order.status) && (
+                  {order.payment_method !== "cash" &&
+                    !["shipped", "delivered", "fulfilled", "cancelled"].includes(order.status) && (
                     <div className="hidden md:block">
                       <ShipOrder orderId={order.id} hasEmail={!!order.email} />
                     </div>

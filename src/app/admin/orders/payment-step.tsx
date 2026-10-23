@@ -4,8 +4,8 @@ import { useEffect, useState, useTransition } from "react";
 import { Sheet } from "@/components/sheet";
 import { copyText, showToast } from "@/components/toast";
 import { formatPrice } from "@/lib/finishes";
-import type { CardOrderStatus, PaymentMethod, PaymentStatus } from "@/lib/types";
-import { CheckIcon, CopyIcon } from "../icons";
+import type { CardOrderStatus, PaidVia, PaymentMethod, PaymentStatus } from "@/lib/types";
+import { BankIcon, CashIcon, CheckIcon, CopyIcon, TruckIcon, WalletIcon } from "../icons";
 import { ConfirmButton } from "../ui/drawers";
 import { ICON_ACTION } from "../ui/kit";
 import {
@@ -16,6 +16,26 @@ import {
   setAmountDue,
   undoPayment,
 } from "./payment-actions";
+
+const METHOD_LABEL: Record<PaymentMethod, string> = {
+  cod: "Cash on delivery",
+  gcash: "GCash",
+  cash: "Cash (meet-up)",
+};
+
+// How the money actually came in — can differ from the chosen method.
+const VIA: { value: PaidVia; label: string; icon: typeof CashIcon }[] = [
+  { value: "cash", label: "Cash", icon: CashIcon },
+  { value: "gcash", label: "GCash", icon: WalletIcon },
+  { value: "bank", label: "Bank", icon: BankIcon },
+  { value: "courier", label: "Courier", icon: TruckIcon },
+];
+
+function defaultVia(method: PaymentMethod, status: PaymentStatus): PaidVia {
+  if (method === "gcash") return "gcash";
+  if (method === "cash") return "cash";
+  return status === "with_courier" ? "courier" : "cash";
+}
 
 const FIELD =
   "h-12 w-full rounded-2xl bg-white px-4 text-base text-slate-800 ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -30,6 +50,7 @@ export type PaymentInfo = {
   estimate: boolean;
   amountReceived: number | null;
   paidAt: string | null;
+  paidVia: PaidVia | null;
   gcashRef: string | null;
   proofPath: string | null;
   proofAt: string | null;
@@ -81,6 +102,7 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
   const [proofUrl, setProofUrl] = useState<string | null>(null);
   const [editingAmount, setEditingAmount] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [via, setVia] = useState<PaidVia>(defaultVia(p.method, p.status));
 
   useEffect(() => {
     if (!p.proofPath) return;
@@ -111,7 +133,7 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
             Amount due{p.estimate ? " · estimate" : ""}
           </p>
           <p className="text-2xl font-bold text-brand-900">{formatPrice(p.amountDue)}</p>
-          <p className="text-xs text-slate-500">{p.method === "cod" ? "Cash on delivery" : "GCash"}</p>
+          <p className="text-xs text-slate-500">{METHOD_LABEL[p.method]}</p>
         </div>
         {p.status !== "paid" && (
           <button
@@ -184,6 +206,9 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
                 {new Date(p.paidAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
               </p>
             )}
+            {p.paidVia && (
+              <p className="text-sm">via {VIA.find((v) => v.value === p.paidVia)?.label}</p>
+            )}
             {p.gcashRef && <p className="font-mono text-sm">GCash ref {p.gcashRef}</p>}
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -249,7 +274,13 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
         <form
           action={(fd) =>
             run(
-              () => markPaid(p.orderId, String(fd.get("amount") ?? ""), String(fd.get("ref") ?? "")),
+              () =>
+                markPaid(
+                  p.orderId,
+                  String(fd.get("amount") ?? ""),
+                  String(fd.get("ref") ?? ""),
+                  via,
+                ),
               p.status === "with_courier" ? "Remittance recorded" : "Marked paid",
             )
           }
@@ -259,7 +290,28 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
             {p.status === "with_courier" ? "Amount remitted (₱)" : "Amount received (₱)"}
             <input name="amount" inputMode="numeric" required defaultValue={p.amountDue} className={FIELD} />
           </label>
-          {p.method === "gcash" && (
+          <fieldset>
+            <legend className="mb-1 text-sm font-medium text-slate-600">Received via</legend>
+            <div className="grid grid-cols-4 gap-2">
+              {VIA.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setVia(value)}
+                  aria-pressed={via === value}
+                  className={`ios-press flex flex-col items-center gap-1 rounded-2xl py-2.5 text-xs font-semibold ${
+                    via === value
+                      ? "bg-brand-900 text-white"
+                      : "bg-white text-slate-600 ring-1 ring-slate-200"
+                  }`}
+                >
+                  <Icon className="size-5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+          {via === "gcash" && (
             <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
               GCash reference (optional)
               <input name="ref" defaultValue={p.gcashRef ?? ""} maxLength={40} className={`${FIELD} font-mono`} />

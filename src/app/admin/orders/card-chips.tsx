@@ -6,6 +6,7 @@ import { cardUrl } from "@/lib/card-link";
 import { CheckIcon, CopyIcon, RotateIcon } from "../icons";
 import { ConfirmButton } from "../ui/drawers";
 import { setTagWritten } from "../tags/actions";
+import { NewPinButton } from "./new-pin";
 
 // The cards assigned to an order, ready to write with NFC Tools: each link
 // with Copy + "Written ✓", progress, and Copy all (one link per line).
@@ -14,7 +15,7 @@ export function CardChips({
   cards,
 }: {
   origin: string;
-  cards: { tagId: string; writtenAt: string | null }[];
+  cards: { tagId: string; writtenAt: string | null; claimed: boolean }[];
 }) {
   const links = cards.map((c) => cardUrl(origin, c.tagId));
   const [written, setWritten] = useOptimistic(
@@ -62,6 +63,7 @@ export function CardChips({
             tagId={c.tagId}
             link={links[i]}
             written={written.has(c.tagId)}
+            claimed={c.claimed}
             onWritten={(value) => {
               const next = new Set(written);
               if (value) next.add(c.tagId);
@@ -79,11 +81,13 @@ function CardRow({
   tagId,
   link,
   written,
+  claimed,
   onWritten,
 }: {
   tagId: string;
   link: string;
   written: boolean;
+  claimed: boolean;
   onWritten: (value: boolean) => void;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -108,6 +112,8 @@ function CardRow({
       >
         <CopyIcon className="size-4.5" />
       </button>
+      {/* Lost the sleeve slip? Only unactivated cards still need a PIN. */}
+      {!claimed && <NewPinButton tagId={tagId} />}
       {written ? (
         <ConfirmButton
           title={`Redo ${tagId}?`}
