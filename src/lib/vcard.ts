@@ -1,4 +1,4 @@
-import type { Profile } from "@/lib/types";
+import type { PublicProfile } from "@/lib/types";
 
 function escapeVCardValue(value: string): string {
   return value
@@ -8,7 +8,7 @@ function escapeVCardValue(value: string): string {
     .replace(/;/g, "\\;");
 }
 
-export function buildVCard(profile: Profile): string {
+export function buildVCard(profile: PublicProfile): string {
   const lines = ["BEGIN:VCARD", "VERSION:3.0"];
 
   const name = profile.full_name?.trim() || "";

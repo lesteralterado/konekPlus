@@ -1,5 +1,6 @@
 "use server";
 
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { KeychainPlatform } from "@/lib/types";
 
@@ -32,6 +33,7 @@ export async function submitKeychainOrder(
   if (input.items.length === 0) {
     return { error: "Add at least one social media account.", orderId: null };
   }
+  if (!(await rateLimit("keychainOrder"))) return { error: RATE_LIMITED_MESSAGE, orderId: null };
 
   const supabase = createPublicClient();
   const { data, error } = await supabase.rpc("submit_keychain_order", {
@@ -45,6 +47,9 @@ export async function submitKeychainOrder(
     })),
   });
 
-  if (error) return { error: error.message, orderId: null };
+  if (error) {
+    console.error("[keychain] submit failed:", error.message);
+    return { error: "We couldn't save your order. Please check your links and try again.", orderId: null };
+  }
   return { error: null, orderId: data };
 }

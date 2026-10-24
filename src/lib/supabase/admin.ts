@@ -8,6 +8,11 @@ import type { Database } from "@/lib/types";
 // import this from pages or server actions (request-handling code should go
 // through the RLS-scoped clients in ./server.ts and ./client.ts instead).
 export function createAdminClient() {
+  // Defence in depth: the secret key must never reach a browser bundle.
+  // (Not "server-only" — that import throws in the plain-tsx script above.)
+  if (typeof window !== "undefined") {
+    throw new Error("createAdminClient() is server-only");
+  }
   return createSupabaseClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY!,

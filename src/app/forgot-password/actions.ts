@@ -1,5 +1,6 @@
 "use server";
 
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type ForgotPasswordState = { status: "idle" | "sent" | "error"; error: string | null };
@@ -10,6 +11,7 @@ export async function requestPasswordReset(
 ): Promise<ForgotPasswordState> {
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { status: "error", error: "Enter your email address." };
+  if (!(await rateLimit("forgotPassword"))) return { status: "error", error: RATE_LIMITED_MESSAGE };
 
   const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
   const supabase = await createClient();

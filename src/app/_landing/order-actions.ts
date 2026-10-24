@@ -11,6 +11,7 @@ import {
   quote,
   type FinishId,
 } from "@/lib/finishes";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod } from "@/lib/types";
 
@@ -23,6 +24,7 @@ export type OrderErrorCode =
   | "email"
   | "address"
   | "payment"
+  | "rate"
   | "server";
 
 export type OrderFormState =
@@ -75,6 +77,7 @@ export async function placeOrder(
   if (email.length > 200 || !EMAIL_PATTERN.test(email)) return fail("email");
   if (address.length < 3 || address.length > 500) return fail("address");
   if (!PAYMENT_METHODS.has(payment)) return fail("payment");
+  if (!(await rateLimit("order"))) return fail("rate");
 
   // Generated here because RLS doesn't let an anonymous visitor read the
   // row back — this is how they get a reference to quote when we contact them.

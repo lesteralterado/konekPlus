@@ -21,7 +21,14 @@ export type Profile = {
   cta_url: string | null;
   links: ProfileLink[];
   updated_at: string;
+  // Owner's privacy toggles for the public card + vCard (0022).
+  show_email: boolean;
+  show_phone: boolean;
 };
+
+// What anyone tapping a card may see — returned by get_public_profile()
+// (0022). No user_id; email/phone already blanked if the owner hid them.
+export type PublicProfile = Omit<Profile, "user_id" | "show_email" | "show_phone">;
 
 export type PortfolioItem = {
   id: string;
@@ -334,6 +341,26 @@ export type Database = {
           attempts_left: number;
           locked_minutes: number;
         }[];
+      };
+      get_public_profile: {
+        Args: { p_tag_id: string };
+        Returns: PublicProfile[];
+      };
+      get_public_portfolio: {
+        Args: { p_tag_id: string };
+        Returns: PortfolioItem[];
+      };
+      get_public_testimonials: {
+        Args: { p_tag_id: string };
+        Returns: ProfileTestimonial[];
+      };
+      rate_limit_hit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number };
+        Returns: boolean;
+      };
+      purge_old_data: {
+        Args: Record<string, never>;
+        Returns: { bucket: string; path: string }[];
       };
       submit_payment_proof: {
         Args: { p_reference: string; p_phone: string; p_gcash_ref: string; p_proof_path: string | null };

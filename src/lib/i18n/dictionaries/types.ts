@@ -145,7 +145,7 @@ export type Dictionary = {
       orderAnother: string;
       trackOrder: string;
       errors: Record<
-        "finish" | "quantity" | "name" | "phone" | "email" | "address" | "payment" | "server",
+        "finish" | "quantity" | "name" | "phone" | "email" | "address" | "payment" | "rate" | "server",
         string
       >;
     };

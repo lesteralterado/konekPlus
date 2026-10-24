@@ -7,6 +7,7 @@ import {
   issueLoginPinAndGetVerifyUrl,
   safeNextPath,
 } from "@/lib/device-verification";
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState = { error: string | null };
@@ -22,6 +23,7 @@ export async function login(
   if (!email || !password) {
     return { error: "Email and password are required." };
   }
+  if (!(await rateLimit("login"))) return { error: RATE_LIMITED_MESSAGE };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });

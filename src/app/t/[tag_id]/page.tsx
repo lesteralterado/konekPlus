@@ -2,6 +2,7 @@ import type { Viewport } from "next";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import QRCode from "qrcode";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getLocale } from "@/lib/i18n/locale";
@@ -122,50 +123,40 @@ export default async function TagPage({
       return <CardUnavailable t={dict.tagStatus} locale={locale} />;
   }
 
-  const { data: profileId } = await supabase.rpc("get_tag_profile", {
+  // Public fields only, for this one card, and only while it's switched on
+  // (get_public_profile, 0022) — profiles can't be listed or bulk-read.
+  const { data: publicRows } = await supabase.rpc("get_public_profile", {
     p_tag_id: tag_id,
   });
-  if (!profileId) {
-    // Lost a race between the two reads above — someone else claimed it,
-    // or the owner disabled it, in between.
-    return <InvalidCard t={dict.tagStatus} locale={locale} />;
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", profileId)
-    .maybeSingle();
+  const profile = publicRows?.[0];
   if (!profile) {
+    // Lost a race with the status read above — claimed or switched off in between.
     return <InvalidCard t={dict.tagStatus} locale={locale} />;
   }
 
+  // user_id is never public, so compare against the signed-in user's own
+  // profile (readable under "Users can view their own profile").
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const isOwner = user?.id === profile.user_id;
+  const { data: ownProfile } = user
+    ? await supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const isOwner = ownProfile?.id === profile.id;
 
   // Only count real visitors tapping the card, not the owner previewing
   // their own — scheduled via after() so it never delays the response.
-  if (!isOwner) {
+  // Per card + visitor cap, so refreshing (or a script) can't inflate the stats.
+  if (!isOwner && (await rateLimit("tagView", tag_id))) {
     after(() => supabase.rpc("record_tag_view", { p_tag_id: tag_id }));
   }
 
-  const { data: portfolioItems } = await supabase
-    .from("portfolio_items")
-    .select("*")
-    .eq("profile_id", profile.id)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: false });
-
-  // RLS only returns approved rows to non-owners (see 0014_feedback.sql);
-  // the owner sees everything including pending ones from /dashboard/testimonials.
-  const { data: testimonials } = await supabase
-    .from("profile_testimonials")
-    .select("*")
-    .eq("profile_id", profile.id)
-    .eq("approved", true)
-    .order("created_at", { ascending: false });
+  // Same per-card gate; testimonials are approved-only (owners review
+  // pending ones in /dashboard/testimonials).
+  const [{ data: portfolioItems }, { data: testimonials }] = await Promise.all([
+    supabase.rpc("get_public_portfolio", { p_tag_id: tag_id }),
+    supabase.rpc("get_public_testimonials", { p_tag_id: tag_id }),
+  ]);
 
   const profileUrl = await getProfileUrl(tag_id);
   // Navy on white with high error correction (room for the centre avatar

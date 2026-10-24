@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { sendEmail } from "@/lib/email/send";
 import { paymentProofAlertEmail } from "@/lib/email/templates";
 import { formatPrice } from "@/lib/finishes";
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod, PaymentStatus } from "@/lib/types";
 
@@ -52,6 +53,8 @@ export async function trackOrder(
   if (!reference || !phone) {
     return { error: "Enter your order reference and mobile number.", order: null };
   }
+  // Slows down guessing reference + phone combinations.
+  if (!(await rateLimit("track"))) return { error: RATE_LIMITED_MESSAGE, order: null };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("lookup_order", {
@@ -97,6 +100,7 @@ export async function submitPaymentProof(
   if (!gcashRef || gcashRef.length > 40) {
     return { error: "Enter the reference number from your GCash receipt.", sent: false };
   }
+  if (!(await rateLimit("paymentProof"))) return { error: RATE_LIMITED_MESSAGE, sent: false };
 
   const supabase = await createClient();
 

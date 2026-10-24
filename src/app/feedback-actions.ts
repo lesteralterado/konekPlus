@@ -1,5 +1,6 @@
 "use server";
 
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 // resetToken only changes on success — the dialog form uses it as a React
@@ -44,6 +45,10 @@ export async function submitFeedback(
     }
   }
 
+  if (!(await rateLimit("feedback"))) {
+    return { error: RATE_LIMITED_MESSAGE, resetToken: prevState.resetToken };
+  }
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -58,12 +63,14 @@ export async function submitFeedback(
       .from("feedback")
       .upload(path, screenshot, { contentType: screenshot.type });
     if (uploadError) {
-      return { error: uploadError.message, resetToken: prevState.resetToken };
+      console.error("[feedback] screenshot upload failed:", uploadError.message);
+      return {
+        error: "We couldn't upload the screenshot. Try a JPG or PNG under 4 MB.",
+        resetToken: prevState.resetToken,
+      };
     }
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("feedback").getPublicUrl(path);
-    screenshotUrl = publicUrl;
+    // Private bucket (0022): store the path; admins view it via a signed URL.
+    screenshotUrl = path;
   }
 
   const { error } = await supabase.from("feedback").insert({
@@ -74,7 +81,10 @@ export async function submitFeedback(
     screenshot_url: screenshotUrl,
     page_path: pagePath || null,
   });
-  if (error) return { error: error.message, resetToken: prevState.resetToken };
+  if (error) {
+    console.error("[feedback] insert failed:", error.message);
+    return { error: "We couldn't send your feedback. Please try again.", resetToken: prevState.resetToken };
+  }
 
   return { error: null, resetToken: Date.now() };
 }

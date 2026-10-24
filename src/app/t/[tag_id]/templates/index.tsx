@@ -1,4 +1,4 @@
-import type { PortfolioItem, Profile, ProfileTemplate, ProfileTestimonial } from "@/lib/types";
+import type { PortfolioItem, ProfileTemplate, PublicProfile, ProfileTestimonial } from "@/lib/types";
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import type { Locale } from "@/lib/i18n/locale";
 import { ClassicTemplate } from "./classic";
@@ -6,7 +6,8 @@ import { EditorialTemplate } from "./editorial";
 import { MinimalTemplate } from "./minimal";
 
 export type TemplateProps = {
-  profile: Profile;
+  // Public fields only (get_public_profile, 0022) — never user_id.
+  profile: PublicProfile;
   tagId: string;
   isOwner: boolean;
   portfolioItems: PortfolioItem[];

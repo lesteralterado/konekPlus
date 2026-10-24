@@ -223,6 +223,7 @@ export const en = {
         email: "That email doesn't look right — or leave it blank.",
         address: "Add a delivery address.",
         payment: "Choose how you'll pay.",
+        rate: "Too many orders from this device — please wait a bit and try again, or message us.",
         server: "Something went wrong placing your order. Please try again.",
       },
     },

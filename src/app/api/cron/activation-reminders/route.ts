@@ -30,6 +30,40 @@ export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) return new NextResponse("Unauthorized", { status: 401 });
 
   const supabase = createAdminClient();
+  const reminders = await sendReminders(supabase);
+  const cleanup = await purgeOldData(supabase);
+  return NextResponse.json({ reminders, cleanup }, { status: "error" in reminders ? 500 : 200 });
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+// Data retention (purge_old_data, 0022): old login codes, view logs and
+// rate-limit counters are deleted in the database; payment screenshots
+// (90 days after paid) and resolved-feedback screenshots (180 days) are
+// detached there and their files deleted here. Less kept = less to leak.
+async function purgeOldData(supabase: AdminClient) {
+  const { data, error } = await supabase.rpc("purge_old_data");
+  if (error) {
+    console.error("[cron] purge_old_data failed:", error.message);
+    return { error: "purge failed" };
+  }
+  const byBucket = new Map<string, string[]>();
+  for (const row of data ?? []) {
+    // Legacy feedback rows hold a public URL; normalise to the object path.
+    const path = row.path.startsWith("http")
+      ? decodeURIComponent(row.path.split(`/${row.bucket}/`).pop() ?? "")
+      : row.path;
+    if (path) byBucket.set(row.bucket, [...(byBucket.get(row.bucket) ?? []), path]);
+  }
+  let filesDeleted = 0;
+  for (const [bucket, paths] of byBucket) {
+    const { data: removed } = await supabase.storage.from(bucket).remove(paths);
+    filesDeleted += removed?.length ?? 0;
+  }
+  return { filesDeleted };
+}
+
+async function sendReminders(supabase: AdminClient) {
 
   const { data: orders, error } = await supabase
     .from("card_orders")
@@ -40,8 +74,11 @@ export async function GET(request: NextRequest) {
     .lt("shipped_at", daysAgoIso(REMIND_AFTER_DAYS))
     .gt("shipped_at", daysAgoIso(GIVE_UP_AFTER_DAYS))
     .limit(BATCH_SIZE);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  if (!orders?.length) return NextResponse.json({ sent: 0, skipped: 0, failed: 0 });
+  if (error) {
+    console.error("[cron] reminder query failed:", error.message);
+    return { error: "reminder query failed" };
+  }
+  if (!orders?.length) return { sent: 0, skipped: 0, failed: 0 };
 
   const { data: unclaimed } = await supabase
     .from("tags")
@@ -95,5 +132,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, skipped, failed });
+  return { sent, skipped, failed };
 }

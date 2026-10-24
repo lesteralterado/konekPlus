@@ -9,7 +9,11 @@ import {
   isDeviceVerificationEnabled,
   issueLoginPinAndGetVerifyUrl,
 } from "@/lib/device-verification";
+import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
+
+// Shown instead of raw database errors, which can reveal table/column names.
+const GENERIC_ERROR = "Something went wrong. Please try again, or message us.";
 
 export type ClaimState = { error: string | null };
 
@@ -74,13 +78,18 @@ export async function verifyTagPin(
   if (!/^\d{6}$/.test(pin)) {
     return { error: "Enter the 6-digit PIN from the sleeve.", verified: null };
   }
+  // On top of the per-card 5-try lockout: stops one visitor sweeping many cards.
+  if (!(await rateLimit("pinCheck"))) return { error: RATE_LIMITED_MESSAGE, verified: null };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("verify_tag_pin", {
     p_tag_id: tagId,
     p_pin: pin,
   });
-  if (error) return { error: error.message, verified: null };
+  if (error) {
+    console.error("[claim] verify_tag_pin failed:", error.message);
+    return { error: GENERIC_ERROR, verified: null };
+  }
 
   const row = data?.[0];
   if (!row) {
@@ -122,6 +131,7 @@ export async function signUpAndClaim(
   if (password.length < 8) {
     return { error: "Password must be at least 8 characters." };
   }
+  if (!(await rateLimit("signup"))) return { error: RATE_LIMITED_MESSAGE };
 
   const supabase = await createClient();
 
@@ -150,13 +160,19 @@ export async function signUpAndClaim(
     phone: phone || null,
     email,
   });
-  if (profileError) return { error: profileError.message };
+  if (profileError) {
+    console.error("[claim] profile insert failed:", profileError.message);
+    return { error: GENERIC_ERROR };
+  }
 
   const { data: claimed, error: claimError } = await supabase.rpc(
     "claim_tag",
     { p_tag_id: tagId, p_pin: pin || null },
   );
-  if (claimError) return { error: claimError.message };
+  if (claimError) {
+    console.error("[claim] claim_tag failed:", claimError.message);
+    return { error: GENERIC_ERROR };
+  }
   if (!claimed) return { error: CLAIM_FAILED };
 
   const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
@@ -202,6 +218,9 @@ export async function submitTestimonial(
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     return { error: "Pick a star rating.", resetToken: prevState.resetToken };
   }
+  if (!(await rateLimit("testimonial"))) {
+    return { error: RATE_LIMITED_MESSAGE, resetToken: prevState.resetToken };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.from("profile_testimonials").insert({
@@ -210,7 +229,10 @@ export async function submitTestimonial(
     rating,
     message,
   });
-  if (error) return { error: error.message, resetToken: prevState.resetToken };
+  if (error) {
+    console.error("[testimonial] insert failed:", error.message);
+    return { error: GENERIC_ERROR, resetToken: prevState.resetToken };
+  }
 
   return { error: null, resetToken: Date.now() };
 }
@@ -230,6 +252,7 @@ export async function linkExistingAndClaim(
   if (!email || !password) {
     return { error: "Email and password are required." };
   }
+  if (!(await rateLimit("login"))) return { error: RATE_LIMITED_MESSAGE };
 
   const supabase = await createClient();
 
@@ -243,7 +266,10 @@ export async function linkExistingAndClaim(
     "claim_tag",
     { p_tag_id: tagId, p_pin: pin || null },
   );
-  if (claimError) return { error: claimError.message };
+  if (claimError) {
+    console.error("[claim] claim_tag failed:", claimError.message);
+    return { error: GENERIC_ERROR };
+  }
   if (!claimed) return { error: CLAIM_FAILED };
 
   return redirectAfterClaim(supabase, email, `/t/${tagId}?activated=1`);

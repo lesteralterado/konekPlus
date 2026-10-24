@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import type { FeedbackCategory } from "@/lib/types";
 import { BugIcon, BulbIcon, MessageIcon, StarIcon } from "../icons";
@@ -69,6 +68,17 @@ export default async function AdminFeedbackPage({
       : { data: [] };
   const profileByUserId = new Map((profiles ?? []).map((p) => [p.user_id, p]));
 
+  // Screenshots live in the private "feedback" bucket (0022). Rows store the
+  // object path (older rows a public URL) — turn either into a 10-minute
+  // signed link for this page view only.
+  const shotPath = (value: string) =>
+    value.startsWith("http") ? decodeURIComponent(value.split("/feedback/").pop() ?? "") : value;
+  const shotPaths = (entries ?? []).flatMap((e) => (e.screenshot_url ? [shotPath(e.screenshot_url)] : []));
+  const { data: signed } = shotPaths.length
+    ? await supabase.storage.from("feedback").createSignedUrls(shotPaths, 600)
+    : { data: [] };
+  const signedByPath = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
+
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
   const baseParams = { ...(category ? { category } : {}), ...(status ? { status } : {}) };
 
@@ -124,11 +134,20 @@ export default async function AdminFeedbackPage({
                     <p className="mt-1.5 line-clamp-4 whitespace-pre-wrap text-[15px] text-slate-700 md:line-clamp-none md:text-sm">
                       {entry.message}
                     </p>
-                    {entry.screenshot_url && (
-                      <a href={entry.screenshot_url} target="_blank" rel="noreferrer" className="mt-2 block w-fit">
-                        <div className="relative h-24 w-36 overflow-hidden rounded-xl bg-slate-100 md:h-20 md:w-32">
-                          <Image src={entry.screenshot_url} alt="Feedback screenshot" fill className="object-cover" />
-                        </div>
+                    {entry.screenshot_url && signedByPath.get(shotPath(entry.screenshot_url)) && (
+                      <a
+                        href={signedByPath.get(shotPath(entry.screenshot_url))!}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 block w-fit"
+                      >
+                        {/* Signed, short-lived URL to a private bucket — plain <img> on purpose. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={signedByPath.get(shotPath(entry.screenshot_url))!}
+                          alt="Feedback screenshot"
+                          className="h-24 w-36 rounded-xl bg-slate-100 object-cover md:h-20 md:w-32"
+                        />
                       </a>
                     )}
                   </div>

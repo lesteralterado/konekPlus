@@ -241,6 +241,7 @@ export const fil = {
         email: "Mukhang mali ang email — o iwanang blangko.",
         address: "Ilagay ang delivery address.",
         payment: "Piliin kung paano ka magbabayad.",
+        rate: "Sobrang daming order mula sa device na ito — maghintay muna, o i-message kami.",
         server: "Nagkaproblema sa pag-order. Pakisubukang muli.",
       },
     },
