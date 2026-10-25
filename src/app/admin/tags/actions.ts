@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { refreshCard } from "@/lib/card-cache";
 import { requireAdmin } from "@/lib/admin-auth";
 import { createClient } from "@/lib/supabase/server";
 import { provisionTags } from "@/lib/provision-tags";
@@ -21,6 +22,7 @@ export async function resetTag(tagId: string) {
   revalidatePath("/admin/tags");
   revalidatePath("/admin/customers");
   revalidatePath(`/t/${tagId}`);
+  refreshCard(tagId);
 }
 
 // Records that a card's chip has been written (with NFC Tools) and tested —
@@ -73,6 +75,7 @@ export async function setTagEnabled(tagId: string, enabled: boolean) {
   revalidatePath("/admin/tags");
   revalidatePath("/admin/customers");
   revalidatePath(`/t/${tagId}`);
+  refreshCard(tagId);
 }
 
 export type ProvisionState = { error: string | null; codes: string[] };

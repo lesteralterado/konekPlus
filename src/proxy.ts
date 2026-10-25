@@ -29,6 +29,22 @@ import {
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  const requiresLogin =
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    request.nextUrl.pathname.startsWith("/admin");
+
+  // Most traffic (card taps, the homepage) is anonymous: no Supabase session
+  // cookie means there's nothing to verify or refresh, so skip the auth call.
+  const hasSessionCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  if (!hasSessionCookie) {
+    if (!requiresLogin) return response;
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
@@ -50,13 +66,11 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const requiresLogin =
-    request.nextUrl.pathname.startsWith("/dashboard") ||
-    request.nextUrl.pathname.startsWith("/admin");
+  // getClaims() refreshes the session cookie when needed (the @supabase/ssr
+  // pattern) and verifies the JWT locally with asymmetric signing keys —
+  // no round trip to Supabase Auth on every navigation, unlike getUser().
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? { id: claimsData.claims.sub } : null;
 
   if (!user && requiresLogin) {
     const loginUrl = new URL("/login", request.url);

@@ -44,6 +44,14 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Browser-side router cache: a page visited in the last 30s re-opens
+    // instantly instead of asking the server again. Server Actions that call
+    // revalidatePath() still clear it, so your own edits show at once; other
+    // people's changes can appear up to 30s late.
+    staleTimes: {
+      dynamic: 30,
+      static: 180,
+    },
   },
   images: {
     remotePatterns: [

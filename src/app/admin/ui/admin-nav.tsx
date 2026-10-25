@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link, { useLinkStatus } from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "@/app/dashboard/actions";
 import { Sheet } from "@/components/sheet";
@@ -58,6 +58,10 @@ function Badge({ count, className = "" }: { count: number; className?: string })
 
 export function AdminNav({ newOrders, newFeedback }: { newOrders: number; newFeedback: number }) {
   const pathname = usePathname() ?? "/admin";
+  const router = useRouter();
+  // Start loading a tab the moment a finger/pointer lands on it, ~100ms
+  // before the tap completes. Cheap: the router dedupes repeat prefetches.
+  const warm = (href: string) => () => router.prefetch(href);
   const [moreOpen, setMoreOpen] = useState(false);
   const badgeFor = (href: string) =>
     href === "/admin/orders" ? newOrders : href === "/admin/feedback" ? newFeedback : 0;
@@ -75,6 +79,7 @@ export function AdminNav({ newOrders, newFeedback }: { newOrders: number; newFee
               <Link
                 key={href}
                 href={href}
+                onPointerEnter={warm(href)}
                 aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                   active
@@ -84,6 +89,7 @@ export function AdminNav({ newOrders, newFeedback }: { newOrders: number; newFee
               >
                 <Icon className="h-4 w-4" />
                 <span className="flex-1">{label}</span>
+                <PendingSpinner />
                 <Badge count={badgeFor(href)} />
               </Link>
             );
@@ -121,6 +127,8 @@ export function AdminNav({ newOrders, newFeedback }: { newOrders: number; newFee
               <Link
                 key={href}
                 href={href}
+                onTouchStart={warm(href)}
+                onPointerEnter={warm(href)}
                 aria-current={active ? "page" : undefined}
                 className={`ios-press flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold ${
                   active ? "text-brand-900" : "text-slate-400"
@@ -128,6 +136,7 @@ export function AdminNav({ newOrders, newFeedback }: { newOrders: number; newFee
               >
                 <TabIcon active={active} badge={badgeFor(href)}>
                   <Icon className="size-5.5" />
+                  <PendingSpinner overlay />
                 </TabIcon>
                 {short}
               </Link>
@@ -224,5 +233,20 @@ function TabIcon({
       {children}
       <Badge count={badge} className="absolute -top-0.5 right-1.5 ring-2 ring-white" />
     </span>
+  );
+}
+
+// Shown on the link that was just tapped until its page arrives (must be
+// rendered inside that <Link> — useLinkStatus reads the nearest one).
+function PendingSpinner({ overlay = false }: { overlay?: boolean }) {
+  const { pending } = useLinkStatus();
+  if (!pending) return null;
+  return (
+    <span
+      aria-hidden="true"
+      className={`size-3.5 shrink-0 rounded-full border-2 border-brand-600 border-t-transparent motion-safe:animate-spin ${
+        overlay ? "absolute -bottom-0.5 left-1.5 bg-white" : ""
+      }`}
+    />
   );
 }

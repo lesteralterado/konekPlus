@@ -18,6 +18,8 @@ export async function setTestimonialApproved(testimonialId: string, approved: bo
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/testimonials");
+  // Approved testimonials show on the (cached) public card pages.
+  revalidatePath("/t/[tag_id]", "page");
 }
 
 export async function deleteTestimonial(testimonialId: string) {
@@ -34,4 +36,6 @@ export async function deleteTestimonial(testimonialId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/testimonials");
+  // Approved testimonials show on the (cached) public card pages.
+  revalidatePath("/t/[tag_id]", "page");
 }

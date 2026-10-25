@@ -26,12 +26,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireAdmin();
-
   // Badges on the Orders tab (new orders + GCash proofs to verify) and the
-  // Feedback row — what's waiting on someone.
+  // Feedback row — what's waiting on someone. Fetched in parallel with the
+  // admin check: the counts are admin-only under RLS (a non-admin just gets
+  // 0s), and requireAdmin() still redirects before anything renders.
   const supabase = await createClient();
-  const [{ count: newOrders }, { count: toVerify }, { count: newFeedback }] = await Promise.all([
+  const [, { count: newOrders }, { count: toVerify }, { count: newFeedback }] = await Promise.all([
+    requireAdmin(),
     supabase.from("card_orders").select("id", { count: "exact", head: true }).eq("status", "new"),
     supabase
       .from("card_orders")

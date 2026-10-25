@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Suspense } from "react";
 import ReactDOM from "react-dom";
+import { TopLoader } from "@/components/top-loader";
 import "./globals.css";
 import { LOGO_URL } from "@/lib/constants";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -43,6 +45,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Preloader />
+        {/* useSearchParams inside → needs its own Suspense boundary. */}
+        <Suspense fallback={null}>
+          <TopLoader />
+        </Suspense>
         {children}
         <FeedbackWidget dict={dict.feedbackWidget} />
       </body>

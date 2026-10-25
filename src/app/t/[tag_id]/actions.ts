@@ -9,6 +9,7 @@ import {
   isDeviceVerificationEnabled,
   issueLoginPinAndGetVerifyUrl,
 } from "@/lib/device-verification";
+import { refreshCard } from "@/lib/card-cache";
 import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
@@ -174,6 +175,7 @@ export async function signUpAndClaim(
     return { error: GENERIC_ERROR };
   }
   if (!claimed) return { error: CLAIM_FAILED };
+  refreshCard(tagId);
 
   const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
   const welcome = welcomeEmail({
@@ -271,6 +273,7 @@ export async function linkExistingAndClaim(
     return { error: GENERIC_ERROR };
   }
   if (!claimed) return { error: CLAIM_FAILED };
+  refreshCard(tagId);
 
   return redirectAfterClaim(supabase, email, `/t/${tagId}?activated=1`);
 }

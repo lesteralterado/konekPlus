@@ -2,6 +2,8 @@ import type { Viewport } from "next";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import QRCode from "qrcode";
+import { getAuthUserId } from "@/lib/auth";
+import { getPublicCard } from "@/lib/public-card";
 import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -94,11 +96,17 @@ export default async function TagPage({
   const { tag_id } = await params;
   const { activated } = await searchParams;
   const supabase = await createClient();
-  const [locale, dict] = await Promise.all([getLocale(), getDictionary()]);
 
-  const { data: status } = await supabase.rpc("tag_status", {
-    p_tag_id: tag_id,
-  });
+  // Everything independent starts at once: card status (never cached — a
+  // claim must show immediately), the cached public card data, who's
+  // signed in (local token check), and the UI strings.
+  const [locale, dict, { data: status }, cachedCard, userId] = await Promise.all([
+    getLocale(),
+    getDictionary(),
+    supabase.rpc("tag_status", { p_tag_id: tag_id }),
+    getPublicCard(tag_id),
+    getAuthUserId(),
+  ]);
 
   switch (status) {
     case null:
@@ -124,39 +132,43 @@ export default async function TagPage({
   }
 
   // Public fields only, for this one card, and only while it's switched on
-  // (get_public_profile, 0022) — profiles can't be listed or bulk-read.
-  const { data: publicRows } = await supabase.rpc("get_public_profile", {
-    p_tag_id: tag_id,
-  });
-  const profile = publicRows?.[0];
-  if (!profile) {
+  // (get_public_profile, 0022) — served from a 60s cache (src/lib/public-card.ts).
+  // The status above is live, so if the cache is behind (a card claimed
+  // seconds ago) fall back to a direct read rather than showing "invalid".
+  let card = cachedCard;
+  if (!card) {
+    const [{ data: rows }, { data: portfolio }, { data: testimonials }] = await Promise.all([
+      supabase.rpc("get_public_profile", { p_tag_id: tag_id }),
+      supabase.rpc("get_public_portfolio", { p_tag_id: tag_id }),
+      supabase.rpc("get_public_testimonials", { p_tag_id: tag_id }),
+    ]);
+    card = rows?.[0]
+      ? { profile: rows[0], portfolio: portfolio ?? [], testimonials: testimonials ?? [] }
+      : null;
+  }
+  if (!card) {
     // Lost a race with the status read above — claimed or switched off in between.
     return <InvalidCard t={dict.tagStatus} locale={locale} />;
   }
+  const { profile, portfolio: portfolioItems, testimonials } = card;
 
   // user_id is never public, so compare against the signed-in user's own
-  // profile (readable under "Users can view their own profile").
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const { data: ownProfile } = user
-    ? await supabase.from("profiles").select("id").eq("user_id", user.id).maybeSingle()
-    : { data: null };
-  const isOwner = ownProfile?.id === profile.id;
+  // profile (readable under "Users can view their own profile"). Anonymous
+  // visitors skip this query entirely.
+  const [ownProfileResult, countView] = await Promise.all([
+    userId
+      ? supabase.from("profiles").select("id").eq("user_id", userId).maybeSingle()
+      : Promise.resolve({ data: null }),
+    // Per card + visitor cap, so refreshing (or a script) can't inflate the stats.
+    rateLimit("tagView", tag_id),
+  ]);
+  const isOwner = ownProfileResult.data?.id === profile.id;
 
   // Only count real visitors tapping the card, not the owner previewing
   // their own — scheduled via after() so it never delays the response.
-  // Per card + visitor cap, so refreshing (or a script) can't inflate the stats.
-  if (!isOwner && (await rateLimit("tagView", tag_id))) {
+  if (!isOwner && countView) {
     after(() => supabase.rpc("record_tag_view", { p_tag_id: tag_id }));
   }
-
-  // Same per-card gate; testimonials are approved-only (owners review
-  // pending ones in /dashboard/testimonials).
-  const [{ data: portfolioItems }, { data: testimonials }] = await Promise.all([
-    supabase.rpc("get_public_portfolio", { p_tag_id: tag_id }),
-    supabase.rpc("get_public_testimonials", { p_tag_id: tag_id }),
-  ]);
 
   const profileUrl = await getProfileUrl(tag_id);
   // Navy on white with high error correction (room for the centre avatar
@@ -177,8 +189,8 @@ export default async function TagPage({
         profile={profile}
         tagId={tag_id}
         isOwner={isOwner}
-        portfolioItems={portfolioItems ?? []}
-        testimonials={testimonials ?? []}
+        portfolioItems={portfolioItems}
+        testimonials={testimonials}
         locale={locale}
         dict={dict.profile}
         profileUrl={profileUrl}

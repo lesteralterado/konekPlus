@@ -5,6 +5,7 @@ import { TEMPLATES, TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import type { ProfileTemplate } from "@/lib/types";
 import { en } from "@/lib/i18n/dictionaries/en";
 import { UseTemplateButton } from "./use-template-button";
+import { getAuthUserId } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,15 +17,14 @@ const TEMPLATE_DESCRIPTIONS: Record<ProfileTemplate, string> = {
 
 export default async function TemplatePickerPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Token checked once per request, locally when possible (src/lib/auth.ts).
+  const userId = await getAuthUserId();
+  if (!userId) redirect("/login");
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .maybeSingle();
 
   if (!profile) redirect("/dashboard");

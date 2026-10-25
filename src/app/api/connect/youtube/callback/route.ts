@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -75,6 +76,10 @@ export async function GET(request: NextRequest) {
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", user.id);
+
+  // The new YouTube link shows on the (cached) public card pages right away.
+  revalidatePath("/t/[tag_id]", "page");
+  revalidatePath("/dashboard");
 
   const url = new URL("/dashboard", request.url);
   url.searchParams.set("social_connected", "youtube");
