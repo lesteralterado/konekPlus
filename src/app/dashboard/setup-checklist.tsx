@@ -31,12 +31,17 @@ export function SetupChecklist({
       </div>
       <ul className="mt-3 flex flex-col gap-1.5 text-sm">
         {items.map((i) => (
-          <li
-            key={i.label}
-            className={i.done ? "text-slate-400 line-through" : "text-slate-700"}
-          >
-            {i.done ? "✓ " : "○ "}
-            {i.label}
+          <li key={i.label}>
+            {i.done ? (
+              <span className="text-slate-400 line-through">✓ {i.label}</span>
+            ) : (
+              <Link
+                href="/dashboard?edit=1"
+                className="text-slate-700 underline decoration-brand-300 decoration-dotted underline-offset-4 hover:text-brand-700"
+              >
+                ○ {i.label}
+              </Link>
+            )}
           </li>
         ))}
       </ul>

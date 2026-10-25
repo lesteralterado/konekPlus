@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Toaster } from "@/components/toast";
+import { getAuthUserId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import { AddTagForm } from "./add-tag-form";
@@ -24,9 +26,9 @@ const SOCIAL_ERROR_MESSAGES: Record<string, string> = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ social_connected?: string; social_error?: string }>;
+  searchParams: Promise<{ social_connected?: string; social_error?: string; edit?: string }>;
 }) {
-  const { social_connected, social_error } = await searchParams;
+  const { social_connected, social_error, edit } = await searchParams;
   const feedback = social_connected
     ? { type: "success" as const, message: "YouTube connected!" }
     : social_error
@@ -38,16 +40,15 @@ export default async function DashboardPage({
         }
       : null;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Token checked once per request, locally when possible (src/lib/auth.ts).
+  const userId = await getAuthUserId();
+  if (!userId) redirect("/login");
 
+  const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("user_id", user.id)
+    .eq("user_id", userId)
     .maybeSingle();
 
   const { data: tags } = profile
@@ -58,10 +59,26 @@ export default async function DashboardPage({
         .order("created_at", { ascending: true })
     : { data: null };
 
+  // "View my card" opens the first card that's switched on, as a visitor sees it.
+  const liveTagId = tags?.find((t) => t.enabled)?.tag_id ?? null;
+
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
+      <Toaster scopeClass="admin-ui" />
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-brand-900">Your profile</h1>
+        <div className="flex items-center gap-2">
+          {liveTagId && (
+            <a
+              href={`/t/${liveTagId}`}
+              target="_blank"
+              rel="noreferrer"
+              className="ios-press flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-brand-700 shadow-sm transition hover:bg-brand-50"
+            >
+              View my card
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
         <form action={signOut}>
           <button
             type="submit"
@@ -72,6 +89,7 @@ export default async function DashboardPage({
             <LogOutIcon />
           </button>
         </form>
+        </div>
       </div>
 
       {!profile ? (
@@ -81,7 +99,12 @@ export default async function DashboardPage({
       ) : (
         <>
           <SetupChecklist profile={profile} firstTagId={tags?.[0]?.tag_id ?? null} />
-          <ProfileForm profile={profile} feedback={feedback} />
+          <ProfileForm
+            key={edit === "1" ? "edit" : "view"}
+            profile={profile}
+            feedback={feedback}
+            initialEditing={edit === "1"}
+          />
           <Link
             href="/dashboard/template"
             className="mt-4 flex items-center justify-between rounded-3xl bg-white px-5 py-4 text-sm font-semibold text-brand-900 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] transition hover:bg-brand-50/60 active:scale-[0.99]"

@@ -112,6 +112,16 @@ export async function updateProfile(
     avatarUrl = `${publicUrl}?v=${Date.now()}`;
   }
 
+  // "Remove photo" in the edit form. Storage cleanup is best-effort: the
+  // avatar's extension comes from whatever file was uploaded, so try the
+  // usual ones; a miss just leaves an unreferenced object behind.
+  const removeAvatar = !avatarUrl && formData.get("remove_avatar") === "1";
+  if (removeAvatar) {
+    await supabase.storage
+      .from("avatars")
+      .remove(["jpg", "jpeg", "png", "webp"].map((ext) => `${user.id}/avatar.${ext}`));
+  }
+
   const { error } = await supabase
     .from("profiles")
     .update({
@@ -122,11 +132,20 @@ export async function updateProfile(
       bio: bio || null,
       phone: phone || null,
       email: email || null,
+      // Privacy switches (0022). An unchecked checkbox isn't sent at all, so
+      // only apply them when the form says it contains them (*_present);
+      // otherwise a form without the switches would hide contact info.
+      ...(formData.get("show_phone_present")
+        ? { show_phone: formData.get("show_phone") === "on" }
+        : {}),
+      ...(formData.get("show_email_present")
+        ? { show_email: formData.get("show_email") === "on" }
+        : {}),
       cta_label: ctaLabel || null,
       cta_url: ctaUrl || null,
       links,
       socials,
-      ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
+      ...(avatarUrl ? { avatar_url: avatarUrl } : removeAvatar ? { avatar_url: null } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("user_id", user.id);
