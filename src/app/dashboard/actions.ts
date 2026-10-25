@@ -168,6 +168,7 @@ export async function addTagByCode(
     };
   }
 
+  refreshCard(code);
   revalidatePath("/dashboard");
   return { error: null };
 }
@@ -185,7 +186,8 @@ export async function toggleTagEnabled(formData: FormData) {
 
   await supabase.rpc("set_tag_enabled", { p_tag_id: tagId, p_enabled: enabled });
 
-  refreshCard(code);
+  // Switching a card off must hide its cached public page right away.
+  refreshCard(tagId);
   revalidatePath("/dashboard");
 }
 
@@ -216,8 +218,6 @@ export async function disconnectSocial(provider: string) {
     .update({ socials, updated_at: new Date().toISOString() })
     .eq("user_id", user.id);
 
-  // Switching a card off must hide its cached public page right away.
-  refreshCard(tagId);
   revalidatePath("/dashboard");
   revalidatePath("/t/[tag_id]", "page");
 }
