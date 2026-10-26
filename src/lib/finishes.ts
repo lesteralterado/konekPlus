@@ -27,6 +27,11 @@ export const BULK_TIERS = [
 
 export const MAX_QUANTITY = 100;
 
+// What one card costs us to make and send (blank NFC card, printing,
+// packaging, delivery). An estimate — real cost is ₱300–600 — so use the
+// top of the range: break-even figures on /admin/finance should err safe.
+export const EST_UNIT_COST_PHP = 600;
+
 export function isFinishId(value: string): value is FinishId {
   return FINISHES.some((f) => f.id === value);
 }

@@ -195,9 +195,64 @@ export type KeychainItem = {
   created_at: string;
 };
 
+// Admin-only money tracking (0023).
+export type BillCategory = "ktlo" | "dev" | "marketing" | "other";
+export type ExpenseCategory = BillCategory | "cogs" | "fees";
+
+export type FinanceBill = {
+  id: string;
+  vendor: string;
+  category: BillCategory;
+  currency: "USD" | "PHP";
+  amount: number;
+  billing_interval: "monthly" | "yearly";
+  active: boolean;
+  note: string | null;
+  created_at: string;
+};
+
+export type FinanceExpense = {
+  id: string;
+  bill_id: string | null;
+  category: ExpenseCategory;
+  description: string;
+  amount_php: number;
+  paid_on: string; // YYYY-MM-DD, Manila
+  created_by: string | null;
+  created_at: string;
+};
+
+export type FinanceSettings = {
+  id: boolean;
+  usd_php_rate: number;
+  reserve_balance_php: number;
+  reserve_per_card_php: number;
+  reserve_target_months: number;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
+      finance_bills: {
+        Row: FinanceBill;
+        Insert: Pick<FinanceBill, "vendor" | "category" | "amount"> & Partial<FinanceBill>;
+        Update: Partial<FinanceBill>;
+        Relationships: [];
+      };
+      finance_expenses: {
+        Row: FinanceExpense;
+        Insert: Pick<FinanceExpense, "category" | "description" | "amount_php"> &
+          Partial<FinanceExpense>;
+        Update: Partial<FinanceExpense>;
+        Relationships: [];
+      };
+      finance_settings: {
+        Row: FinanceSettings;
+        Insert: Partial<FinanceSettings>;
+        Update: Partial<FinanceSettings>;
+        Relationships: [];
+      };
       profiles: {
         Row: Profile;
         Insert: Partial<Profile> & { user_id: string };

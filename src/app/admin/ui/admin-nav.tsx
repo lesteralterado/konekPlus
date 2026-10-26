@@ -17,6 +17,7 @@ import {
   MessageIcon,
   StarIcon,
   UsersIcon,
+  WalletIcon,
 } from "../icons";
 
 type NavItem = {
@@ -36,6 +37,7 @@ const TABS: NavItem[] = [
 ];
 
 const MORE: NavItem[] = [
+  { href: "/admin/finance", label: "Finance", short: "Finance", icon: WalletIcon, tile: "bg-emerald-500" },
   { href: "/admin/keychains", label: "Keychains", short: "Keychains", icon: KeyIcon, tile: "bg-violet-500" },
   { href: "/admin/feedback", label: "Feedback", short: "Feedback", icon: MessageIcon, tile: "bg-amber-500" },
   { href: "/admin/testimonials", label: "Testimonials", short: "Reviews", icon: StarIcon, tile: "bg-rose-500" },

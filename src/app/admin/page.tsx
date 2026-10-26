@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ActivationFunnel } from "./activation-funnel";
+import { manilaMonth } from "@/lib/finance";
 import { formatPrice } from "@/lib/finishes";
 import { amountFor } from "@/lib/order-amount";
 import {
@@ -74,18 +75,6 @@ function MoneyTile({
       {sub && <p className="mt-1 text-xs text-slate-500">{sub}</p>}
     </Link>
   );
-}
-
-// Start of the current month in Philippine time, as an ISO timestamp.
-function manilaMonthStartIso(): string {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Manila",
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-  const y = parts.find((p) => p.type === "year")!.value;
-  const m = parts.find((p) => p.type === "month")!.value;
-  return new Date(`${y}-${m}-01T00:00:00+08:00`).toISOString();
 }
 
 function daysAgoIso(days: number): string {
@@ -200,7 +189,7 @@ export default async function AdminDashboardPage() {
     .select("status, payment_method, payment_status, paid_via, amount_due_php, amount_received_php, paid_at, finish, quantity")
     .neq("status", "cancelled")
     .neq("payment_status", "refunded");
-  const monthStart = manilaMonthStartIso();
+  const monthStart = manilaMonth().startIso;
   const money = {
     paidMonth: 0,
     byVia: {} as Record<string, number>,
