@@ -261,7 +261,7 @@ export const fil = {
         },
         {
           q: "May buwanang bayad ba?",
-          a: "Wala — minsan ka lang magbabayad para sa card, at patuloy itong gagana. May kasamang 1 taon ng Pro ang bawat card: lahat ng card style, walang limitasyong portfolio projects, at araw-araw na chart ng mga tap mo. Pagkatapos nito, mananatili ang card mo sa Basic, libre habambuhay: ang iyong profile, links, testimonials, ang Classic style, 3 portfolio projects, at pag-edit kahit kailan. Gusto mong ituloy ang Pro? {proYearly} kada taon o {proMonthly} kada buwan — kung gusto mo lang.",
+          a: "Wala — minsan ka lang magbabayad para sa card, at patuloy itong gagana. May kasamang 1 taon ng Pro ang bawat card: lahat ng card style, walang limitasyong portfolio projects, at araw-araw na chart ng mga tap mo. Pagkatapos nito, mananatili ang card mo sa Basic, libre habambuhay: ang iyong profile, links, testimonials, ang Classic style, 3 portfolio projects, at pag-edit kahit kailan. Gusto mong ituloy ang Pro? {proYearly} kada taon o {proMonthly} kada buwan — kung gusto mo lang. Ie-email ka namin bago matapos ang Pro mo, at walang awtomatikong renewal.",
         },
         {
           q: "Paano kung huminto sa paggana ang card ko?",

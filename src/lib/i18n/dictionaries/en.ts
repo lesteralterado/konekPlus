@@ -243,7 +243,7 @@ export const en = {
         },
         {
           q: "Is there a monthly fee?",
-          a: "No — you pay once for the card, and it keeps working. Every card includes 1 year of Pro: every card style, unlimited portfolio projects, and a day-by-day chart of your taps. After that your card stays on Basic, free forever: your profile, links, testimonials, the Classic style, 3 portfolio projects, and editing any time. Want to keep Pro? It's {proYearly} a year or {proMonthly} a month — only if you choose to.",
+          a: "No — you pay once for the card, and it keeps working. Every card includes 1 year of Pro: every card style, unlimited portfolio projects, and a day-by-day chart of your taps. After that your card stays on Basic, free forever: your profile, links, testimonials, the Classic style, 3 portfolio projects, and editing any time. Want to keep Pro? It's {proYearly} a year or {proMonthly} a month — only if you choose to. We'll email you before your Pro ends, and nothing renews automatically.",
         },
         {
           q: "What if my card stops working?",

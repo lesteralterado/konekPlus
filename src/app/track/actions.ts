@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { sendEmail } from "@/lib/email/send";
 import { paymentProofAlertEmail } from "@/lib/email/templates";
 import { formatPrice } from "@/lib/finishes";
+import { gcashAccount, type GcashAccount } from "@/lib/gcash";
 import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 import type { PaymentMethod, PaymentStatus } from "@/lib/types";
@@ -23,7 +24,7 @@ export type TrackedOrder = {
   payment_note: string | null;
 };
 
-export type GcashAccount = { name: string; number: string } | null;
+export type { GcashAccount };
 
 export type TrackState = {
   error: string | null;
@@ -33,14 +34,6 @@ export type TrackState = {
   phone?: string;
   gcash?: GcashAccount;
 };
-
-// Where customers send GCash payments. Unset → the page says we'll message
-// the details instead (see .env.local.example).
-function gcashAccount(): GcashAccount {
-  const name = process.env.GCASH_ACCOUNT_NAME?.trim();
-  const number = process.env.GCASH_ACCOUNT_NUMBER?.trim();
-  return name && number ? { name, number } : null;
-}
 
 // Reference + phone must both match (see lookup_order in 0017/0020). A miss
 // gets one generic message so the form can't be used to confirm a reference exists.

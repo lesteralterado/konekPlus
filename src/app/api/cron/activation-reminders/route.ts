@@ -1,7 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { sendEmail } from "@/lib/email/send";
-import { activationReminderEmail } from "@/lib/email/templates";
+import { activationReminderEmail, proEndingEmail } from "@/lib/email/templates";
+import { formatPrice } from "@/lib/finishes";
+import { PRO_PRICE_PHP, RENEW_NUDGE_DAYS, daysLeft, formatPlanDate } from "@/lib/plan";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -31,8 +33,80 @@ export async function GET(request: NextRequest) {
 
   const supabase = createAdminClient();
   const reminders = await sendReminders(supabase);
+  const proReminders = await sendProReminders(supabase);
   const cleanup = await purgeOldData(supabase);
-  return NextResponse.json({ reminders, cleanup }, { status: "error" in reminders ? 500 : 200 });
+  const failed = "error" in reminders || "error" in proReminders;
+  return NextResponse.json({ reminders, proReminders, cleanup }, { status: failed ? 500 : 200 });
+}
+
+// "Your Pro ends soon": once inside the last 30 days and once inside the
+// last 7. pro_reminder_sent_at says which already went out; renewing clears
+// it (confirm_plan_payment, 0025). Skipped while a renewal awaits checking.
+// Goes to the owner's login email.
+async function sendProReminders(supabase: AdminClient) {
+  const now = Date.now();
+  const { data: profiles, error } = await supabase
+    .from("profiles")
+    .select("id, user_id, full_name, pro_until, pro_reminder_sent_at")
+    .gt("pro_until", new Date(now).toISOString())
+    .lte("pro_until", new Date(now + RENEW_NUDGE_DAYS * 86_400_000).toISOString())
+    .limit(BATCH_SIZE);
+  if (error) {
+    console.error("[cron] pro reminder query failed:", error.message);
+    return { error: "pro reminder query failed" };
+  }
+  if (!profiles?.length) return { sent: 0, failed: 0 };
+
+  const { data: pending } = await supabase
+    .from("plan_payments")
+    .select("profile_id")
+    .eq("status", "proof_submitted")
+    .in(
+      "profile_id",
+      profiles.map((p) => p.id),
+    );
+  const renewing = new Set((pending ?? []).map((r) => r.profile_id));
+
+  const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
+  let sent = 0;
+  let failed = 0;
+
+  for (const p of profiles) {
+    const until = new Date(p.pro_until!).getTime();
+    const left = daysLeft(p.pro_until, now)!;
+    const sentAt = p.pro_reminder_sent_at ? new Date(p.pro_reminder_sent_at).getTime() : 0;
+    // Which window we're in, and whether its email already went out.
+    const windowStart = until - (left <= 7 ? 8 : RENEW_NUDGE_DAYS + 1) * 86_400_000;
+    if (sentAt >= windowStart || renewing.has(p.id)) continue;
+
+    const { data: auth } = await supabase.auth.admin.getUserById(p.user_id);
+    const to = auth?.user?.email;
+    if (!to) continue;
+
+    const result = await sendEmail({
+      to,
+      ...proEndingEmail({
+        fullName: p.full_name || "there",
+        proUntil: formatPlanDate(p.pro_until!),
+        daysLeft: left,
+        yearlyPrice: formatPrice(PRO_PRICE_PHP.yearly),
+        monthlyPrice: formatPrice(PRO_PRICE_PHP.monthly),
+        dashboardUrl: `${siteUrl}/dashboard`,
+      }),
+    });
+    // Only a delivered send is recorded, so a failure is retried tomorrow.
+    if (result.ok) {
+      await supabase
+        .from("profiles")
+        .update({ pro_reminder_sent_at: new Date().toISOString() })
+        .eq("id", p.id);
+      sent++;
+    } else {
+      failed++;
+    }
+  }
+
+  return { sent, failed };
 }
 
 type AdminClient = ReturnType<typeof createAdminClient>;

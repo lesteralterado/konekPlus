@@ -334,3 +334,92 @@ export function paymentReceivedEmail(p: PaymentReceivedDetails): Omit<EmailMessa
     `),
   };
 }
+
+export type PlanProofAlertDetails = {
+  fullName: string;
+  termLabel: string;
+  amountDue: string;
+  gcashReference: string;
+  hasScreenshot: boolean;
+  adminUrl: string;
+};
+
+// To the owner: a cardholder sent GCash proof for a Pro renewal — verify it.
+export function planProofAlertEmail(p: PlanProofAlertDetails): Omit<EmailMessage, "to"> {
+  return {
+    subject: `Pro renewal from ${p.fullName} — please verify`,
+    text: [
+      `${p.fullName} sent GCash proof for ${p.termLabel} of Pro.`,
+      `Amount due: ${p.amountDue}`,
+      `GCash ref: ${p.gcashReference}${p.hasScreenshot ? " (screenshot attached in admin)" : ""}`,
+      "",
+      `Verify: ${p.adminUrl}`,
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Pro renewal to verify</p>
+      <p style="margin:0 0 16px;color:${MUTED};">${escapeHtml(p.fullName)} · ${escapeHtml(p.termLabel)}</p>
+      <p style="margin:0 0 4px;">Amount due: <strong>${escapeHtml(p.amountDue)}</strong></p>
+      <p style="margin:0 0 4px;">GCash ref: <strong style="font-family:'Courier New',monospace;">${escapeHtml(p.gcashReference)}</strong></p>
+      ${p.hasScreenshot ? `<p style="margin:0;color:${MUTED};font-size:13px;">Screenshot attached — view it in admin.</p>` : ""}
+      ${button(p.adminUrl, "Verify renewal")}
+    `),
+  };
+}
+
+export type ProRenewedDetails = {
+  fullName: string;
+  amount: string;
+  proUntil: string;
+  dashboardUrl: string;
+};
+
+// To the cardholder: we confirmed their renewal.
+export function proRenewedEmail(p: ProRenewedDetails): Omit<EmailMessage, "to"> {
+  return {
+    subject: "Your Konek+ Pro is renewed",
+    text: [
+      `Hi ${p.fullName},`,
+      "",
+      `We received your payment of ${p.amount}. Your Pro is now active until ${p.proUntil}. Thank you!`,
+      `Your dashboard: ${p.dashboardUrl}`,
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Pro renewed ✓</p>
+      <p style="margin:0 0 16px;">Hi ${escapeHtml(p.fullName)}, we received your payment of <strong>${escapeHtml(p.amount)}</strong>. Your Pro is now active until <strong>${escapeHtml(p.proUntil)}</strong>. Thank you!</p>
+      ${button(p.dashboardUrl, "Open my dashboard")}
+    `),
+  };
+}
+
+export type ProEndingDetails = {
+  fullName: string;
+  proUntil: string;
+  daysLeft: number;
+  yearlyPrice: string;
+  monthlyPrice: string;
+  dashboardUrl: string;
+};
+
+// To the cardholder: Pro ends soon. Says plainly that the card keeps
+// working on Basic, so it never reads as a threat.
+export function proEndingEmail(p: ProEndingDetails): Omit<EmailMessage, "to"> {
+  const when = p.daysLeft <= 1 ? "tomorrow" : `in ${p.daysLeft} days`;
+  return {
+    subject: `Your Konek+ Pro ends ${when}`,
+    text: [
+      `Hi ${p.fullName},`,
+      "",
+      `Your Pro ends on ${p.proUntil}. Your card keeps working either way — after that it shows the Classic style and your first 3 portfolio projects. Nothing is deleted.`,
+      `To keep every card style, your full portfolio and your daily taps chart, renew for ${p.yearlyPrice} a year or ${p.monthlyPrice} a month from your dashboard: ${p.dashboardUrl}`,
+      "",
+      "Nothing renews automatically. Questions? Just reply to this email.",
+    ].join("\n"),
+    html: layout(`
+      <p style="margin:0 0 8px;font-size:18px;font-weight:bold;">Your Pro ends ${escapeHtml(when)}</p>
+      <p style="margin:0 0 16px;">Hi ${escapeHtml(p.fullName)}, your Pro ends on <strong>${escapeHtml(p.proUntil)}</strong>. Your card keeps working either way — after that it shows the Classic style and your first 3 portfolio projects. Nothing is deleted.</p>
+      <p style="margin:0 0 16px;">To keep every card style, your full portfolio and your daily taps chart, renew for <strong>${escapeHtml(p.yearlyPrice)}</strong> a year or <strong>${escapeHtml(p.monthlyPrice)}</strong> a month.</p>
+      ${button(p.dashboardUrl, "Renew Pro")}
+      <p style="margin:16px 0 0;color:${MUTED};font-size:13px;">Nothing renews automatically. Questions? Just reply to this email.</p>
+    `),
+  };
+}

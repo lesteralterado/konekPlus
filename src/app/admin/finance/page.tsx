@@ -62,7 +62,13 @@ export default async function AdminFinancePage({
   const isCurrent = month.key === currentManilaMonthKey();
 
   const supabase = await createClient();
-  const [{ data: settings }, { data: bills }, { data: expenses }, { data: paidOrders }] = await Promise.all([
+  const [
+    { data: settings },
+    { data: bills },
+    { data: expenses },
+    { data: paidOrders },
+    { data: paidRenewals },
+  ] = await Promise.all([
     supabase.from("finance_settings").select("*").eq("id", true).maybeSingle(),
     supabase
       .from("finance_bills")
@@ -81,6 +87,12 @@ export default async function AdminFinancePage({
       .eq("payment_status", "paid")
       .gte("paid_at", month.startIso)
       .lt("paid_at", month.endIso),
+    supabase
+      .from("plan_payments")
+      .select("amount_received_php")
+      .eq("status", "paid")
+      .gte("paid_at", month.startIso)
+      .lt("paid_at", month.endIso),
   ]);
 
   if (!settings) {
@@ -94,13 +106,15 @@ export default async function AdminFinancePage({
   const rate = Number(settings.usd_php_rate);
   const activeBills = (bills ?? []).filter((b) => b.active);
 
-  // Cash in: card orders marked paid this month.
-  let cashIn = 0;
+  // Cash in: card orders and Pro renewals marked paid this month.
+  let cardSales = 0;
   let cards = 0;
   for (const o of paidOrders ?? []) {
-    cashIn += o.amount_received_php ?? amountFor(o).php;
+    cardSales += o.amount_received_php ?? amountFor(o).php;
     cards += o.quantity;
   }
+  const renewals = (paidRenewals ?? []).reduce((sum, r) => sum + (r.amount_received_php ?? 0), 0);
+  const cashIn = cardSales + renewals;
   const cashOut = (expenses ?? []).reduce((sum, e) => sum + Number(e.amount_php), 0);
   const net = cashIn - cashOut;
 
@@ -113,7 +127,7 @@ export default async function AdminFinancePage({
 
   // What one card leaves after paying for itself: this month's real average
   // price when there are sales, else the cheapest finish (worst case).
-  const avgPrice = cards > 0 ? cashIn / cards : LOWEST_PRICE_PHP;
+  const avgPrice = cards > 0 ? cardSales / cards : LOWEST_PRICE_PHP;
   const margin = avgPrice - EST_UNIT_COST_PHP;
   const needAll = breakEvenCards(fixed, margin);
   const needServers = breakEvenCards(servers, margin);
@@ -165,7 +179,11 @@ export default async function AdminFinancePage({
           <Tile
             label="Cash in"
             value={formatPrice(cashIn)}
-            sub={`${plural(cards, "card")} paid`}
+            sub={
+              renewals > 0
+                ? `${plural(cards, "card")} · ${formatPrice(renewals)} Pro renewals`
+                : `${plural(cards, "card")} paid`
+            }
             tone="text-emerald-600"
           />
           <Tile label="Cash out" value={formatPrice(cashOut)} sub={`${plural((expenses ?? []).length, "expense")} logged`} />
@@ -223,7 +241,14 @@ export default async function AdminFinancePage({
               ? "No server bills yet."
               : `Pays the servers for ${runway.toFixed(1)} months with no sales.`}{" "}
             {setAside > 0 && `Move ${formatPrice(setAside)} in for this month’s ${plural(cards, "card")}.`}
+            {renewals > 0 && ` Pro renewals (${formatPrice(renewals)}) go in too.`}
           </p>
+          {servers > 0 && (
+            <p className="mt-2 text-xs text-slate-500">
+              Renewals cover {Math.round((renewals / servers) * 100)}% of this month’s server bills — the goal
+              is 100%, so servers never depend on new card sales.
+            </p>
+          )}
           <details className="mt-3">
             <summary className="cursor-pointer text-sm font-semibold text-brand-700">Update reserve & rate</summary>
             <div className="mt-3">

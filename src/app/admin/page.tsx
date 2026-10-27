@@ -10,6 +10,7 @@ import {
   CreditCardIcon,
   KeyIcon,
   MessageIcon,
+  StarIcon,
   UsersIcon,
   WalletIcon,
 } from "./icons";
@@ -161,6 +162,7 @@ export default async function AdminDashboardPage() {
     { count: toVerify },
     { count: toHandOver },
     { count: newFeedback },
+    { count: renewalsToVerify },
   ] = await Promise.all([
       supabase.from("tags").select("*", { count: "exact", head: true }),
       supabase.from("tags").select("*", { count: "exact", head: true }).eq("claimed", true),
@@ -180,6 +182,10 @@ export default async function AdminDashboardPage() {
         .select("id", { count: "exact", head: true })
         .eq("status", "ready_for_handover"),
       supabase.from("feedback").select("id", { count: "exact", head: true }).eq("status", "new"),
+      supabase
+        .from("plan_payments")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "proof_submitted"),
     ]);
 
   // Money: everything that isn't cancelled or refunded. Small table, so one
@@ -225,6 +231,7 @@ export default async function AdminDashboardPage() {
   // filtered list. Hidden entirely when everything's handled.
   const todo = [
     { count: money.verify.n, label: "GCash proofs to verify", href: "/admin/orders?pay=proof_submitted", icon: WalletIcon, tile: "bg-emerald-500" },
+    { count: renewalsToVerify ?? 0, label: "Pro renewals to verify", href: "/admin/renewals", icon: StarIcon, tile: "bg-accent-500" },
     { count: newOrders ?? 0, label: "new orders", href: "/admin/orders?status=new", icon: BagIcon, tile: "bg-accent-500" },
     { count: toVerify ?? 0, label: "keychains to verify", href: "/admin/keychains?status=social_links_submitted", icon: KeyIcon, tile: "bg-violet-500" },
     { count: toHandOver ?? 0, label: "keychains to hand over", href: "/admin/keychains?status=ready_for_handover", icon: KeyIcon, tile: "bg-brand-600" },

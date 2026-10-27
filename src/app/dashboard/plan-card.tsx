@@ -1,4 +1,6 @@
-import { formatPlanDate, isPro } from "@/lib/plan";
+import { gcashAccount } from "@/lib/gcash";
+import { RENEW_NUDGE_DAYS, daysLeft, formatPlanDate, isPro } from "@/lib/plan";
+import { RenewPanel } from "./renew-panel";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
 
@@ -20,7 +22,7 @@ function TapsChart({ days, counts }: { days: string[]; counts: Map<string, numbe
     new Date(`${d}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
   return (
     <div className="mt-4">
-      <div className="flex h-20 items-end gap-[3px]" role="img" aria-label={`Taps per day, last ${DAYS} days`}>
+      <div className="flex h-20 items-end gap-0.75" role="img" aria-label={`Taps per day, last ${DAYS} days`}>
         {days.map((d) => {
           const n = counts.get(d) ?? 0;
           return (
@@ -45,7 +47,17 @@ function TapsChart({ days, counts }: { days: string[]; counts: Map<string, numbe
 // 30-day total; Pro also gets the day-by-day chart.
 export async function PlanCard({ profile }: { profile: Profile }) {
   const supabase = await createClient();
-  const { data: rows } = await supabase.rpc("my_card_views", { p_days: DAYS });
+  const [{ data: rows }, { data: lastPayment }] = await Promise.all([
+    supabase.rpc("my_card_views", { p_days: DAYS }),
+    supabase
+      .from("plan_payments")
+      .select("status, admin_note")
+      .eq("profile_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const left = daysLeft(profile.pro_until);
   const counts = new Map((rows ?? []).map((r) => [r.day, r.views]));
   const total = (rows ?? []).reduce((sum, r) => sum + r.views, 0);
   const pro = isPro(profile);
@@ -89,6 +101,13 @@ export async function PlanCard({ profile }: { profile: Profile }) {
           projects and a day-by-day chart of your taps.
         </p>
       )}
+
+      <RenewPanel
+        gcash={gcashAccount()}
+        pending={lastPayment?.status === "proof_submitted"}
+        rejectedNote={lastPayment?.status === "rejected" ? lastPayment.admin_note : null}
+        open={!pro || (left !== null && left <= RENEW_NUDGE_DAYS)}
+      />
     </section>
   );
 }

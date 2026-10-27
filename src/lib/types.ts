@@ -28,14 +28,37 @@ export type Profile = {
   // database sets these — owners can't, even with their own row.
   pro_until: string | null;
   founding: boolean;
+  // Last "Pro is ending" email (0025); cleared when Pro is renewed.
+  pro_reminder_sent_at: string | null;
 };
 
 // What anyone tapping a card may see — returned by get_public_profile()
 // (0022). No user_id; email/phone already blanked if the owner hid them.
 export type PublicProfile = Omit<
   Profile,
-  "user_id" | "show_email" | "show_phone" | "pro_until" | "founding"
+  "user_id" | "show_email" | "show_phone" | "pro_until" | "founding" | "pro_reminder_sent_at"
 >;
+
+export type ProTerm = "monthly" | "yearly";
+export type PlanPaymentStatus = "proof_submitted" | "paid" | "rejected";
+
+// A Pro renewal paid by GCash (0025).
+export type PlanPayment = {
+  id: string;
+  profile_id: string;
+  user_id: string;
+  term: ProTerm;
+  months: number;
+  amount_due_php: number;
+  gcash_reference: string;
+  proof_path: string | null;
+  status: PlanPaymentStatus;
+  amount_received_php: number | null;
+  admin_note: string | null;
+  paid_at: string | null;
+  confirmed_by: string | null;
+  created_at: string;
+};
 
 export type PortfolioItem = {
   id: string;
@@ -254,6 +277,16 @@ export type Database = {
         Update: Partial<FinanceExpense>;
         Relationships: [];
       };
+      plan_payments: {
+        Row: PlanPayment;
+        Insert: Pick<
+          PlanPayment,
+          "profile_id" | "term" | "months" | "amount_due_php" | "gcash_reference"
+        > &
+          Partial<PlanPayment>;
+        Update: Partial<PlanPayment>;
+        Relationships: [];
+      };
       finance_settings: {
         Row: FinanceSettings;
         Insert: Partial<FinanceSettings>;
@@ -419,6 +452,10 @@ export type Database = {
       rate_limit_hit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number };
         Returns: boolean;
+      };
+      confirm_plan_payment: {
+        Args: { p_id: string; p_amount_received: number };
+        Returns: string | null;
       };
       my_card_views: {
         Args: { p_days?: number };
