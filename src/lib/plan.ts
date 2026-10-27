@@ -11,6 +11,11 @@ import type { Profile, ProfileTemplate } from "@/lib/types";
 export const BASIC_TEMPLATE: ProfileTemplate = "classic";
 export const BASIC_PORTFOLIO_LIMIT = 3;
 
+// Pro renewal after the included year. Shown on the landing FAQ and terms,
+// so a price here is the price promised.
+export const PRO_PRICE_PHP = { yearly: 499, monthly: 59 } as const;
+export const PRO_INCLUDED_MONTHS = 12;
+
 export function isPro(profile: Pick<Profile, "pro_until">, now = Date.now()): boolean {
   return !!profile.pro_until && new Date(profile.pro_until).getTime() > now;
 }

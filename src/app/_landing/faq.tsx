@@ -1,5 +1,14 @@
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
+import { formatPrice } from "@/lib/finishes";
+import { format } from "@/lib/i18n/format";
+import { PRO_PRICE_PHP } from "@/lib/plan";
 import { ChevronDownIcon } from "./icons";
+
+// Answers can quote the Pro renewal price; it comes from one place.
+const PRICES = {
+  proYearly: formatPrice(PRO_PRICE_PHP.yearly),
+  proMonthly: formatPrice(PRO_PRICE_PHP.monthly),
+};
 
 export function Faq({ t }: { t: Dictionary["home"]["faq"] }) {
   return (
@@ -21,7 +30,7 @@ export function Faq({ t }: { t: Dictionary["home"]["faq"] }) {
                 {faq.q}
                 <ChevronDownIcon className="h-4 w-4 shrink-0 text-slate-400 transition group-open:rotate-180" />
               </summary>
-              <p className="mt-3 text-sm leading-relaxed text-slate-500">{faq.a}</p>
+              <p className="mt-3 text-sm leading-relaxed text-slate-500">{format(faq.a, PRICES)}</p>
             </details>
           ))}
         </div>

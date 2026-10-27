@@ -138,6 +138,7 @@ export type Dictionary = {
       submit: string;
       submitting: string;
       guarantee: string;
+      proIncluded: string;
       noPaymentNow: string;
       successTitle: string;
       /** {reference} and {phone} placeholders */

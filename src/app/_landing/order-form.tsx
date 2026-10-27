@@ -15,7 +15,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries/types";
 import type { PaymentMethod } from "@/lib/types";
 import { FINISH_STYLES } from "./card-deck";
 import { CHOOSE_FINISH_EVENT } from "./choose-finish";
-import { ShieldCheckIcon, WalletIcon } from "./icons";
+import { ShieldCheckIcon, StarIcon, WalletIcon } from "./icons";
 import { placeOrder, type OrderFormState } from "./order-actions";
 
 export type FinishOption = { id: FinishId; name: string; price: string; tagline: string };
@@ -358,6 +358,10 @@ function OrderFormInner({
           <li className="flex items-center gap-2">
             <WalletIcon className="h-4 w-4 shrink-0 text-brand-600" />
             {t.noPaymentNow}
+          </li>
+          <li className="flex items-center gap-2">
+            <StarIcon className="h-4 w-4 shrink-0 text-brand-600" />
+            {t.proIncluded}
           </li>
         </ul>
       </div>

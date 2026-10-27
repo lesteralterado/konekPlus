@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
+import { formatPrice } from "@/lib/finishes";
+import { PRO_INCLUDED_MONTHS, PRO_PRICE_PHP } from "@/lib/plan";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "Setyembre 20, 2026";
+const UPDATED = "Oktubre 27, 2026";
 
 // First-pass Filipino translation — worth a native-speaker proofread
 // before this is treated as the authoritative Filipino version.
@@ -96,7 +98,25 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="6. Availability ng serbisyo">
+      <LegalSection heading="6. Mga plan: Basic at Pro">
+        <p>
+          Minsanang bili ang iyong card. Walang bayad para manatili itong gumagana.
+        </p>
+        <LegalList
+          items={[
+            "Libre ang Basic hangga't tumatakbo ang Serbisyo: ang iyong profile, links, testimonials, ang Classic style, hanggang 3 portfolio project, pag-on o pag-off ng mga card, at pag-edit kahit kailan.",
+            `Idinadagdag ng Pro ang lahat ng card style, walang limitasyong portfolio project, at araw-araw na chart ng mga tap sa card mo. May kasamang ${PRO_INCLUDED_MONTHS} buwan ng Pro ang pag-claim ng card, simula sa araw ng pag-claim. Hindi nadadagdagan ang oras kapag nag-claim ng higit pang card sa parehong account.`,
+            `Pagkatapos nito, opsyonal ang Pro: ${formatPrice(PRO_PRICE_PHP.yearly)} kada taon o ${formatPrice(PRO_PRICE_PHP.monthly)} kada buwan, babayaran nang pauna. Walang awtomatikong renewal o singil.`,
+            "Kapag natapos ang Pro, walang mabubura. Ipapakita ng card mo ang Classic style at ang unang 3 portfolio project mo, at babalik ang lahat ng iba pa sa sandaling maging aktibo ulit ang Pro.",
+          ]}
+        />
+        <p>
+          Kung babaguhin namin ang presyo ng Pro, sa mga renewal lang pagkatapos ng
+          aming anunsyo ito ilalapat &mdash; hindi kailanman sa panahong nabayaran mo na.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="7. Availability ng serbisyo">
         <p>
           Nilalayon naming panatilihing available ang Serbisyo ngunit hindi namin
           ginagarantiyahan ang walang-tigil na access. Maaaring kailanganin naming
@@ -105,7 +125,7 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Pagwawakas">
+      <LegalSection heading="8. Pagwawakas">
         <p>
           Maaari mong burahin ang iyong account kahit kailan, na nag-aalis ng iyong
           data ng profile at nag-aalis ng link sa iyong mga card. Maaari naming
@@ -114,7 +134,7 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="8. Mga disclaimer at limitasyon ng pananagutan">
+      <LegalSection heading="9. Mga disclaimer at limitasyon ng pananagutan">
         <p>
           Ibinibigay ang Serbisyo nang &ldquo;as is.&rdquo; Hanggang sa pinapayagan ng
           batas, itinatanggi ng Konek+ ang anumang uri ng warranty at hindi mananagot
@@ -123,7 +143,7 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="9. Mga pagbabago sa mga tuntuning ito">
+      <LegalSection heading="10. Mga pagbabago sa mga tuntuning ito">
         <p>
           Maaari naming i-update ang mga Tuntuning ito paminsan-minsan. Ang
           pagpapatuloy ng paggamit ng Serbisyo matapos magkabisa ang mga pagbabago ay
@@ -131,7 +151,7 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="10. Namamahalang batas">
+      <LegalSection heading="11. Namamahalang batas">
         <p>
           Ang mga Tuntuning ito ay pinamamahalaan ng mga batas na naaangkop sa lugar
           ng legal na pagtatatag ng Konek+, nang walang pagsasaalang-alang sa mga
@@ -139,7 +159,7 @@ export function TermsContentFil() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="11. Makipag-ugnayan sa amin">
+      <LegalSection heading="12. Makipag-ugnayan sa amin">
         <p>
           Mga tanong tungkol sa mga Tuntuning ito:{" "}
           <a

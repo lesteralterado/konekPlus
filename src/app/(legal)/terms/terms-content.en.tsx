@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
+import { formatPrice } from "@/lib/finishes";
+import { PRO_INCLUDED_MONTHS, PRO_PRICE_PHP } from "@/lib/plan";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "September 20, 2026";
+const UPDATED = "October 27, 2026";
 
 export function TermsContentEn() {
   return (
@@ -76,7 +78,25 @@ export function TermsContentEn() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="6. Service availability">
+      <LegalSection heading="6. Plans: Basic and Pro">
+        <p>
+          Your card is a one-time purchase. There is no fee to keep it working.
+        </p>
+        <LegalList
+          items={[
+            "Basic is free for as long as the Service runs: your profile, links, testimonials, the Classic style, up to 3 portfolio projects, switching cards on or off, and editing any time.",
+            `Pro adds every card style, unlimited portfolio projects and a day-by-day chart of your card taps. Claiming a card includes ${PRO_INCLUDED_MONTHS} months of Pro from the day you claim it. Claiming more cards on the same account doesn’t add extra time.`,
+            `After that, Pro is optional: ${formatPrice(PRO_PRICE_PHP.yearly)} a year or ${formatPrice(PRO_PRICE_PHP.monthly)} a month, paid in advance. Nothing renews or is charged automatically.`,
+            "If Pro ends, nothing is deleted. Your card shows the Classic style and your first 3 portfolio projects, and everything else comes back as soon as Pro is active again.",
+          ]}
+        />
+        <p>
+          If we change the Pro price, the new price applies only to renewals made
+          after we announce it, never to time you&apos;ve already paid for.
+        </p>
+      </LegalSection>
+
+      <LegalSection heading="7. Service availability">
         <p>
           We aim to keep the Service available but don&apos;t guarantee uninterrupted
           access. We may need to suspend or modify features for maintenance,
@@ -84,7 +104,7 @@ export function TermsContentEn() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Termination">
+      <LegalSection heading="8. Termination">
         <p>
           You may delete your account at any time, which removes your profile data
           and unlinks your cards. We may suspend or terminate accounts that violate
@@ -92,7 +112,7 @@ export function TermsContentEn() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="8. Disclaimers &amp; limitation of liability">
+      <LegalSection heading="9. Disclaimers &amp; limitation of liability">
         <p>
           The Service is provided &ldquo;as is.&rdquo; To the extent permitted by law,
           Konek+ disclaims warranties of any kind and is not liable for indirect,
@@ -100,21 +120,21 @@ export function TermsContentEn() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="9. Changes to these terms">
+      <LegalSection heading="10. Changes to these terms">
         <p>
           We may update these Terms from time to time. Continued use of the Service
           after changes take effect means you accept the updated Terms.
         </p>
       </LegalSection>
 
-      <LegalSection heading="10. Governing law">
+      <LegalSection heading="11. Governing law">
         <p>
           These Terms are governed by the laws applicable to Konek+&apos;s place of
           legal establishment, without regard to conflict-of-law principles.
         </p>
       </LegalSection>
 
-      <LegalSection heading="11. Contact us">
+      <LegalSection heading="12. Contact us">
         <p>
           Questions about these Terms:{" "}
           <a
