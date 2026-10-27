@@ -24,11 +24,18 @@ export type Profile = {
   // Owner's privacy toggles for the public card + vCard (0022).
   show_email: boolean;
   show_phone: boolean;
+  // Plans (0024): Pro until this moment (null = never had it). Only the
+  // database sets these — owners can't, even with their own row.
+  pro_until: string | null;
+  founding: boolean;
 };
 
 // What anyone tapping a card may see — returned by get_public_profile()
 // (0022). No user_id; email/phone already blanked if the owner hid them.
-export type PublicProfile = Omit<Profile, "user_id" | "show_email" | "show_phone">;
+export type PublicProfile = Omit<
+  Profile,
+  "user_id" | "show_email" | "show_phone" | "pro_until" | "founding"
+>;
 
 export type PortfolioItem = {
   id: string;
@@ -412,6 +419,10 @@ export type Database = {
       rate_limit_hit: {
         Args: { p_key: string; p_max: number; p_window_seconds: number };
         Returns: boolean;
+      };
+      my_card_views: {
+        Args: { p_days?: number };
+        Returns: { day: string; views: number }[];
       };
       purge_old_data: {
         Args: Record<string, never>;

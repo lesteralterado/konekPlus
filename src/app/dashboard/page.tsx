@@ -5,6 +5,7 @@ import { getAuthUserId } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import { AddTagForm } from "./add-tag-form";
+import { PlanCard } from "./plan-card";
 import { ProfileForm } from "./profile-form";
 import { SetupChecklist } from "./setup-checklist";
 import { signOut, toggleTagEnabled } from "./actions";
@@ -105,6 +106,7 @@ export default async function DashboardPage({
             feedback={feedback}
             initialEditing={edit === "1"}
           />
+          <PlanCard profile={profile} />
           <Link
             href="/dashboard/template"
             className="mt-4 flex items-center justify-between rounded-3xl bg-white px-5 py-4 text-sm font-semibold text-brand-900 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] transition hover:bg-brand-50/60 active:scale-[0.99]"

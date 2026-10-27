@@ -6,6 +6,7 @@ import type { ProfileTemplate } from "@/lib/types";
 import { en } from "@/lib/i18n/dictionaries/en";
 import { UseTemplateButton } from "./use-template-button";
 import { getAuthUserId } from "@/lib/auth";
+import { BASIC_TEMPLATE, canUseTemplate } from "@/lib/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -93,15 +94,24 @@ export default async function TemplatePickerPage() {
 
               <div className="flex flex-1 flex-col gap-3 p-5">
                 <div>
-                  <h2 className="font-bold text-brand-900">
+                  <h2 className="flex items-center gap-2 font-bold text-brand-900">
                     {TEMPLATE_LABELS[key]}
+                    {key !== BASIC_TEMPLATE && (
+                      <span className="rounded-full bg-accent-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                        Pro
+                      </span>
+                    )}
                   </h2>
                   <p className="mt-0.5 text-xs leading-relaxed text-slate-500">
                     {TEMPLATE_DESCRIPTIONS[key]}
                   </p>
                 </div>
                 <div className="mt-auto">
-                  <UseTemplateButton template={key} isActive={isActive} />
+                  <UseTemplateButton
+                    template={key}
+                    isActive={isActive}
+                    locked={!canUseTemplate(profile, key)}
+                  />
                 </div>
               </div>
             </div>

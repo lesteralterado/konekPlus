@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AddProjectForm } from "./add-project-form";
 import { DeletePortfolioButton } from "./delete-button";
 import { getAuthUserId } from "@/lib/auth";
+import { BASIC_PORTFOLIO_LIMIT, isPro } from "@/lib/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -16,16 +17,22 @@ export default async function PortfolioPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, pro_until")
     .eq("user_id", userId)
     .maybeSingle();
   if (!profile) redirect("/dashboard");
 
+  // Same order as the public card, so "first 3" means the same projects.
   const { data: items } = await supabase
     .from("portfolio_items")
     .select("*")
     .eq("profile_id", profile.id)
+    .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
+
+  const pro = isPro(profile);
+  const count = items?.length ?? 0;
+  const full = !pro && count >= BASIC_PORTFOLIO_LIMIT;
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-6 py-10">
@@ -44,18 +51,33 @@ export default async function PortfolioPage() {
         public profile.
       </p>
 
-      <div className="mt-6">
-        <AddProjectForm />
-      </div>
+      {!pro && (
+        <p className="mt-4 rounded-2xl bg-brand-50/70 px-4 py-3 text-sm text-brand-900">
+          {count} of {BASIC_PORTFOLIO_LIMIT} projects on Basic. Pro shows as many as you like.
+        </p>
+      )}
+
+      {!full && (
+        <div className="mt-6">
+          <AddProjectForm />
+        </div>
+      )}
 
       {items && items.length > 0 && (
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {items.map((item) => (
+          {items.map((item, i) => (
             <div
               key={item.id}
-              className="relative overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)]"
+              className={`relative overflow-hidden rounded-3xl bg-white shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] ${
+                !pro && i >= BASIC_PORTFOLIO_LIMIT ? "opacity-60" : ""
+              }`}
             >
               <DeletePortfolioButton itemId={item.id} />
+              {!pro && i >= BASIC_PORTFOLIO_LIMIT && (
+                <span className="absolute left-3 top-3 z-10 rounded-full bg-slate-900/70 px-2.5 py-1 text-[11px] font-semibold text-white">
+                  Hidden — shows with Pro
+                </span>
+              )}
               {item.image_url && (
                 <div className="relative h-40 w-full bg-slate-100">
                   <Image

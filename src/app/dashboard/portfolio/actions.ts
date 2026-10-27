@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { BASIC_PORTFOLIO_LIMIT, isPro } from "@/lib/plan";
 import { createClient } from "@/lib/supabase/server";
 
 // resetToken only changes on success — the form uses it as a React `key` to
@@ -21,10 +22,23 @@ export async function addPortfolioItem(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id")
+    .select("id, pro_until")
     .eq("user_id", user.id)
     .maybeSingle();
   if (!profile) redirect("/dashboard");
+
+  if (!isPro(profile)) {
+    const { count } = await supabase
+      .from("portfolio_items")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id);
+    if ((count ?? 0) >= BASIC_PORTFOLIO_LIMIT) {
+      return {
+        error: `Basic shows ${BASIC_PORTFOLIO_LIMIT} projects. Remove one, or get Pro for unlimited.`,
+        resetToken: prevState.resetToken,
+      };
+    }
+  }
 
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
