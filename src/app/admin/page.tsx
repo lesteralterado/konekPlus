@@ -19,6 +19,9 @@ export const dynamic = "force-dynamic";
 
 const DAYS = 30;
 const BAR_COLOR = "var(--color-brand-600)";
+// Buckets are UTC days; a fixed locale and zone keep server and browser
+// labels identical.
+const DAY_LABEL: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", timeZone: "UTC" };
 
 function StatTile({
   label,
@@ -123,7 +126,7 @@ function DailyClaimsChart({ buckets }: { buckets: { date: Date; count: number }[
           const barHeight = b.count === 0 ? 0 : Math.max(3, (b.count / max) * (chartHeight - 8));
           const x = i * (barWidth + gap);
           const y = chartHeight - barHeight;
-          const label = b.date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+          const label = b.date.toLocaleDateString("en-PH", DAY_LABEL);
           return (
             <rect
               key={i}
@@ -135,16 +138,16 @@ function DailyClaimsChart({ buckets }: { buckets: { date: Date; count: number }[
               fill={BAR_COLOR}
               opacity={b.count === 0 ? 0.15 : 1}
             >
-              <title>
-                {label}: {b.count} claimed
-              </title>
+              {/* One string child: React 19 treats <title> specially and
+                  mismatches on hydration when it gets several text nodes. */}
+              <title>{`${label}: ${b.count} claimed`}</title>
             </rect>
           );
         })}
       </svg>
       <div className="mt-1 flex justify-between text-[11px] text-slate-400">
-        <span>{buckets[0].date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
-        <span>{buckets[buckets.length - 1].date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
+        <span>{buckets[0].date.toLocaleDateString("en-PH", DAY_LABEL)}</span>
+        <span>{buckets[buckets.length - 1].date.toLocaleDateString("en-PH", DAY_LABEL)}</span>
       </div>
     </div>
   );
