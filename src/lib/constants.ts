@@ -15,13 +15,6 @@ export const LOGO_SOURCE_URL =
   "https://res.cloudinary.com/dhxi75eld/image/upload/v1788160699/Untitled_design_4_cfbrps.png";
 export const LOGO_URL = cloudinary(LOGO_SOURCE_URL, 160);
 
-// Both sides of the Konek+ card shown by the splash (src/app/preloader.tsx):
-// 720px WebP exports of the Canva card art, a few KB each and served from
-// our own origin so the splash never waits on a third party. Preloaded in
-// layout.tsx.
-export const PRELOADER_CARD_FRONT_URL = "/preloader/card-front.webp";
-export const PRELOADER_CARD_BACK_URL = "/preloader/card-back.webp";
-
 // Square, opaque PNG of the mark for home-screen icons (PWA / iOS), padded
 // on white so the OS icon mask doesn't crop it.
 export function appIconUrl(size: number): string {

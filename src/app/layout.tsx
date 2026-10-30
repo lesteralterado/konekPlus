@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import ReactDOM from "react-dom";
 import { TopLoader } from "@/components/top-loader";
 import "./globals.css";
-import { LOGO_URL, PRELOADER_CARD_BACK_URL, PRELOADER_CARD_FRONT_URL } from "@/lib/constants";
+import { LOGO_URL } from "@/lib/constants";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { FeedbackWidget } from "./feedback-widget";
 import { Preloader } from "./preloader";
@@ -34,9 +34,6 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   // Router's documented way to emit resource hints (a raw <link> isn't
   // supported in the component tree).
   ReactDOM.preload(LOGO_URL, { as: "image", fetchPriority: "high" });
-  // The splash itself is made of these two — they must be there for first paint.
-  ReactDOM.preload(PRELOADER_CARD_FRONT_URL, { as: "image", fetchPriority: "high" });
-  ReactDOM.preload(PRELOADER_CARD_BACK_URL, { as: "image", fetchPriority: "high" });
 
   const dict = await getDictionary();
 
