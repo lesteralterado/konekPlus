@@ -98,7 +98,8 @@ export function TermsContentFil() {
         </p>
         <p>
           Kapag personal naming iniaabot ang card o keychain, maaari kaming mag-alok ng
-          opsyonal na litrato kasama ka, at pasasalamat sa pagpayag. Kukunan at
+          opsyonal na litrato kasama ka (maaari ring magpadala ang mga may-ari ng card
+          mula sa kanilang dashboard), at pasasalamat sa pagpayag. Kukunan at
           gagamitin lamang ang mga litrato ayon sa pinayagan mo noon (tingnan ang
           aming{" "}
           <Link href="/privacy" className="font-medium text-brand-700 underline underline-offset-2">

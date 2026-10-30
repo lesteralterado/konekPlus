@@ -168,6 +168,7 @@ export default async function AdminDashboardPage() {
     { count: newFeedback },
     { count: renewalsToVerify },
     { count: freebiesToGive },
+    { count: photosToReview },
   ] = await Promise.all([
       supabase.from("tags").select("*", { count: "exact", head: true }),
       supabase.from("tags").select("*", { count: "exact", head: true }).eq("claimed", true),
@@ -195,6 +196,10 @@ export default async function AdminDashboardPage() {
         .from("customer_photos")
         .select("id", { count: "exact", head: true })
         .eq("freebie_status", "pending"),
+      supabase
+        .from("customer_photos")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending_review"),
     ]);
 
   // Money: everything that isn't cancelled or refunded. Small table, so one
@@ -241,6 +246,7 @@ export default async function AdminDashboardPage() {
   const todo = [
     { count: money.verify.n, label: "GCash proofs to verify", href: "/admin/orders?pay=proof_submitted", icon: WalletIcon, tile: "bg-emerald-500" },
     { count: renewalsToVerify ?? 0, label: "Pro renewals to verify", href: "/admin/renewals", icon: StarIcon, tile: "bg-accent-500" },
+    { count: photosToReview ?? 0, label: "customer photos to review", href: "/admin/photos?show=review", icon: CameraIcon, tile: "bg-pink-500" },
     { count: freebiesToGive ?? 0, label: "photo freebies to give", href: "/admin/photos?show=freebie", icon: CameraIcon, tile: "bg-pink-500" },
     { count: newOrders ?? 0, label: "new orders", href: "/admin/orders?status=new", icon: BagIcon, tile: "bg-accent-500" },
     { count: toVerify ?? 0, label: "keychains to verify", href: "/admin/keychains?status=social_links_submitted", icon: KeyIcon, tile: "bg-violet-500" },

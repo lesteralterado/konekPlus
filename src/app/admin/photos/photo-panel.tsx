@@ -33,6 +33,8 @@ export function PhotoRow({
       )}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-1.5">
+          {photo.source === "card_selfie" && <StatusPill tone="sky" label="Sent by customer" />}
+          {photo.status === "pending_review" && <StatusPill tone="amber" label="To review" />}
           {withdrawn ? (
             <StatusPill tone="red" label={`Withdrawn ${photo.withdrawn_at ? when(photo.withdrawn_at) : ""}`.trim()} />
           ) : (
@@ -56,6 +58,8 @@ export function PhotoRow({
             photoId={photo.id}
             freebiePending={photo.freebie_status === "pending"}
             withdrawn={withdrawn}
+            reviewPending={photo.status === "pending_review"}
+            leftoverFiles={withdrawn && !!(photo.photo_path || photo.website_photo_path)}
             imageUrl={url}
             websiteReady={photo.consent_website && photo.status === "active" && !photo.website_photo_path}
             defaultName={customerName}

@@ -99,7 +99,10 @@ export function PrivacyContentFil() {
           namin ang litrato kasama ang petsa, ang mga pinili mo, at kung nabigyan ng
           pasasalamat na regalo. Bilang default, pribadong iniingatan ang litrato bilang
           tala ng pag-abot ng order. Gagamitin lamang ito sa aming mga social media page
-          o website kung hiwalay kang papayag doon.
+          o website kung hiwalay kang papayag doon. Maaari ring piliin ng mga may-ari
+          ng card na magpadala sa amin ng litrato nila kasama ang kanilang card mula sa
+          kanilang dashboard; ganoon din ang pagtrato namin dito, at sinusuri muna ito
+          ng isang tao bago may gawin dito.
         </p>
       </LegalSection>
 

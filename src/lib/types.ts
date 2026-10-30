@@ -503,6 +503,28 @@ export type Database = {
         Args: { p_id: string; p_amount_received: number };
         Returns: string | null;
       };
+      my_photo_offer: {
+        Args: Record<string, never>;
+        Returns: {
+          eligible: boolean;
+          photo_id: string | null;
+          status: CustomerPhotoStatus | null;
+          freebie_status: FreebieStatus | null;
+        }[];
+      };
+      submit_customer_photo: {
+        Args: {
+          p_path: string;
+          p_consent_social: boolean;
+          p_consent_website: boolean;
+          p_text_version: number;
+        };
+        Returns: string | null;
+      };
+      withdraw_customer_photo: {
+        Args: { p_id: string; p_clear?: boolean };
+        Returns: { photo_path: string | null; website_photo_path: string | null }[];
+      };
       my_card_views: {
         Args: { p_days?: number };
         Returns: { day: string; views: number }[];

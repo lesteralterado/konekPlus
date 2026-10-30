@@ -9,6 +9,7 @@ const PAGE_SIZE = 12;
 
 const FILTERS = [
   { value: "", label: "All" },
+  { value: "review", label: "To review" },
   { value: "freebie", label: "Freebie to give" },
   { value: "social", label: "Social OK" },
   { value: "website", label: "Website OK" },
@@ -32,17 +33,22 @@ export default async function AdminPhotosPage({
     .select("*", { count: "exact" })
     .order("created_at", { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1);
+  if (show === "review") query = query.eq("status", "pending_review");
   if (show === "freebie") query = query.eq("freebie_status", "pending");
   if (show === "social") query = query.eq("consent_social", true).neq("status", "withdrawn");
   if (show === "website") query = query.eq("consent_website", true).neq("status", "withdrawn");
   if (show === "withdrawn") query = query.eq("status", "withdrawn");
 
-  const [{ data: photos, count }, { count: freebiesToGive }] = await Promise.all([
+  const [{ data: photos, count }, { count: freebiesToGive }, { count: toReview }] = await Promise.all([
     query,
     supabase
       .from("customer_photos")
       .select("id", { count: "exact", head: true })
       .eq("freebie_status", "pending"),
+    supabase
+      .from("customer_photos")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending_review"),
   ]);
   const rows = photos ?? [];
 
@@ -86,6 +92,15 @@ export default async function AdminPhotosPage({
         <h1 className="text-[28px] font-bold tracking-tight text-brand-900 md:text-2xl md:font-semibold">
           Photos
         </h1>
+        {(toReview ?? 0) > 0 && (
+          <Link
+            href="/admin/photos?show=review"
+            className="ios-press inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-700"
+          >
+            <span className="size-2 rounded-full bg-amber-500" aria-hidden="true" />
+            {toReview} to review
+          </Link>
+        )}
         {(freebiesToGive ?? 0) > 0 && (
           <Link
             href="/admin/photos?show=freebie"

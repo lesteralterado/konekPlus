@@ -84,7 +84,10 @@ export function PrivacyContentEn() {
           affects your order. If you agree, we store the photo along with the date,
           the choices you made, and whether a thank-you gift was given. By default
           the photo is kept privately as our record of the handover. It is used on
-          our social media pages or website only if you separately agree to that.
+          our social media pages or website only if you separately agree to that. Card
+          owners may also choose to send us a photo of themselves with their card from
+          their dashboard; we treat it the same way, and a person checks it before
+          anything is done with it.
         </p>
       </LegalSection>
 

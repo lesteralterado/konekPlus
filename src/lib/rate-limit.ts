@@ -18,6 +18,7 @@ export const LIMITS = {
   testimonial: { max: 5, windowSec: 3600 },
   track: { max: 15, windowSec: 600 },
   paymentProof: { max: 5, windowSec: 3600 },
+  customerPhoto: { max: 5, windowSec: 3600 },
   login: { max: 10, windowSec: 600 },
   signup: { max: 10, windowSec: 3600 },
   forgotPassword: { max: 5, windowSec: 3600 },

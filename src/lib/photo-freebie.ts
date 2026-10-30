@@ -11,4 +11,13 @@ export const PHOTO_FREEBIE = {
   enabled: true,
   // What staff see in the photo sheet. Never shown to customers.
   label: "a small thank-you gift",
+
+  // Card owners sending their own photo from the dashboard. OFF until the
+  // freebie is decided: while it's off, no customer sees the offer, so
+  // nobody is promised a gift that hasn't been chosen. (Customers who already
+  // sent a photo still see its status, and can remove it.)
+  offerToCustomers: false,
+  // What the customer-facing offer says they get. Change together with
+  // `label` once the freebie is decided; keep it true to what you give.
+  customerText: "a thank-you gift",
 };

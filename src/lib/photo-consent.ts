@@ -19,6 +19,8 @@ export type ConsentLocale = "en" | "fil";
 
 export type ConsentText = {
   intro: string;
+  // The same choices, worded for a customer sending their own photo.
+  selfIntro: string;
   record: string;
   social: string;
   website: string;
@@ -29,6 +31,7 @@ export type ConsentText = {
 export const CONSENT_TEXT: Record<ConsentLocale, ConsentText> = {
   en: {
     intro: "Konek+ would like to take a photo of you with your purchase. You choose what it may be used for.",
+    selfIntro: "You're sending Konek+ a photo of you with your purchase. You choose what it may be used for.",
     record: `Keep this photo privately as our record of your handover. We delete it after ${PHOTO_RETENTION_MONTHS} months.`,
     social: "Konek+ may post this photo on its social media pages.",
     website: "Konek+ may show this photo on its website, next to your feedback.",
@@ -37,6 +40,7 @@ export const CONSENT_TEXT: Record<ConsentLocale, ConsentText> = {
   },
   fil: {
     intro: "Nais ng Konek+ na kumuha ng litrato mo kasama ang binili mo. Ikaw ang pipili kung saan ito maaaring gamitin.",
+    selfIntro: "Magpapadala ka sa Konek+ ng litrato mo kasama ang binili mo. Ikaw ang pipili kung saan ito maaaring gamitin.",
     record: `Itatago nang pribado ang litratong ito bilang tala ng pagkaka-abot sa iyo. Buburahin namin ito pagkalipas ng ${PHOTO_RETENTION_MONTHS} buwan.`,
     social: "Maaaring i-post ng Konek+ ang litratong ito sa mga social media page nito.",
     website: "Maaaring ipakita ng Konek+ ang litratong ito sa website nito, kasama ng iyong feedback.",

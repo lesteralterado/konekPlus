@@ -6,7 +6,14 @@ import { showToast } from "@/components/toast";
 import { CameraIcon } from "@/app/dashboard/icons";
 import Cropper, { type Area, type Point } from "react-easy-crop";
 import { getCroppedImage } from "@/lib/crop-image";
-import { publishPhotoToWebsite, setFreebie, withdrawPhoto, type PhotoResult } from "./actions";
+import {
+  approvePhoto,
+  publishPhotoToWebsite,
+  rejectPhoto,
+  setFreebie,
+  withdrawPhoto,
+  type PhotoResult,
+} from "./actions";
 import { openHandoverPhoto, type PhotoTarget } from "./handover-photo";
 
 const chip =
@@ -261,8 +268,72 @@ function WebsiteSheet({
   );
 }
 
-// What can still be done to one photo: record the freebie, put it on the
-// website (if the customer agreed), or withdraw it.
+function RejectSheet({ photoId, onClose }: { photoId: string; onClose: () => void }) {
+  const { pending, error, run } = useSheetAction(onClose, "Photo rejected");
+
+  return (
+    <div className="pb-2">
+      <p className="text-[15px] leading-relaxed text-slate-600">
+        This deletes the photo so the customer can send another. Use it for a photo that isn&apos;t
+        them with their card, or isn&apos;t usable. Nothing was published or promised yet.
+      </p>
+      {error && <p className="mt-3 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}
+      <div className="mt-4 flex flex-col gap-2.5 pb-1">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => run(() => rejectPhoto(photoId))}
+          className="ios-press h-12.5 w-full rounded-full bg-red-500 text-[17px] font-semibold text-white disabled:opacity-60"
+        >
+          {pending ? "Working…" : "Reject photo"}
+        </button>
+        <button type="button" onClick={onClose} className={secondaryButton}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// A photo the customer sent themselves, waiting for a look.
+function ReviewButtons({ photoId, onReject }: { photoId: string; onReject: () => void }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function approve() {
+    startTransition(async () => {
+      const result = await approvePhoto(photoId);
+      setError(result.error);
+      if (!result.error) showToast("Photo approved");
+    });
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={approve}
+        className={`${chip} bg-emerald-100 text-emerald-800`}
+      >
+        {pending ? "Approving…" : "Approve"}
+      </button>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={onReject}
+        className={`${chip} bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-600`}
+      >
+        Reject
+      </button>
+      {error && <p className="w-full text-sm text-red-600">{error}</p>}
+    </>
+  );
+}
+
+// What can still be done to one photo: approve or reject one the customer
+// sent, otherwise record the freebie, put it on the website (if the customer
+// agreed), or withdraw it.
 export function PhotoActions({
   photoId,
   freebiePending,
@@ -270,6 +341,8 @@ export function PhotoActions({
   imageUrl,
   websiteReady,
   defaultName,
+  reviewPending = false,
+  leftoverFiles = false,
 }: {
   photoId: string;
   freebiePending: boolean;
@@ -279,10 +352,45 @@ export function PhotoActions({
   // Agreed to website use, still active, and not on the website yet.
   websiteReady: boolean;
   defaultName: string;
+  // A customer-sent photo awaiting review.
+  reviewPending?: boolean;
+  // Withdrawn, but a file is still stored (a customer's own withdrawal that
+  // couldn't finish deleting). Withdrawing again finishes the job.
+  leftoverFiles?: boolean;
 }) {
-  const [sheet, setSheet] = useState<"freebie" | "withdraw" | "website" | null>(null);
+  const [sheet, setSheet] = useState<"freebie" | "withdraw" | "website" | "reject" | null>(null);
   const close = () => setSheet(null);
-  if (withdrawn) return null;
+  if (withdrawn && !leftoverFiles) return null;
+
+  if (withdrawn) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={() => setSheet("withdraw")}
+          className={`${chip} bg-red-50 text-red-600`}
+        >
+          Delete leftover file
+        </button>
+        <Sheet open={sheet === "withdraw"} onClose={close} title="Delete leftover file?" closeLabel="Close" scopeClass="admin-ui">
+          {sheet === "withdraw" && <WithdrawSheet photoId={photoId} onClose={close} />}
+        </Sheet>
+      </>
+    );
+  }
+
+  if (reviewPending) {
+    return (
+      <>
+        <div className="flex flex-wrap items-center gap-2">
+          <ReviewButtons photoId={photoId} onReject={() => setSheet("reject")} />
+        </div>
+        <Sheet open={sheet === "reject"} onClose={close} title="Reject photo?" closeLabel="Close" scopeClass="admin-ui">
+          {sheet === "reject" && <RejectSheet photoId={photoId} onClose={close} />}
+        </Sheet>
+      </>
+    );
+  }
 
   return (
     <>

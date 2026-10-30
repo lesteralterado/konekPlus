@@ -97,6 +97,82 @@ export async function saveHandoverPhoto(formData: FormData): Promise<PhotoResult
   return { error: null };
 }
 
+// A customer-sent photo passes review. Only now does it count: it becomes
+// active and, if freebies are tracked and the order hasn't had one, the
+// freebie becomes owed. (Staff-taken photos are active from the start.)
+export async function approvePhoto(photoId: string): Promise<PhotoResult> {
+  await requireAdmin();
+  if (!UUID.test(photoId)) return { error: "That photo wasn't recognised." };
+
+  const supabase = await createClient();
+  const { data: photo } = await supabase
+    .from("customer_photos")
+    .select("status, card_order_id, keychain_order_id")
+    .eq("id", photoId)
+    .maybeSingle();
+  if (!photo) return { error: "That photo no longer exists." };
+  if (photo.status !== "pending_review") return { error: "That photo was already reviewed." };
+
+  let freebieStatus: "pending" | "none" = "none";
+  if (PHOTO_FREEBIE.enabled) {
+    const column = photo.card_order_id ? "card_order_id" : "keychain_order_id";
+    const orderId = photo.card_order_id ?? photo.keychain_order_id;
+    const { data: existing } = await supabase
+      .from("customer_photos")
+      .select("id")
+      .eq(column, orderId as string)
+      .in("freebie_status", ["pending", "given"])
+      .limit(1);
+    if (!existing?.length) freebieStatus = "pending";
+  }
+
+  const { data, error } = await supabase
+    .from("customer_photos")
+    .update({ status: "active", freebie_status: freebieStatus })
+    .eq("id", photoId)
+    .eq("status", "pending_review")
+    .select("id");
+  if (error) return { error: error.message };
+  if (!data?.length) return { error: "That photo was already reviewed." };
+
+  refresh();
+  return { error: null };
+}
+
+// A customer-sent photo that isn't usable (not them, not their card, blurry).
+// The file and the row are removed so they can send another; nothing was
+// published or promised yet, so there's no record to keep.
+export async function rejectPhoto(photoId: string): Promise<PhotoResult> {
+  await requireAdmin();
+  if (!UUID.test(photoId)) return { error: "That photo wasn't recognised." };
+
+  const supabase = await createClient();
+  const { data: photo } = await supabase
+    .from("customer_photos")
+    .select("status, photo_path")
+    .eq("id", photoId)
+    .maybeSingle();
+  if (!photo) return { error: "That photo no longer exists." };
+  if (photo.status !== "pending_review") return { error: "Only photos waiting for review can be rejected." };
+
+  if (photo.photo_path) {
+    const { error: removeError } = await supabase.storage
+      .from("customer-photos")
+      .remove([photo.photo_path]);
+    if (removeError) return { error: "We couldn't delete the file. Please try again." };
+  }
+
+  const { error } = await supabase
+    .from("customer_photos")
+    .delete()
+    .eq("id", photoId)
+    .eq("status", "pending_review");
+  if (error) return { error: error.message };
+
+  refresh();
+  return { error: null };
+}
+
 // The thank-you was handed over (note = what it was), or the customer
 // didn't want it. Only moves a pending freebie, so it can't be rewritten.
 export async function setFreebie(

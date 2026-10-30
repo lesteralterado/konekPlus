@@ -78,7 +78,8 @@ export function TermsContentEn() {
         </p>
         <p>
           When we hand over a card or keychain in person we may offer an optional
-          photo with you, and a thank-you for agreeing. Photos are only taken and
+          photo with you (card owners can also send one from their dashboard), and a
+          thank-you for agreeing. Photos are only taken and
           used as you agree at the time (see our{" "}
           <Link href="/privacy" className="font-medium text-brand-700 underline underline-offset-2">
             Privacy Policy
