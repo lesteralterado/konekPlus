@@ -5,6 +5,7 @@ import { Sheet } from "@/components/sheet";
 import { showToast } from "@/components/toast";
 import type { CardOrderStatus, PaymentMethod } from "@/lib/types";
 import { BoxIcon, CheckIcon, HandIcon, TruckIcon } from "../icons";
+import { openHandoverPhoto } from "../photos/handover-photo";
 import { ORDER_STATUS } from "../ui/status";
 import { setOrderStatus } from "./actions";
 import { ShipOrder } from "./ship-order";
@@ -28,10 +29,13 @@ export function NextStep({
   hasEmail,
   unwrittenCards = 0,
   paymentMethod = "cod",
+  customerName,
 }: {
   orderId: string;
   status: CardOrderStatus;
   hasEmail: boolean;
+  // For the photo offer after an in-person hand-over.
+  customerName?: string;
   // Assigned cards not yet marked written — a soft warning before shipping.
   unwrittenCards?: number;
   // Cash orders are met in person: Preparing → Hand over (→ delivered), no courier.
@@ -59,6 +63,11 @@ export function NextStep({
           startTransition(async () => {
             await setOrderStatus(orderId, step.to);
             showToast(`Marked ${ORDER_STATUS[step.to].label.toLowerCase()}`);
+            // Handed over in person: the customer is right there, so offer the
+            // optional photo. (Couriered orders skip this; the owner isn't here.)
+            if (paymentMethod === "cash" && step.to === "delivered" && customerName) {
+              openHandoverPhoto({ kind: "card", orderId, customerName });
+            }
           });
         }}
         className="ios-press flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-900 text-[15px] font-semibold text-white disabled:opacity-60 md:h-9 md:w-auto md:px-4 md:text-xs"

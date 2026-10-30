@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
+import { CameraIcon } from "@/app/dashboard/icons";
 import { ActivationFunnel } from "./activation-funnel";
 import { manilaMonth } from "@/lib/finance";
 import { formatPrice } from "@/lib/finishes";
@@ -166,6 +167,7 @@ export default async function AdminDashboardPage() {
     { count: toHandOver },
     { count: newFeedback },
     { count: renewalsToVerify },
+    { count: freebiesToGive },
   ] = await Promise.all([
       supabase.from("tags").select("*", { count: "exact", head: true }),
       supabase.from("tags").select("*", { count: "exact", head: true }).eq("claimed", true),
@@ -189,6 +191,10 @@ export default async function AdminDashboardPage() {
         .from("plan_payments")
         .select("id", { count: "exact", head: true })
         .eq("status", "proof_submitted"),
+      supabase
+        .from("customer_photos")
+        .select("id", { count: "exact", head: true })
+        .eq("freebie_status", "pending"),
     ]);
 
   // Money: everything that isn't cancelled or refunded. Small table, so one
@@ -235,6 +241,7 @@ export default async function AdminDashboardPage() {
   const todo = [
     { count: money.verify.n, label: "GCash proofs to verify", href: "/admin/orders?pay=proof_submitted", icon: WalletIcon, tile: "bg-emerald-500" },
     { count: renewalsToVerify ?? 0, label: "Pro renewals to verify", href: "/admin/renewals", icon: StarIcon, tile: "bg-accent-500" },
+    { count: freebiesToGive ?? 0, label: "photo freebies to give", href: "/admin/photos?show=freebie", icon: CameraIcon, tile: "bg-pink-500" },
     { count: newOrders ?? 0, label: "new orders", href: "/admin/orders?status=new", icon: BagIcon, tile: "bg-accent-500" },
     { count: toVerify ?? 0, label: "keychains to verify", href: "/admin/keychains?status=social_links_submitted", icon: KeyIcon, tile: "bg-violet-500" },
     { count: toHandOver ?? 0, label: "keychains to hand over", href: "/admin/keychains?status=ready_for_handover", icon: KeyIcon, tile: "bg-brand-600" },

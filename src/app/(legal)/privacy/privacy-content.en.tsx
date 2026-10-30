@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "September 20, 2026";
+const UPDATED = "October 30, 2026";
 
 export function PrivacyContentEn() {
   return (
@@ -75,6 +75,17 @@ export function PrivacyContentEn() {
           phone/email you provide, and the social profile links you submit so we can
           program the keychain.
         </p>
+        <p>
+          <strong className="font-semibold text-brand-900">
+            Photos taken at handover (optional).
+          </strong>{" "}
+          When we hand over a card or keychain in person, we may offer to take a
+          photo of you with it. It is entirely optional &mdash; saying no never
+          affects your order. If you agree, we store the photo along with the date,
+          the choices you made, and whether a thank-you gift was given. By default
+          the photo is kept privately as our record of the handover. It is used on
+          our social media pages or website only if you separately agree to that.
+        </p>
       </LegalSection>
 
       <LegalSection heading="2. How we use this information">
@@ -84,6 +95,7 @@ export function PrivacyContentEn() {
             "To let you generate a “save to contacts” vCard from your profile",
             "To show you your own card’s view counts",
             "To fulfill physical card and keychain orders",
+            "To keep an optional photo of you with your order as a private record of the handover and, only if you separately agree, to post it on our social media pages or show it on our website",
             "To respond to support requests",
           ]}
         />
@@ -107,6 +119,12 @@ export function PrivacyContentEn() {
           database-level access controls described below &mdash; not just an
           app-level login screen.
         </p>
+        <p>
+          Handover photos are private by default: they sit in access-controlled
+          storage that only Konek+ administrators can open. A photo becomes public
+          only if you agreed to social media or website use, and then only in the
+          place you agreed to.
+        </p>
       </LegalSection>
 
       <LegalSection heading="4. How we protect your data">
@@ -116,6 +134,7 @@ export function PrivacyContentEn() {
             "Data is encrypted in transit (TLS) between your device, our servers, and our database",
             "Account passwords are hashed by our authentication provider; device-trust PINs are stored only as salted hashes",
             "Uploaded images (avatar, portfolio) are stored in access-scoped storage tied to your account",
+            "Handover photos are stored in a private bucket and shown to administrators only through short-lived links",
           ]}
         />
         <p>
@@ -144,6 +163,7 @@ export function PrivacyContentEn() {
             "We keep your account and profile data for as long as your account is active",
             "Deleting your account removes your profile and portfolio items, and unlinks any cards from it (they revert to unclaimed)",
             "Anonymous view-count records are kept in aggregate and periodically pruned; they can never be tied back to a visitor’s identity because we never collected one",
+            "Handover photos kept privately are deleted after 12 months. A photo you agreed to have on our website or social media stays until you withdraw consent",
           ]}
         />
       </LegalSection>
@@ -155,6 +175,18 @@ export function PrivacyContentEn() {
           processing. You can already do most of this yourself from your dashboard
           &mdash; edit or remove any profile field, delete portfolio items, or download
           your vCard.
+        </p>
+        <p>
+          If you&apos;re in the Philippines, you have rights under the Data Privacy
+          Act of 2012 (Republic Act No. 10173), including the rights to be informed,
+          to access your data, to object, to correct it, to have it erased or
+          blocked, and to file a complaint with the National Privacy Commission.
+        </p>
+        <p>
+          If you agreed to a handover photo you can change your mind at any time:
+          contact us and we will delete the photo, remove it from our website, and
+          take down any social media post on request. Any thank-you gift you
+          already received is yours to keep.
         </p>
         <p>
           For anything else, including full account deletion, contact us at{" "}
@@ -173,7 +205,8 @@ export function PrivacyContentEn() {
         <p>
           Konek+ is not directed to children, and we do not knowingly collect data
           from anyone under 16. If you believe a child has created an account, contact
-          us and we&apos;ll remove it.
+          us and we&apos;ll remove it. We only take handover photos of customers aged
+          18 or over, or with the agreement of a parent or guardian.
         </p>
       </LegalSection>
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "Setyembre 20, 2026";
+const UPDATED = "Oktubre 30, 2026";
 
 // First-pass Filipino translation — see src/lib/i18n/dictionaries/fil.ts for
 // the same note. Legal/policy text especially deserves a native-speaker
@@ -89,6 +89,18 @@ export function PrivacyContentFil() {
           customer, numero ng telepono/email na ibinigay mo, at ang mga social profile
           link na isinumite mo para maaari naming i-program ang keychain.
         </p>
+        <p>
+          <strong className="font-semibold text-brand-900">
+            Mga larawan sa pag-abot ng order (opsyonal).
+          </strong>{" "}
+          Kapag personal naming iniaabot ang card o keychain, maaari kaming mag-alok na
+          kumuha ng litrato mo kasama nito. Ganap itong opsyonal &mdash; ang pagtanggi
+          ay hindi kailanman makakaapekto sa iyong order. Kung papayag ka, iniimbak
+          namin ang litrato kasama ang petsa, ang mga pinili mo, at kung nabigyan ng
+          pasasalamat na regalo. Bilang default, pribadong iniingatan ang litrato bilang
+          tala ng pag-abot ng order. Gagamitin lamang ito sa aming mga social media page
+          o website kung hiwalay kang papayag doon.
+        </p>
       </LegalSection>
 
       <LegalSection heading="2. Paano namin ginagamit ang impormasyong ito">
@@ -98,6 +110,7 @@ export function PrivacyContentFil() {
             "Para payagan kang makagawa ng “save to contacts” na vCard mula sa iyong profile",
             "Para ipakita sa iyo ang bilang ng view ng sarili mong card",
             "Para tuparin ang mga order ng physical card at keychain",
+            "Para itago ang opsyonal na litrato mo kasama ang order mo bilang pribadong tala ng pag-abot ng order at, kung hiwalay kang papayag lamang, i-post ito sa aming mga social media page o ipakita sa aming website",
             "Para tumugon sa mga kahilingan ng suporta",
           ]}
         />
@@ -121,6 +134,13 @@ export function PrivacyContentFil() {
           mismo ay sakop din ng parehong database-level access controls na inilarawan
           sa ibaba &mdash; hindi lang isang app-level na login screen.
         </p>
+        <p>
+          Pribado bilang default ang mga larawan sa pag-abot ng order: nasa
+          access-controlled na storage ang mga ito na mabubuksan lamang ng mga
+          administrator ng Konek+. Magiging pampubliko lamang ang isang larawan kung
+          pumayag ka sa paggamit sa social media o website, at doon lamang sa
+          pinayagan mo.
+        </p>
       </LegalSection>
 
       <LegalSection heading="4. Paano namin pinoprotektahan ang iyong data">
@@ -130,6 +150,7 @@ export function PrivacyContentFil() {
             "Naka-encrypt ang data habang ipinapadala (TLS) sa pagitan ng iyong device, ng aming mga server, at ng aming database",
             "Naka-hash ang mga password ng account gamit ang aming authentication provider; ang mga device-trust PIN ay iniimbak lamang bilang salted hash",
             "Ang mga na-upload na larawan (avatar, portfolio) ay iniimbak sa access-scoped na storage na nakatali sa iyong account",
+            "Ang mga larawan sa pag-abot ng order ay iniimbak sa pribadong bucket at ipinapakita lamang sa mga administrator sa pamamagitan ng mga link na panandalian lamang",
           ]}
         />
         <p>
@@ -159,6 +180,7 @@ export function PrivacyContentFil() {
             "Iniingatan namin ang data ng iyong account at profile habang aktibo ang iyong account",
             "Ang pagbura ng iyong account ay nag-aalis ng iyong profile at mga portfolio item, at nag-aalis ng link sa anumang card mula rito (babalik ang mga ito sa unclaimed)",
             "Ang mga anonymous na rekord ng view count ay iniingatan sa aggregate at pana-panahong binubura; hindi kailanman maiuugnay ang mga ito pabalik sa pagkakakilanlan ng isang bisita dahil hindi kami kailanman nangolekta ng isa",
+            "Ang mga larawan sa pag-abot ng order na pribadong iniingatan ay binubura pagkalipas ng 12 buwan. Ang larawang pinayagan mong ilagay sa aming website o social media ay mananatili hanggang bawiin mo ang pahintulot",
           ]}
         />
       </LegalSection>
@@ -170,6 +192,18 @@ export function PrivacyContentFil() {
           paghigpitan ang ilang pagproseso. Karamihan nito ay magagawa mo na mismo
           mula sa iyong dashboard &mdash; i-edit o alisin ang anumang profile field,
           burahin ang mga portfolio item, o i-download ang iyong vCard.
+        </p>
+        <p>
+          Kung ikaw ay nasa Pilipinas, may mga karapatan ka sa ilalim ng Data Privacy
+          Act of 2012 (Republic Act No. 10173), kabilang ang karapatang malaman,
+          ma-access ang iyong data, tumutol, magtama nito, ipabura o i-block ito, at
+          maghain ng reklamo sa National Privacy Commission.
+        </p>
+        <p>
+          Kung pumayag ka sa litrato sa pag-abot ng order, maaari kang magbago ng isip
+          anumang oras: makipag-ugnayan sa amin at buburahin namin ang litrato, aalisin
+          sa aming website, at ide-delete ang anumang social media post kapag hiniling.
+          Ang anumang pasasalamat na regalo na natanggap mo na ay iyo na.
         </p>
         <p>
           Para sa iba pa, kabilang ang kumpletong pagbura ng account, makipag-ugnayan
@@ -190,7 +224,8 @@ export function PrivacyContentFil() {
           Ang Konek+ ay hindi nakadirekta sa mga bata, at hindi namin sinasadyang
           kinokolekta ang data mula sa sinumang wala pang 16 taong gulang. Kung sa
           tingin mo ay may batang gumawa ng account, makipag-ugnayan sa amin at aalisin
-          namin ito.
+          namin ito. Kumukuha lamang kami ng litrato sa pag-abot ng order ng mga
+          customer na 18 taong gulang pataas, o may pahintulot ng magulang o guardian.
         </p>
       </LegalSection>
 

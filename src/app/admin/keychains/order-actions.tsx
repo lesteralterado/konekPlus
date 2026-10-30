@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { openHandoverPhoto } from "../photos/handover-photo";
 import { ConfirmButton } from "../ui/drawers";
 import {
   markCompleted,
@@ -98,7 +99,12 @@ export function HandoverButton({
       label="Release / Handover"
       pendingLabel="Releasing…"
       confirmMessage={`Confirm physical handover of all keychains to ${customerName}?`}
-      onRun={() => markHandedOver(orderId)}
+      onRun={async () => {
+        await markHandedOver(orderId);
+        // The customer is right there: offer the optional photo. The status
+        // change unmounts this button, so the sheet lives in the admin layout.
+        openHandoverPhoto({ kind: "keychain", orderId, customerName });
+      }}
     />
   );
 }

@@ -3,6 +3,7 @@ import { Toaster } from "@/components/toast";
 import { requireAdmin } from "@/lib/admin-auth";
 import { appIconUrl } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
+import { HandoverPhotoHost } from "./photos/handover-photo";
 import { AdminNav } from "./ui/admin-nav";
 
 // Installable on a phone's home screen ("Add to Home Screen"), opening
@@ -48,6 +49,7 @@ export default async function AdminLayout({
         {children}
       </main>
       <Toaster scopeClass="admin-ui" />
+      <HandoverPhotoHost />
     </div>
   );
 }

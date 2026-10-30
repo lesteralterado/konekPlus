@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { MIN_TESTIMONIALS } from "@/app/_landing/testimonials";
 import { createClient } from "@/lib/supabase/server";
 import { EyeIcon, EyeOffIcon, StarIcon, TrashIcon } from "../icons";
@@ -60,6 +61,15 @@ export default async function AdminTestimonialsPage() {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
+                  {item.photo_url && (
+                    <Image
+                      src={item.photo_url}
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="size-8 rounded-full object-cover"
+                    />
+                  )}
                   <span className="font-semibold text-brand-900">{item.author_name}</span>
                   {item.author_role && <span className="text-sm text-slate-500">{item.author_role}</span>}
                   <span className="flex items-center gap-0.5 text-accent-500" aria-label={`${item.rating} of 5`}>

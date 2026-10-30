@@ -4,6 +4,7 @@ import Link, { useLinkStatus } from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { signOut } from "@/app/dashboard/actions";
+import { CameraIcon } from "@/app/dashboard/icons";
 import { Sheet } from "@/components/sheet";
 import {
   ArrowLeftIcon,
@@ -39,6 +40,7 @@ const TABS: NavItem[] = [
 const MORE: NavItem[] = [
   { href: "/admin/finance", label: "Finance", short: "Finance", icon: WalletIcon, tile: "bg-emerald-500" },
   { href: "/admin/renewals", label: "Pro renewals", short: "Renewals", icon: StarIcon, tile: "bg-accent-500" },
+  { href: "/admin/photos", label: "Photos", short: "Photos", icon: CameraIcon, tile: "bg-pink-500" },
   { href: "/admin/keychains", label: "Keychains", short: "Keychains", icon: KeyIcon, tile: "bg-violet-500" },
   { href: "/admin/feedback", label: "Feedback", short: "Feedback", icon: MessageIcon, tile: "bg-amber-500" },
   { href: "/admin/testimonials", label: "Testimonials", short: "Reviews", icon: StarIcon, tile: "bg-rose-500" },

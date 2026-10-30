@@ -4,7 +4,7 @@ import { formatPrice } from "@/lib/finishes";
 import { PRO_INCLUDED_MONTHS, PRO_PRICE_PHP } from "@/lib/plan";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "October 27, 2026";
+const UPDATED = "October 30, 2026";
 
 export function TermsContentEn() {
   return (
@@ -75,6 +75,17 @@ export function TermsContentEn() {
         <p>
           We reserve the right to disable a card that&apos;s reported lost, abused, or
           used to violate these Terms.
+        </p>
+        <p>
+          When we hand over a card or keychain in person we may offer an optional
+          photo with you, and a thank-you for agreeing. Photos are only taken and
+          used as you agree at the time (see our{" "}
+          <Link href="/privacy" className="font-medium text-brand-700 underline underline-offset-2">
+            Privacy Policy
+          </Link>
+          ). Saying no never affects your order or our replacement guarantee, and
+          you can withdraw your consent at any time. A thank-you you already
+          received is yours to keep.
         </p>
       </LegalSection>
 

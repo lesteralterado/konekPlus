@@ -54,7 +54,31 @@ export async function setTestimonialPublished(id: string, published: boolean) {
 export async function deleteTestimonial(id: string) {
   await requireAdmin();
   const supabase = await createClient();
+  const { data: row } = await supabase
+    .from("landing_testimonials")
+    .select("customer_photo_id")
+    .eq("id", id)
+    .maybeSingle();
+
   const { error } = await supabase.from("landing_testimonials").delete().eq("id", id);
   if (error) throw new Error(error.message);
+
+  // A photo testimonial's public copy goes with it (best effort — the private
+  // photo and its consent record are untouched).
+  if (row?.customer_photo_id) {
+    const { data: photo } = await supabase
+      .from("customer_photos")
+      .select("website_photo_path")
+      .eq("id", row.customer_photo_id)
+      .maybeSingle();
+    if (photo?.website_photo_path) {
+      await supabase.storage.from("testimonial-photos").remove([photo.website_photo_path]);
+      await supabase
+        .from("customer_photos")
+        .update({ website_photo_path: null })
+        .eq("id", row.customer_photo_id);
+    }
+    revalidatePath("/admin/photos");
+  }
   revalidate();
 }

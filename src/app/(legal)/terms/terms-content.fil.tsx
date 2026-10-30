@@ -4,7 +4,7 @@ import { formatPrice } from "@/lib/finishes";
 import { PRO_INCLUDED_MONTHS, PRO_PRICE_PHP } from "@/lib/plan";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "Oktubre 27, 2026";
+const UPDATED = "Oktubre 30, 2026";
 
 // First-pass Filipino translation — worth a native-speaker proofread
 // before this is treated as the authoritative Filipino version.
@@ -95,6 +95,18 @@ export function TermsContentFil() {
         <p>
           Inilalaan namin ang karapatang i-disable ang isang card na iniulat na nawala,
           inabuso, o ginamit para labagin ang mga Tuntuning ito.
+        </p>
+        <p>
+          Kapag personal naming iniaabot ang card o keychain, maaari kaming mag-alok ng
+          opsyonal na litrato kasama ka, at pasasalamat sa pagpayag. Kukunan at
+          gagamitin lamang ang mga litrato ayon sa pinayagan mo noon (tingnan ang
+          aming{" "}
+          <Link href="/privacy" className="font-medium text-brand-700 underline underline-offset-2">
+            Patakaran sa Privacy
+          </Link>
+          ). Ang pagtanggi ay hindi kailanman makakaapekto sa iyong order o sa aming
+          replacement guarantee, at maaari mong bawiin ang iyong pahintulot anumang
+          oras. Ang pasasalamat na natanggap mo na ay iyo na.
         </p>
       </LegalSection>
 

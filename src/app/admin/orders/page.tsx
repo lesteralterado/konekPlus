@@ -7,6 +7,8 @@ import type { CardOrderStatus, PaymentStatus } from "@/lib/types";
 import { BagIcon, MailIcon, PhoneIcon, SmsIcon } from "../icons";
 import { CopyButton } from "../ui/drawers";
 import { CARD, EmptyState, FilterChips, IconLink, PANEL, Pager } from "../ui/kit";
+import { loadOrderPhotos } from "../photos/data";
+import { PhotoPanel } from "../photos/photo-panel";
 import { AssignCards } from "./assign-cards";
 import { NextStep } from "./next-step";
 import { PaymentStep } from "./payment-step";
@@ -84,6 +86,11 @@ export default async function AdminOrdersPage({
       { tagId: t.tag_id, writtenAt: t.written_at, claimed: t.claimed },
     ]);
   }
+  const { byOrder: photosByOrder, urls: photoUrls } = await loadOrderPhotos(
+    supabase,
+    "card_order_id",
+    orderIds,
+  );
   const origin = siteOrigin();
 
   const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
@@ -248,6 +255,7 @@ export default async function AdminOrdersPage({
                       hasEmail={!!order.email}
                       unwrittenCards={unwritten}
                       paymentMethod={order.payment_method}
+                      customerName={order.full_name}
                     />
                     <PaymentStep
                       orderId={order.id}
@@ -274,6 +282,16 @@ export default async function AdminOrdersPage({
                       <ShipOrder orderId={order.id} hasEmail={!!order.email} />
                     </div>
                   )}
+                  <PhotoPanel
+                    photos={photosByOrder.get(order.id) ?? []}
+                    urls={photoUrls}
+                    target={{ kind: "card", orderId: order.id, customerName: order.full_name }}
+                    // Only orders met in person (cash meet-up) offer a new photo.
+                    canAdd={
+                      order.payment_method === "cash" &&
+                      ["delivered", "fulfilled"].includes(order.status)
+                    }
+                  />
                   {order.status !== "cancelled" && (
                     <AssignCards
                       orderId={order.id}

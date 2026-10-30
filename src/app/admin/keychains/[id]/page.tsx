@@ -9,6 +9,8 @@ import { cleanProfileUrl } from "@/lib/keychain-link";
 import { createClient } from "@/lib/supabase/server";
 import type { KeychainPlatform } from "@/lib/types";
 import { ArrowLeftIcon, MailIcon, PhoneIcon } from "../../icons";
+import { loadOrderPhotos } from "../../photos/data";
+import { PhotoPanel } from "../../photos/photo-panel";
 import { IconLink } from "../../ui/kit";
 import { NfcGuide } from "../nfc-guide";
 import {
@@ -47,13 +49,14 @@ export default async function AdminKeychainOrderDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: order }, { data: items }] = await Promise.all([
+  const [{ data: order }, { data: items }, { byOrder: photosByOrder, urls: photoUrls }] = await Promise.all([
     supabase.from("keychain_orders").select("*").eq("id", id).maybeSingle(),
     supabase
       .from("keychain_items")
       .select("*")
       .eq("order_id", id)
       .order("created_at", { ascending: true }),
+    loadOrderPhotos(supabase, "keychain_order_id", [id]),
   ]);
 
   if (!order) notFound();
@@ -122,6 +125,13 @@ export default async function AdminKeychainOrderDetailPage({
           )}
           {order.status === "handed_over" && <MarkCompletedButton orderId={order.id} />}
         </div>
+
+        <PhotoPanel
+          photos={photosByOrder.get(order.id) ?? []}
+          urls={photoUrls}
+          target={{ kind: "keychain", orderId: order.id, customerName: order.customer_name }}
+          canAdd={order.status === "handed_over" || order.status === "completed"}
+        />
       </section>
 
       {writing && <NfcGuide open={!allReadyForHandover} />}

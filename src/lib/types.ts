@@ -39,6 +39,36 @@ export type PublicProfile = Omit<
   "user_id" | "show_email" | "show_phone" | "pro_until" | "founding" | "pro_reminder_sent_at"
 >;
 
+// Optional photos with customers at handover (0026).
+export type CustomerPhotoSource = "keychain_handover" | "card_handover" | "card_selfie";
+export type CustomerPhotoStatus = "pending_review" | "active" | "withdrawn";
+export type FreebieStatus = "none" | "pending" | "given" | "declined";
+
+export type CustomerPhoto = {
+  id: string;
+  source: CustomerPhotoSource;
+  keychain_order_id: string | null;
+  card_order_id: string | null;
+  // Path in the private customer-photos bucket; null once withdrawn/purged.
+  photo_path: string | null;
+  purged_at: string | null;
+  // The public, cropped copy on the website (0028); null if none.
+  website_photo_path: string | null;
+  consent_text_version: number;
+  consent_social: boolean;
+  consent_website: boolean;
+  consent_recorded_by: "staff" | "customer";
+  consented_at: string;
+  taken_by: string | null;
+  status: CustomerPhotoStatus;
+  withdrawn_at: string | null;
+  freebie_status: FreebieStatus;
+  freebie_note: string | null;
+  freebie_given_at: string | null;
+  freebie_given_by: string | null;
+  created_at: string;
+};
+
 export type ProTerm = "monthly" | "yearly";
 export type PlanPaymentStatus = "proof_submitted" | "paid" | "rejected";
 
@@ -142,7 +172,16 @@ export type LandingTestimonial = {
   published: boolean;
   sort_order: number;
   created_at: string;
+  // Cropped, public copy of a customer's photo (0028), only for customers who
+  // agreed to website use.
+  photo_url: string | null;
+  // The private photo record behind it. Admin-only: never select it in a
+  // public query.
+  customer_photo_id: string | null;
 };
+
+// What the public homepage receives.
+export type PublicLandingTestimonial = Omit<LandingTestimonial, "customer_photo_id">;
 
 export type ProfileTestimonial = {
   id: string;
@@ -275,6 +314,13 @@ export type Database = {
         Insert: Pick<FinanceExpense, "category" | "description" | "amount_php"> &
           Partial<FinanceExpense>;
         Update: Partial<FinanceExpense>;
+        Relationships: [];
+      };
+      customer_photos: {
+        Row: CustomerPhoto;
+        Insert: Pick<CustomerPhoto, "source" | "consent_text_version" | "consent_recorded_by"> &
+          Partial<CustomerPhoto>;
+        Update: Partial<CustomerPhoto>;
         Relationships: [];
       };
       plan_payments: {

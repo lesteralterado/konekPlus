@@ -7,6 +7,23 @@ import { usePrefersReducedMotion } from "@/lib/use-prefers-reduced-motion";
 import { CloseIcon } from "@/app/dashboard/icons";
 import { useIsClient } from "@/components/toast";
 
+// Counted, so two sheets open at once (one handing over to the next, e.g. a
+// confirm drawer closing as a photo sheet opens) can't leave the page stuck:
+// each used to restore the overflow it saw when it opened, so the later one
+// put "hidden" back. Only the last sheet to close unlocks scrolling.
+let scrollLocks = 0;
+let scrollBefore = "";
+
+function lockPageScroll() {
+  const root = document.documentElement;
+  if (scrollLocks++ === 0) scrollBefore = root.style.overflow;
+  root.style.overflow = "hidden";
+}
+
+function unlockPageScroll() {
+  if (--scrollLocks === 0) document.documentElement.style.overflow = scrollBefore;
+}
+
 // iOS-style bottom sheet: springs up, dims the page, drag the grabber/header
 // down (or tap outside / Escape / ✕) to dismiss. Portals to <body> because
 // a transformed ancestor (e.g. the profile's .fade-up) would otherwise trap
@@ -41,9 +58,7 @@ export function Sheet({
   useEffect(() => {
     if (!open) return;
     const previouslyFocused = document.activeElement as HTMLElement | null;
-    const root = document.documentElement;
-    const prevOverflow = root.style.overflow;
-    root.style.overflow = "hidden";
+    lockPageScroll();
     panelRef.current?.focus();
 
     function onKey(e: KeyboardEvent) {
@@ -52,7 +67,7 @@ export function Sheet({
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
-      root.style.overflow = prevOverflow;
+      unlockPageScroll();
       previouslyFocused?.focus?.();
     };
   }, [open]);

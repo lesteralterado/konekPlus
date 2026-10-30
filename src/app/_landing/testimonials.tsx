@@ -1,5 +1,6 @@
 import type { Dictionary } from "@/lib/i18n/dictionaries/types";
-import type { LandingTestimonial } from "@/lib/types";
+import Image from "next/image";
+import type { PublicLandingTestimonial } from "@/lib/types";
 import { StarIcon } from "./icons";
 
 // Social proof only works when there's enough of it: below this many
@@ -20,7 +21,7 @@ export function Testimonials({
   items,
 }: {
   t: Dictionary["home"]["testimonials"];
-  items: LandingTestimonial[];
+  items: PublicLandingTestimonial[];
 }) {
   if (items.length < MIN_TESTIMONIALS) return null;
 
@@ -48,9 +49,20 @@ export function Testimonials({
                 <blockquote className="mt-4 text-brand-900">“{item.quote}”</blockquote>
               </div>
               <figcaption className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
-                  {initials(item.author_name)}
-                </span>
+                {item.photo_url ? (
+                  // Only customers who agreed to website use get a photo (0028).
+                  <Image
+                    src={item.photo_url}
+                    alt=""
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
+                    {initials(item.author_name)}
+                  </span>
+                )}
                 <span>
                   <span className="block text-sm font-semibold text-brand-900">{item.author_name}</span>
                   {item.author_role && (

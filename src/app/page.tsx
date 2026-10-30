@@ -51,9 +51,11 @@ export default async function Home() {
     supabase.rpc("average_feedback_rating"),
     supabase.rpc("feedback_rating_count"),
     // RLS returns published rows only.
+    // Explicit columns: customer_photo_id names a private record, so it must
+    // never reach the public page.
     supabase
       .from("landing_testimonials")
-      .select("*")
+      .select("id, author_name, author_role, quote, rating, published, sort_order, created_at, photo_url")
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
   ]);
