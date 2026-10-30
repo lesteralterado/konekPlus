@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PRELOADER_CARD_BACK_URL, PRELOADER_CARD_FRONT_URL } from "@/lib/constants";
 import { markPreloaderDone } from "@/lib/preloader-events";
 
 // The first tap lands ~0.93s in (see .preloader-tap in globals.css); hold
@@ -11,24 +12,37 @@ const MAX_HOLD_MS = 3200;
 const EXIT_MS = 800;
 const REDUCED_EXIT_MS = 200;
 
-// Inline, not the remote Cloudinary logo — the splash must render
-// instantly regardless of network speed.
-function TapMark({ className }: { className?: string }) {
+// One side of the card art. Same-origin and a few KB (see constants.ts), so
+// the splash renders without waiting on a third party. The face's own dark
+// gradient (.preloader-face) shows until the image decodes, so it's never
+// blank.
+function CardFace({
+  src,
+  className,
+  children,
+}: {
+  src: string;
+  // Must position the face (relative / absolute): children are placed inside it.
+  className: string;
+  children?: React.ReactNode;
+}) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
+    <div
+      className={`preloader-face overflow-hidden shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/10 ${className}`}
     >
-      <path d="M4.5 12a7.5 7.5 0 0 1 7.5-7.5" />
-      <path d="M7.3 12a4.7 4.7 0 0 1 4.7-4.7" />
-      <circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none" />
-    </svg>
+      {/* eslint-disable-next-line @next/next/no-img-element -- fixed local art, preloaded in layout.tsx; next/image adds nothing here */}
+      <img
+        src={src}
+        alt=""
+        width={720}
+        height={411}
+        decoding="sync"
+        fetchPriority="high"
+        draggable={false}
+        className="block size-full object-cover"
+      />
+      {children}
+    </div>
   );
 }
 
@@ -109,15 +123,21 @@ export function Preloader() {
           ))}
 
           {/* Positioned so it paints above the absolutely-positioned rings
-              — they should bloom out from behind the card. */}
-          <div ref={cardRef} className="preloader-card-in relative">
-            <div className="preloader-tap relative flex h-24 w-42 flex-col justify-between overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#17384f_0%,#0a1c29_100%)] p-4 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.6)] ring-1 ring-white/10">
-              <TapMark className="h-6 w-6 text-accent-500" />
-              <div className="flex items-end justify-between">
-                <span className="text-sm font-semibold tracking-tight text-white/85">konek+</span>
-                <span className="text-[9px] font-semibold tracking-[0.2em] text-white/30">NFC</span>
-              </div>
-              <span className="preloader-sheen" />
+              — they should bloom out from behind the cards. */}
+          <div ref={cardRef} className="preloader-card-in relative flex w-64 flex-col sm:w-80">
+            {/* QR back on top, its lower edge tucked under the front — the
+                overlap stops short of the name printed under the QR. */}
+            <CardFace
+              src={PRELOADER_CARD_BACK_URL}
+              className="relative aspect-7/4 -translate-x-2 -rotate-3"
+            />
+            {/* NFC front: the one that taps. The tilts and offsets use the
+                individual rotate/translate properties so they compose with
+                the tap's transform instead of being replaced by it. */}
+            <div className="preloader-tap relative -mt-[7%] aspect-7/4 translate-x-2 rotate-2">
+              <CardFace src={PRELOADER_CARD_FRONT_URL} className="relative size-full">
+                <span className="preloader-sheen" />
+              </CardFace>
             </div>
           </div>
         </div>

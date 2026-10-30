@@ -339,6 +339,14 @@ body:has(> main.profile-ui) {
   animation: preloader-card-in 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* One side of the card art (a 3.5 × 2 in business card). The gradient
+   matches the art's own, so the face is never blank while its image loads;
+   the radius is the card's real corner (~3 mm of 89 mm). */
+.preloader-face {
+  border-radius: 4% / 7%;
+  background: linear-gradient(180deg, #2d2d2d, #000);
+}
+
 .preloader-tap {
   animation: preloader-tap 1.4s cubic-bezier(0.45, 0, 0.25, 1) 0.2s infinite both;
 }
@@ -347,8 +355,8 @@ body:has(> main.profile-ui) {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 8rem;
-  height: 8rem;
+  width: 11rem;
+  height: 11rem;
   border: 2px solid color-mix(in srgb, var(--accent-500) 70%, transparent);
   border-radius: 9999px;
   opacity: 0;
