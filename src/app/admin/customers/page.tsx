@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ChevronRightIcon, CreditCardIcon } from "../icons";
@@ -107,7 +108,7 @@ export default async function AdminCustomersPage({
                   <td className="py-3 pr-4 text-slate-600">{p.email || "—"}</td>
                   <td className="py-3 pr-4 text-slate-600">{p.company || "—"}</td>
                   <td className="py-3 pr-4 text-slate-600">{cardCountByProfile.get(p.id) ?? 0}</td>
-                  <td className="py-3 text-slate-500">{new Date(p.updated_at).toLocaleDateString()}</td>
+                  <td className="py-3 text-slate-500">{formatDate(p.updated_at)}</td>
                 </tr>
               ))}
               {(profiles ?? []).length === 0 && (

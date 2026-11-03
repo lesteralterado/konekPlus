@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateTime } from "@/lib/format-date";
 import { useEffect, useState, useTransition } from "react";
 import { Sheet } from "@/components/sheet";
 import { copyText, showToast } from "@/components/toast";
@@ -9,6 +10,7 @@ import { BankIcon, CashIcon, CheckIcon, CopyIcon, TruckIcon, WalletIcon } from "
 import { ConfirmButton } from "../ui/drawers";
 import { ICON_ACTION } from "../ui/kit";
 import {
+  type DuplicateRef,
   getProofUrl,
   markPaid,
   markRefunded,
@@ -36,6 +38,9 @@ function defaultVia(method: PaymentMethod, status: PaymentStatus): PaidVia {
   if (method === "cash") return "cash";
   return status === "with_courier" ? "courier" : "cash";
 }
+
+// Mirrors MIN_GCASH_REF in payment-actions.ts (the server is the real check).
+const MIN_GCASH_REF = 6;
 
 const FIELD =
   "h-12 w-full rounded-2xl bg-white px-4 text-base text-slate-800 ring-1 ring-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -103,6 +108,12 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
   const [editingAmount, setEditingAmount] = useState(false);
   const [rejecting, setRejecting] = useState(false);
   const [via, setVia] = useState<PaidVia>(defaultVia(p.method, p.status));
+  // Controlled, so the button can wait for a usable GCash reference and the
+  // duplicate warning can resubmit what was typed.
+  const [amount, setAmount] = useState(String(p.amountDue));
+  const [ref, setRef] = useState(p.gcashRef ?? "");
+  const [duplicate, setDuplicate] = useState<DuplicateRef | null>(null);
+  const refReady = ref.replace(/[\s-]+/g, "").length >= MIN_GCASH_REF;
 
   useEffect(() => {
     if (!p.proofPath) return;
@@ -119,6 +130,24 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
       setError(res.error);
       if (!res.error) {
         showToast(toast);
+        p.onDone();
+      }
+    });
+  }
+
+  // Mark paid / confirm / remittance. A GCash reference already on another
+  // payment comes back as a warning to confirm, not as an error.
+  function submitPaid(confirmDuplicate: boolean) {
+    startTransition(async () => {
+      const res = await markPaid(p.orderId, amount, ref, via, confirmDuplicate);
+      if (res.duplicate) {
+        setDuplicate(res.duplicate);
+        setError(null);
+        return;
+      }
+      setError(res.error);
+      if (!res.error) {
+        showToast(p.status === "with_courier" ? "Remittance recorded" : "Marked paid");
         p.onDone();
       }
     });
@@ -164,7 +193,7 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
         <div className="rounded-2xl bg-white p-4 ring-1 ring-slate-200/70">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
             Customer&apos;s proof
-            {p.proofAt && ` · ${new Date(p.proofAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}`}
+            {p.proofAt && ` · ${formatDateTime(p.proofAt)}`}
           </p>
           {p.gcashRef && (
             <div className="mt-1 flex items-center gap-2">
@@ -203,7 +232,7 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
             </p>
             {p.paidAt && (
               <p className="text-sm">
-                {new Date(p.paidAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                {formatDateTime(p.paidAt)}
               </p>
             )}
             {p.paidVia && (
@@ -271,24 +300,17 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
           </div>
         </form>
       ) : (
-        <form
-          action={(fd) =>
-            run(
-              () =>
-                markPaid(
-                  p.orderId,
-                  String(fd.get("amount") ?? ""),
-                  String(fd.get("ref") ?? ""),
-                  via,
-                ),
-              p.status === "with_courier" ? "Remittance recorded" : "Marked paid",
-            )
-          }
-          className="flex flex-col gap-3"
-        >
+        <form action={() => submitPaid(false)} className="flex flex-col gap-3">
           <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
             {p.status === "with_courier" ? "Amount remitted (₱)" : "Amount received (₱)"}
-            <input name="amount" inputMode="numeric" required defaultValue={p.amountDue} className={FIELD} />
+            <input
+              name="amount"
+              inputMode="numeric"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className={FIELD}
+            />
           </label>
           <fieldset>
             <legend className="mb-1 text-sm font-medium text-slate-600">Received via</legend>
@@ -313,11 +335,51 @@ function PaymentDrawer(p: PaymentInfo & { onDone: () => void }) {
           </fieldset>
           {via === "gcash" && (
             <label className="flex flex-col gap-1 text-sm font-medium text-slate-600">
-              GCash reference (optional)
-              <input name="ref" defaultValue={p.gcashRef ?? ""} maxLength={40} className={`${FIELD} font-mono`} />
+              GCash reference (required)
+              <input
+                name="ref"
+                value={ref}
+                onChange={(e) => {
+                  setRef(e.target.value);
+                  setDuplicate(null);
+                }}
+                required
+                minLength={MIN_GCASH_REF}
+                maxLength={40}
+                autoCapitalize="characters"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="Ref No. from the receipt"
+                aria-describedby="gcash-ref-hint"
+                className={`${FIELD} font-mono`}
+              />
+              <span id="gcash-ref-hint" className="text-xs font-normal text-slate-500">
+                The Ref No. on the customer&apos;s GCash receipt, or in your GCash history.
+              </span>
             </label>
           )}
-          <button type="submit" disabled={isPending} className="ios-press flex h-12.5 items-center justify-center gap-2 rounded-full bg-emerald-500 text-[17px] font-semibold text-white disabled:opacity-60">
+          {duplicate && (
+            <div role="alert" className="rounded-2xl bg-amber-50 p-3 text-sm text-amber-800">
+              <p className="font-semibold">This reference is already on {duplicate.label}</p>
+              <p className="mt-0.5">
+                {formatPrice(duplicate.amount)}
+                {duplicate.when && `, paid ${duplicate.when}`}. Is this the same payment, covering both?
+              </p>
+              <button
+                type="button"
+                disabled={isPending}
+                onClick={() => submitPaid(true)}
+                className="ios-press mt-2 h-10 rounded-full bg-amber-500 px-4 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                Yes, same payment — mark paid
+              </button>
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={isPending || (via === "gcash" && !refReady)}
+            className="ios-press flex h-12.5 items-center justify-center gap-2 rounded-full bg-emerald-500 text-[17px] font-semibold text-white disabled:opacity-60"
+          >
             <CheckIcon className="size-5" />
             {isPending
               ? "Saving…"

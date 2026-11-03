@@ -1,10 +1,10 @@
+import { formatDate } from "@/lib/format-date";
 import type { CustomerPhoto } from "@/lib/types";
 import { StatusPill } from "../ui/status";
 import { AddPhotoButton, PhotoActions } from "./photo-actions";
 import type { PhotoTarget } from "./handover-photo";
 
-const when = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
+const when = formatDate;
 
 // One photo: thumbnail, what the customer agreed to, the freebie, and what
 // can still be done. Shared by the per-order panel and the /admin/photos list.

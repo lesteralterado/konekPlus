@@ -1,11 +1,11 @@
+import { formatDate } from "@/lib/format-date";
 import { createClient } from "@/lib/supabase/server";
 import { StarIcon } from "../icons";
 import { CARD, PANEL } from "../ui/kit";
 import { StatusPill } from "../ui/status";
 import { ReviewActions } from "./review-actions";
 
-const when = (iso: string) =>
-  new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" });
+const when = formatDate;
 
 // Reviews card owners sent from their dashboard (0030), waiting for you or
 // already handled. A review only reaches the website when you publish it;

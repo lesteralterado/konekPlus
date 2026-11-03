@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from "@/lib/format-date";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -86,7 +87,7 @@ export default async function AdminCustomerDetailPage({
               Profile updated
             </dt>
             <dd className="mt-0.5 text-sm text-slate-700">
-              {new Date(profile.updated_at).toLocaleString()}
+              {formatDateTime(profile.updated_at)}
             </dd>
           </div>
           <div>
@@ -133,7 +134,7 @@ export default async function AdminCustomerDetailPage({
                     </Link>
                     <p className="text-xs text-slate-400">
                       Linked{" "}
-                      {tag.claimed_at ? new Date(tag.claimed_at).toLocaleDateString() : "—"}
+                      {tag.claimed_at ? formatDate(tag.claimed_at) : "—"}
                       {!tag.enabled && (
                         <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 font-medium text-amber-700">
                           Disabled

@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { KeychainOrderStatus } from "@/lib/types";
@@ -175,7 +176,7 @@ export default async function AdminKeychainsPage({
                     <td className="py-3 pr-4">
                       <OrderStatusBadge status={order.status} />
                     </td>
-                    <td className="py-3 text-slate-500">{new Date(order.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 text-slate-500">{formatDate(order.created_at)}</td>
                   </tr>
                 );
               })}

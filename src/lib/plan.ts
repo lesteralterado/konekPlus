@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format-date";
 import type { Profile, ProfileTemplate, ProTerm } from "@/lib/types";
 
 // Basic vs Pro (0024). The public card RPCs enforce this in the database;
@@ -43,10 +44,5 @@ export function canUseTemplate(profile: Pick<Profile, "pro_until">, template: Pr
 }
 
 export function formatPlanDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-PH", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "Asia/Manila",
-  });
+  return formatDate(iso);
 }

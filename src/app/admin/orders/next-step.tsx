@@ -26,14 +26,18 @@ const NEXT: Partial<
 export function NextStep({
   orderId,
   status,
-  hasEmail,
+  email,
   unwrittenCards = 0,
   paymentMethod = "cod",
   customerName,
+  reference,
 }: {
   orderId: string;
   status: CardOrderStatus;
-  hasEmail: boolean;
+  // The address on the order: the shipping email goes there, and only there.
+  email: string | null;
+  // KP-XXXXXX, for the shipping message.
+  reference?: string;
   // For the photo offer after an in-person hand-over.
   customerName?: string;
   // Assigned cards not yet marked written — a soft warning before shipping.
@@ -91,7 +95,14 @@ export function NextStep({
                 Ship anyway only if you’ve written and tested {unwrittenCards === 1 ? "it" : "them"}.
               </p>
             )}
-            <ShipOrder orderId={orderId} hasEmail={hasEmail} stacked onDone={() => setShipOpen(false)} />
+            <ShipOrder
+              orderId={orderId}
+              email={email}
+              customerName={customerName ?? "there"}
+              reference={reference ?? ""}
+              stacked
+              onDone={() => setShipOpen(false)}
+            />
           </div>
         </Sheet>
       )}

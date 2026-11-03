@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Toaster } from "@/components/toast";
 import { getAuthUserId } from "@/lib/auth";
+import { formatDate } from "@/lib/format-date";
 import { createClient } from "@/lib/supabase/server";
 import { TEMPLATE_LABELS } from "@/app/t/[tag_id]/templates";
 import { AddTagForm } from "./add-tag-form";
@@ -175,9 +176,7 @@ export default async function DashboardPage({
                     {tag.enabled ? "Linked" : "Disabled"}
                   </span>
                   <span className="-mt-1.5 text-[11px] text-slate-500">
-                    {tag.claimed_at
-                      ? new Date(tag.claimed_at).toLocaleDateString()
-                      : "—"}
+                    {tag.claimed_at ? formatDate(tag.claimed_at) : "—"}
                   </span>
                 </Link>
                 <form action={toggleTagEnabled}>

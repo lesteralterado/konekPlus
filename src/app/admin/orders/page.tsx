@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { siteOrigin } from "@/lib/card-link";
+import { formatDateTime } from "@/lib/format-date";
 import { finishById, formatPrice } from "@/lib/finishes";
 import { amountFor } from "@/lib/order-amount";
 import { createClient } from "@/lib/supabase/server";
@@ -217,10 +218,7 @@ export default async function AdminOrdersPage({
                     </p>
                   )}
                   <p className="mt-1 text-xs text-slate-400">
-                    {new Date(order.created_at).toLocaleString(undefined, {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
+                    {formatDateTime(order.created_at)}
                     {order.tracking_number && (
                       <>
                         {" · "}
@@ -252,7 +250,8 @@ export default async function AdminOrdersPage({
                     <NextStep
                       orderId={order.id}
                       status={order.status}
-                      hasEmail={!!order.email}
+                      email={order.email}
+                      reference={reference}
                       unwrittenCards={unwritten}
                       paymentMethod={order.payment_method}
                       customerName={order.full_name}
@@ -279,7 +278,12 @@ export default async function AdminOrdersPage({
                   {order.payment_method !== "cash" &&
                     !["shipped", "delivered", "fulfilled", "cancelled"].includes(order.status) && (
                     <div className="hidden md:block">
-                      <ShipOrder orderId={order.id} hasEmail={!!order.email} />
+                      <ShipOrder
+                        orderId={order.id}
+                        email={order.email}
+                        customerName={order.full_name}
+                        reference={reference}
+                      />
                     </div>
                   )}
                   <PhotoPanel

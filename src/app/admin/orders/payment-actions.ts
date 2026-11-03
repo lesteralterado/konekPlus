@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { requireAdmin } from "@/lib/admin-auth";
 import { sendEmail } from "@/lib/email/send";
 import { paymentReceivedEmail } from "@/lib/email/templates";
+import { formatDate } from "@/lib/format-date";
 import { formatPrice } from "@/lib/finishes";
 import { lockAmount } from "@/lib/order-amount";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +17,63 @@ const PAID_VIA = new Set<PaidVia>(["cash", "gcash", "bank", "courier"]);
 // action is admin-only; customers can only *submit* GCash proof, via the
 // submit_payment_proof RPC from /track.
 
-export type PaymentResult = { error: string | null };
+// The same GCash payment already recorded on another paid order or Pro renewal.
+export type DuplicateRef = { label: string; amount: number; when: string };
+
+export type PaymentResult = { error: string | null; duplicate?: DuplicateRef };
+
+// Money received by GCash has to name the GCash transaction: that reference is
+// the only thing tying an order to a real payment in the GCash history.
+const MIN_GCASH_REF = 6;
+
+// References are copied off a receipt, so spaces and dashes are noise.
+function normalizeGcashRef(value: string | null | undefined): string {
+  return (value ?? "").replace(/[\s-]+/g, "").toUpperCase().slice(0, 40);
+}
+
+type Supabase = Awaited<ReturnType<typeof createClient>>;
+
+// Is this reference already on another PAID order or Pro renewal? Compared
+// after normalising, so "1002 345 678" and "1002345678" match. These tables
+// are small; if they ever aren't, store a normalised column and index it.
+async function findDuplicateGcashRef(
+  supabase: Supabase,
+  ref: string,
+  orderId: string,
+): Promise<DuplicateRef | null> {
+  const [{ data: orders }, { data: renewals }] = await Promise.all([
+    supabase
+      .from("card_orders")
+      .select("id, gcash_reference, amount_received_php, amount_due_php, paid_at")
+      .eq("payment_status", "paid")
+      .neq("id", orderId)
+      .not("gcash_reference", "is", null)
+      .limit(1000),
+    supabase
+      .from("plan_payments")
+      .select("gcash_reference, amount_received_php, amount_due_php, paid_at")
+      .eq("status", "paid")
+      .limit(1000),
+  ]);
+
+  const order = (orders ?? []).find((o) => normalizeGcashRef(o.gcash_reference) === ref);
+  if (order) {
+    return {
+      label: `KP-${order.id.slice(0, 6).toUpperCase()}`,
+      amount: order.amount_received_php ?? order.amount_due_php ?? 0,
+      when: order.paid_at ? formatDate(order.paid_at) : "",
+    };
+  }
+  const renewal = (renewals ?? []).find((r) => normalizeGcashRef(r.gcash_reference) === ref);
+  if (renewal) {
+    return {
+      label: "a Pro renewal",
+      amount: renewal.amount_received_php ?? renewal.amount_due_php,
+      when: renewal.paid_at ? formatDate(renewal.paid_at) : "",
+    };
+  }
+  return null;
+}
 
 function refresh() {
   revalidatePath("/admin/orders");
@@ -35,6 +92,9 @@ export async function markPaid(
   amountReceived: string,
   gcashRef: string,
   via: string,
+  // After the drawer warned that this reference is already on another payment
+  // and the admin said it is the same payment (e.g. one transfer for two orders).
+  confirmDuplicate = false,
 ): Promise<PaymentResult> {
   await requireAdmin();
   const amount = parsePhp(amountReceived);
@@ -53,7 +113,21 @@ export async function markPaid(
     .single();
   if (readError) return { error: readError.message };
 
-  const ref = gcashRef.trim().slice(0, 40);
+  // GCash must come with its reference (the one the customer submitted counts).
+  let ref = normalizeGcashRef(gcashRef);
+  if (via === "gcash") {
+    ref = ref || normalizeGcashRef(current.gcash_reference);
+    if (!ref) return { error: "Enter the GCash reference number from the receipt." };
+    if (ref.length < MIN_GCASH_REF) {
+      return { error: "That GCash reference looks too short. Check it against the receipt." };
+    }
+    if (!confirmDuplicate) {
+      const duplicate = await findDuplicateGcashRef(supabase, ref, id);
+      if (duplicate) {
+        return { error: "This GCash reference is already on another payment.", duplicate };
+      }
+    }
+  }
   const { data: order, error } = await supabase
     .from("card_orders")
     .update({

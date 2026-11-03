@@ -1,3 +1,4 @@
+import { formatShortDate } from "@/lib/format-date";
 import { gcashAccount } from "@/lib/gcash";
 import { RENEW_NUDGE_DAYS, daysLeft, formatPlanDate, isPro } from "@/lib/plan";
 import { RenewPanel } from "./renew-panel";
@@ -19,7 +20,7 @@ function lastDays(): string[] {
 function TapsChart({ days, counts }: { days: string[]; counts: Map<string, number> }) {
   const max = Math.max(1, ...days.map((d) => counts.get(d) ?? 0));
   const label = (d: string) =>
-    new Date(`${d}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+    formatShortDate(`${d}T00:00:00+08:00`);
   return (
     <div className="mt-4">
       <div className="flex h-20 items-end gap-0.75" role="img" aria-label={`Taps per day, last ${DAYS} days`}>

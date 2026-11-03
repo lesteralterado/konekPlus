@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import { createClient } from "@/lib/supabase/server";
 import type { FeedbackCategory } from "@/lib/types";
 import { BugIcon, BulbIcon, MessageIcon, StarIcon } from "../icons";
@@ -128,7 +129,7 @@ export default async function AdminFeedbackPage({
                       )}
                     </div>
                     <p className="text-xs text-slate-400">
-                      {new Date(entry.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+                      {formatDateTime(entry.created_at)}
                       {entry.page_path ? ` · ${entry.page_path}` : ""}
                     </p>
                     <p className="mt-1.5 line-clamp-4 whitespace-pre-wrap text-[15px] text-slate-700 md:line-clamp-none md:text-sm">

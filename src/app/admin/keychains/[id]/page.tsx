@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/format-date";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -84,7 +85,7 @@ export default async function AdminKeychainOrderDetailPage({
             </h1>
             <p className="mt-0.5 text-xs text-slate-400">
               Submitted{" "}
-              {new Date(order.created_at).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}
+              {formatDateTime(order.created_at)}
             </p>
           </div>
           <OrderStatusBadge status={order.status} />

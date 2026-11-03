@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/format-date";
 import Link from "next/link";
 import { cardUrl, siteOrigin } from "@/lib/card-link";
 import { createClient } from "@/lib/supabase/server";
@@ -64,7 +65,7 @@ export default async function AdminTagsPage({
             <span>
               {b.count} tags{b.note ? ` — ${b.note}` : ""}
             </span>
-            <span className="text-slate-400">{new Date(b.created_at).toLocaleDateString()}</span>
+            <span className="text-slate-400">{formatDate(b.created_at)}</span>
           </li>
         ))}
       </ul>
@@ -128,7 +129,7 @@ export default async function AdminTagsPage({
                   )}
                   <p className="text-xs text-slate-400">
                     {tag.written_at ? "✓ Written" : "Not written"}
-                    {tag.claimed_at && ` · Claimed ${new Date(tag.claimed_at).toLocaleDateString()}`}
+                    {tag.claimed_at && ` · Claimed ${formatDate(tag.claimed_at)}`}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
@@ -208,10 +209,10 @@ export default async function AdminTagsPage({
                       )}
                     </td>
                     <td className="py-3 pr-4 text-slate-500">
-                      {tag.claimed_at ? new Date(tag.claimed_at).toLocaleDateString() : "—"}
+                      {tag.claimed_at ? formatDate(tag.claimed_at) : "—"}
                     </td>
                     <td className="py-3 pr-4 text-slate-500">
-                      {tag.written_at ? new Date(tag.written_at).toLocaleDateString() : "—"}
+                      {tag.written_at ? formatDate(tag.written_at) : "—"}
                     </td>
                     <td className="py-3 text-right">
                       <div className="flex items-center justify-end gap-1">

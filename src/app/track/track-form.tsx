@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDate as formatManilaDate } from "@/lib/format-date";
 import { useActionState } from "react";
 import { courierTrackingUrl } from "@/lib/couriers";
 import { finishById, isFinishId } from "@/lib/finishes";
@@ -26,7 +27,7 @@ const inputClass =
   "w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500";
 
 function formatDate(iso: string | null) {
-  return iso ? new Date(iso).toLocaleDateString("en-PH", { dateStyle: "medium" }) : null;
+  return iso ? formatManilaDate(iso) : null;
 }
 
 export function TrackForm() {

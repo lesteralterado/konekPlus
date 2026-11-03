@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { courierTrackingUrl } from "@/lib/couriers";
 import { lockAmount } from "@/lib/order-amount";
 import { sendEmail } from "@/lib/email/send";
@@ -71,13 +70,18 @@ export async function setOrderStatus(id: string, status: CardOrderStatus) {
   revalidatePath("/admin");
 }
 
+// What happened to the shipping email: sent to the customer's address on the
+// order, failed (Resend refused or isn't configured), or none (no email on the order).
+export type ShipResult = { error: string | null; emailed?: "sent" | "failed" | "none"; emailedTo?: string };
+
 // Records the courier + tracking number, flips the order to shipped, stamps
-// its cards as shipped, and emails the customer (when they gave an email).
+// its cards as shipped, and emails the CUSTOMER (the address on the order;
+// nobody else gets a copy) when they gave one.
 export async function markShipped(
   id: string,
   courier: string,
   trackingNumber: string,
-): Promise<{ error: string | null }> {
+): Promise<ShipResult> {
   await requireAdmin();
 
   const tracking = trackingNumber.trim();
@@ -111,6 +115,7 @@ export async function markShipped(
 
   await supabase.from("tags").update({ shipped_at: now }).eq("order_id", id);
 
+  let emailed: "sent" | "failed" | "none" = "none";
   const to = order.email;
   if (to) {
     const siteUrl = process.env.SITE_URL ?? "http://localhost:3000";
@@ -123,9 +128,13 @@ export async function markShipped(
       courierUrl: courierTrackingUrl(courier, tracking),
       trackUrl: `${siteUrl}/track`,
     });
-    after(() => sendEmail({ to, ...message }));
+    // Awaited, not fired in the background, so the admin is told whether it
+    // really went out. (A background send that failed was invisible, and the
+    // toast used to say "customer emailed" either way.)
+    const result = await sendEmail({ to, ...message });
+    emailed = result.ok ? "sent" : "failed";
   }
 
   revalidatePath("/admin/orders");
-  return { error: null };
+  return { error: null, emailed, emailedTo: to ?? undefined };
 }

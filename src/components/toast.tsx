@@ -18,14 +18,16 @@ function emit() {
   for (const l of listeners) l();
 }
 
-export function showToast(message: string) {
+// durationMs: how long it stays; the default suits a quick confirmation, a
+// message the admin must actually read (a warning) asks for longer.
+export function showToast(message: string, durationMs = 1800) {
   current = { id: Date.now(), message };
   emit();
   clearTimeout(timer);
   timer = setTimeout(() => {
     current = null;
     emit();
-  }, 1800);
+  }, durationMs);
 }
 
 const subscribe = (l: () => void) => {

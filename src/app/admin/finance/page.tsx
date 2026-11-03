@@ -7,6 +7,7 @@ import {
   manilaMonth,
   monthlyPhp,
 } from "@/lib/finance";
+import { formatShortDate } from "@/lib/format-date";
 import { EST_UNIT_COST_PHP, LOWEST_PRICE_PHP, formatPrice } from "@/lib/finishes";
 import { amountFor } from "@/lib/order-amount";
 import { createClient } from "@/lib/supabase/server";
@@ -346,7 +347,7 @@ export default async function AdminFinancePage({
                     <StatusPill tone="grey" label={EXPENSE_CATEGORY[e.category]} />
                   </div>
                   <p className="mt-0.5 text-sm text-slate-500">
-                    {new Date(`${e.paid_on}T00:00:00`).toLocaleDateString("en-PH", { month: "short", day: "numeric" })}
+                    {formatShortDate(`${e.paid_on}T00:00:00+08:00`)}
                   </p>
                 </div>
                 <span className="font-semibold text-brand-900">{formatPrice(Number(e.amount_php))}</span>

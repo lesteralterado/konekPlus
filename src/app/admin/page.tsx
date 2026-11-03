@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CameraIcon } from "@/app/dashboard/icons";
 import { ActivationFunnel } from "./activation-funnel";
 import { manilaMonth } from "@/lib/finance";
+import { manilaDayKey } from "@/lib/format-date";
 import { formatPrice } from "@/lib/finishes";
 import { amountFor } from "@/lib/order-amount";
 import {
@@ -20,9 +21,14 @@ export const dynamic = "force-dynamic";
 
 const DAYS = 30;
 const BAR_COLOR = "var(--color-brand-600)";
-// Buckets are UTC days; a fixed locale and zone keep server and browser
-// labels identical.
-const DAY_LABEL: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", timeZone: "UTC" };
+// Each bar is a Manila calendar day. Its date is stored as that day's
+// YYYY-MM-DD at 00:00 UTC, so labelling it in UTC prints the Manila day, and a
+// fixed locale and zone keep server and browser labels identical.
+const DAY_LABEL = new Intl.DateTimeFormat("en-PH", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
 
 function StatTile({
   label,
@@ -89,16 +95,17 @@ function daysAgoIso(days: number): string {
 function dayBuckets(timestamps: string[]): { date: Date; count: number }[] {
   const counts = new Map<string, number>();
   for (const ts of timestamps) {
-    const key = ts.slice(0, 10); // YYYY-MM-DD (UTC)
+    // The day it happened in Manila, not in UTC: a card claimed at 7 AM in
+    // Manila is still "yesterday" in UTC.
+    const key = manilaDayKey(ts);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
 
   const buckets: { date: Date; count: number }[] = [];
-  const today = new Date();
+  const now = Date.now();
   for (let i = DAYS - 1; i >= 0; i--) {
-    const d = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - i));
-    const key = d.toISOString().slice(0, 10);
-    buckets.push({ date: d, count: counts.get(key) ?? 0 });
+    const key = manilaDayKey(new Date(now - i * 86_400_000));
+    buckets.push({ date: new Date(`${key}T00:00:00Z`), count: counts.get(key) ?? 0 });
   }
   return buckets;
 }
@@ -127,7 +134,7 @@ function DailyClaimsChart({ buckets }: { buckets: { date: Date; count: number }[
           const barHeight = b.count === 0 ? 0 : Math.max(3, (b.count / max) * (chartHeight - 8));
           const x = i * (barWidth + gap);
           const y = chartHeight - barHeight;
-          const label = b.date.toLocaleDateString("en-PH", DAY_LABEL);
+          const label = DAY_LABEL.format(b.date);
           return (
             <rect
               key={i}
@@ -147,8 +154,8 @@ function DailyClaimsChart({ buckets }: { buckets: { date: Date; count: number }[
         })}
       </svg>
       <div className="mt-1 flex justify-between text-[11px] text-slate-400">
-        <span>{buckets[0].date.toLocaleDateString("en-PH", DAY_LABEL)}</span>
-        <span>{buckets[buckets.length - 1].date.toLocaleDateString("en-PH", DAY_LABEL)}</span>
+        <span>{DAY_LABEL.format(buckets[0].date)}</span>
+        <span>{DAY_LABEL.format(buckets[buckets.length - 1].date)}</span>
       </div>
     </div>
   );

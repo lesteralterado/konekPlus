@@ -1,3 +1,4 @@
+import { APP_TIME_ZONE } from "@/lib/format-date";
 import type { BillCategory, ExpenseCategory, FinanceBill } from "@/lib/types";
 
 // The money maths behind /admin/finance. Pure functions only, so the page
@@ -54,7 +55,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 // The current month in Philippine time.
 export function currentManilaMonthKey(): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Manila",
+    timeZone: APP_TIME_ZONE,
     year: "numeric",
     month: "2-digit",
   }).formatToParts(new Date());
@@ -74,11 +75,13 @@ export function manilaMonth(key?: string): ManilaMonth {
   const endDate = `${ny}-${pad(nm)}-01`;
   return {
     key: valid,
-    label: new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString("en-PH", {
+    // A fixed mid-month instant formatted in UTC, so the month name can't
+    // drift whatever zone this runs in.
+    label: new Intl.DateTimeFormat("en-PH", {
       month: "long",
       year: "numeric",
       timeZone: "UTC",
-    }),
+    }).format(new Date(Date.UTC(y, m - 1, 15))),
     startIso: new Date(`${startDate}T00:00:00+08:00`).toISOString(),
     endIso: new Date(`${endDate}T00:00:00+08:00`).toISOString(),
     startDate,
