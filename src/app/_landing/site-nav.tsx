@@ -28,7 +28,18 @@ export function SiteNav({
   switcherOnLight,
 }: {
   heroId: string;
-  labels: { howItWorks: string; product: string; faq: string; signIn: string; order: string };
+  labels: {
+    howItWorks: string;
+    product: string;
+    faq: string;
+    // Short "Sign in", for the narrowest phones where the full label won't fit.
+    signIn: string;
+    // "Owner sign in": says who the link is for.
+    ownerSignIn: string;
+    // Its tooltip.
+    signInHint: string;
+    order: string;
+  };
   // Server-rendered LanguageSwitcher variants (plain forms → work without JS).
   switcherOnDark: ReactNode;
   switcherOnLight: ReactNode;
@@ -116,11 +127,16 @@ export function SiteNav({
               accent spot belongs to the buying path. */}
           <Link
             href="/login"
-            className={`text-sm font-medium transition-colors duration-500 ${
+            title={labels.signInHint}
+            className={`-my-2.5 whitespace-nowrap py-2.5 text-sm font-medium transition-colors duration-500 ${
               light ? "text-slate-600 hover:text-brand-900" : "text-white/80 hover:text-white"
             }`}
           >
-            {labels.signIn}
+            {/* Under 360px there's no room for the full label beside the
+                language switcher and Order button (it wraps or hits the
+                logo), so those phones get the short one. */}
+            <span className="min-[360px]:hidden">{labels.signIn}</span>
+            <span className="hidden min-[360px]:inline">{labels.ownerSignIn}</span>
           </Link>
           <a
             href="#order"

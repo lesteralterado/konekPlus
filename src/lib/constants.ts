@@ -8,6 +8,10 @@ export const PROFILE_BANNER_URL = cloudinary(
   1000,
 );
 
+// The short video on the homepage (src/app/_landing/video-reel.tsx), as the
+// reel's own Facebook link. To swap it, change this one line.
+export const FACEBOOK_REEL_URL = "https://www.facebook.com/reel/4894062634148597/";
+
 // The Konek+ mark — landing nav/footer, site chrome, and favicon all
 // reference this asset, preloaded in layout.tsx so it's ready by the time
 // the preloader lifts.

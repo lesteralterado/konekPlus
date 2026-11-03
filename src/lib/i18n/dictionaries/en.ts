@@ -7,6 +7,52 @@ export const en = {
     langEnglish: "EN",
     langFilipino: "FIL",
   },
+  auth: {
+    title: "Sign in",
+    subtitle: "Manage your Konek+ profile and cards.",
+    noticeTitle: "For Konek+ card owners",
+    noticeBody:
+      "You can sign in only if you already have a Konek+ card. Your account is created when you activate it.",
+    noticeCompact: "Only Konek+ card owners have accounts.",
+    emailLabel: "Email",
+    emailPlaceholder: "you@example.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Your password",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    forgot: "Forgot password?",
+    submit: "Sign in",
+    submitting: "Signing in…",
+    linkExpired:
+      "That link has expired or was already used. Sign in, or request a new password reset link.",
+    noCardHeading: "Don't have a card yet?",
+    orderLink: "Order a Konek+ card",
+    activateLink: "Activate the card you received",
+    trackLink: "Track my order",
+    errors: {
+      required: "Enter your email and password.",
+      invalid:
+        "That email and password don't match. Remember, sign-in is only for people who have activated a Konek+ card.",
+      unconfirmed: "Please confirm your email first — check your inbox for the link.",
+      rate: "Too many tries — please wait a few minutes and try again.",
+      unknown: "Something went wrong. Please try again.",
+    },
+    reset: {
+      title: "Reset your password",
+      subtitle:
+        "Enter the email you sign in with and we'll send you a link to choose a new password.",
+      submit: "Send reset link",
+      submitting: "Sending…",
+      sentTitle: "Check your email",
+      sentBody:
+        "If an account exists for that address, we've sent a link to reset your password. It can take a minute — check your spam folder too.",
+      backToSignIn: "← Back to sign in",
+      errors: {
+        required: "Enter your email address.",
+        rate: "Too many requests. Please wait a few minutes and try again.",
+      },
+    },
+  },
   home: {
     nav: {
       howItWorks: "How it works",
@@ -14,6 +60,8 @@ export const en = {
       product: "Product",
       faq: "FAQ",
       order: "Order",
+      ownerSignIn: "Owner sign in",
+      ownerSignInHint: "Sign in — for Konek+ card owners",
     },
     hero: {
       badge: "NFC digital business cards",
@@ -167,6 +215,15 @@ export const en = {
       statOneTap: "One tap.",
       statEveryCard: "Every card you own.",
     },
+    reel: {
+      kicker: "• See it in action",
+      heading: "Watch Konek+ at work.",
+      body: "A short video of Konek+ — press play to watch it.",
+      play: "Play video",
+      note: "Plays from Facebook. Facebook is only contacted when you press play.",
+      openOnFacebook: "Watch on Facebook",
+      iframeTitle: "Konek+ video on Facebook",
+    },
     gallery: {
       kicker: "• The card kit",
       heading: "Every detail, made to be tapped.",
@@ -214,6 +271,8 @@ export const en = {
       proIncluded: "Includes 1 year of Pro · Basic free forever",
       successTitle: "Order received!",
       successBody: "Your reference is {reference}. We'll message you at {phone} to confirm your order and payment, and email you the updates.",
+      successNext:
+        "When your card arrives, tap it and enter the PIN on the sleeve. After that you can sign in to manage your profile.",
       orderAnother: "Place another order",
       trackOrder: "Track my order",
       errors: {

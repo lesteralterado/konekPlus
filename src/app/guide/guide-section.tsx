@@ -178,7 +178,7 @@ export function GuideSection({
         </div>
 
         {isPage && (
-          <section className="mt-14">
+          <section id="activate" className="mt-14 scroll-mt-24">
             <h3 className="text-xl font-semibold text-brand-900">{t.activate.heading}</h3>
             <p className="mt-1 text-sm text-slate-500">{t.activate.intro}</p>
             <ol className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">

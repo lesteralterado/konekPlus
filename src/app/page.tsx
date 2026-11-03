@@ -17,6 +17,7 @@ import { SiteNav } from "./_landing/site-nav";
 import { SmoothScroll } from "./_landing/smooth-scroll";
 import { StickyCta } from "./_landing/sticky-cta";
 import { Testimonials } from "./_landing/testimonials";
+import { VideoReel } from "./_landing/video-reel";
 import { TryIt } from "./_landing/try-it";
 import { Unboxing } from "./_landing/unboxing";
 import { GuideSection } from "./guide/guide-section";
@@ -71,6 +72,8 @@ export default async function Home() {
           product: t.nav.product,
           faq: t.nav.faq,
           signIn: dict.common.signIn,
+          ownerSignIn: t.nav.ownerSignIn,
+          signInHint: t.nav.ownerSignInHint,
           order: t.nav.order,
         }}
         switcherOnDark={<LanguageSwitcher locale={locale} variant="dark" />}
@@ -96,6 +99,7 @@ export default async function Home() {
           claimedCount={claimedData ?? 0}
           recentViewCount={recentViewData ?? 0}
         />
+        <VideoReel t={t.reel} />
         <Testimonials t={t.testimonials} items={testimonials ?? []} />
         <CtaBand t={t.cta} />
         <Gallery t={t.gallery} />

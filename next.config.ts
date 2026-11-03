@@ -14,6 +14,8 @@ const csp = [
   "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co https://i.ytimg.com https://yt3.ggpht.com",
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  // The homepage video's player (src/app/_landing/video-reel.tsx).
+  "frame-src https://www.facebook.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

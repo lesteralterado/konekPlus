@@ -9,8 +9,57 @@ export type Dictionary = {
     langEnglish: string;
     langFilipino: string;
   };
+  // Sign-in and password reset. Sign-in is for card owners only: an account is
+  // created when a card is activated (there is no sign-up page).
+  auth: {
+    title: string;
+    subtitle: string;
+    noticeTitle: string;
+    noticeBody: string;
+    noticeCompact: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    showPassword: string;
+    hidePassword: string;
+    forgot: string;
+    submit: string;
+    submitting: string;
+    linkExpired: string;
+    noCardHeading: string;
+    orderLink: string;
+    activateLink: string;
+    trackLink: string;
+    errors: {
+      required: string;
+      invalid: string;
+      unconfirmed: string;
+      rate: string;
+      unknown: string;
+    };
+    reset: {
+      title: string;
+      subtitle: string;
+      submit: string;
+      submitting: string;
+      sentTitle: string;
+      sentBody: string;
+      backToSignIn: string;
+      errors: { required: string; rate: string };
+    };
+  };
   home: {
-    nav: { howItWorks: string; about: string; product: string; faq: string; order: string };
+    nav: {
+      howItWorks: string;
+      about: string;
+      product: string;
+      faq: string;
+      order: string;
+      // The menu's sign-in link says who it's for, and its tooltip/screen-reader name.
+      ownerSignIn: string;
+      ownerSignInHint: string;
+    };
     hero: {
       badge: string;
       titleLine1: string;
@@ -102,6 +151,15 @@ export type Dictionary = {
       statOneTap: string;
       statEveryCard: string;
     };
+    reel: {
+      kicker: string;
+      heading: string;
+      body: string;
+      play: string;
+      note: string;
+      openOnFacebook: string;
+      iframeTitle: string;
+    };
     gallery: {
       kicker: string;
       heading: string;
@@ -143,6 +201,8 @@ export type Dictionary = {
       successTitle: string;
       /** {reference} and {phone} placeholders */
       successBody: string;
+      // What happens next: the card arrives, gets activated, and only then can they sign in.
+      successNext: string;
       orderAnother: string;
       trackOrder: string;
       errors: Record<

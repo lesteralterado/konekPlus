@@ -5,8 +5,14 @@ import type { ComponentProps } from "react";
 
 export function PasswordInput({
   className = "",
+  showLabel = "Show password",
+  hideLabel = "Hide password",
   ...props
-}: Omit<ComponentProps<"input">, "type">) {
+}: Omit<ComponentProps<"input">, "type"> & {
+  // The button's name flips with the state, so it's translated by the caller.
+  showLabel?: string;
+  hideLabel?: string;
+}) {
   const [visible, setVisible] = useState(false);
 
   return (
@@ -16,12 +22,13 @@ export function PasswordInput({
         type={visible ? "text" : "password"}
         className={`${className} pr-10`}
       />
+      {/* Reachable by keyboard (it used to be tabIndex -1, which hid it from
+          anyone not using a mouse or touch). */}
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        tabIndex={-1}
-        aria-label={visible ? "Hide password" : "Show password"}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+        aria-label={visible ? hideLabel : showLabel}
+        className="absolute inset-y-0 right-0 flex items-center rounded-r-lg px-3 text-slate-400 hover:text-slate-600 focus-visible:text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500"
       >
         {visible ? (
           <svg

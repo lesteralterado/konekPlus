@@ -7,10 +7,18 @@ import {
   issueLoginPinAndGetVerifyUrl,
   safeNextPath,
 } from "@/lib/device-verification";
-import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
-export type LoginState = { error: string | null };
+// An error CODE, not text: the form turns it into the visitor's language
+// (the same pattern as the order form). It also keeps Supabase's own wording
+// off the screen, and "invalid" stays the same whether the email has an
+// account or not, so this form can't be used to find out who's a customer.
+export type LoginError = "required" | "invalid" | "unconfirmed" | "rate" | "unknown";
+// `email` comes back with an error so the form can keep it: React clears the
+// fields after every submission, and retyping an email because of a typo in
+// the password is just annoying. The password is deliberately not kept.
+export type LoginState = { error: LoginError | null; email?: string };
 
 export async function login(
   _prevState: LoginState,
@@ -20,14 +28,23 @@ export async function login(
   const password = String(formData.get("password") ?? "");
   const next = safeNextPath(String(formData.get("next") ?? ""));
 
-  if (!email || !password) {
-    return { error: "Email and password are required." };
-  }
-  if (!(await rateLimit("login"))) return { error: RATE_LIMITED_MESSAGE };
+  const fail = (code: LoginError): LoginState => ({ error: code, email });
+
+  if (!email || !password) return fail("required");
+  if (!(await rateLimit("login"))) return fail("rate");
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.code === "invalid_credentials" || error.message === "Invalid login credentials") {
+      return fail("invalid");
+    }
+    if (error.code === "email_not_confirmed") return fail("unconfirmed");
+    if (error.status === 429 || error.code === "over_request_rate_limit") return fail("rate");
+    // Anything else is ours to look at, not the visitor's to read.
+    console.error("[login] unexpected sign-in error:", error.code, error.status);
+    return fail("unknown");
+  }
 
   // Password check passed. With new-device verification switched on, that's
   // not enough on its own to reach /dashboard from an unrecognized browser.

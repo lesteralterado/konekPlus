@@ -48,8 +48,12 @@ export function Footer({ dict, locale }: { dict: Dictionary; locale: Locale }) {
               <Link href="/guide" className="text-slate-600 transition hover:text-brand-700">
                 {dict.guide.kicker}
               </Link>
-              <Link href="/login" className="text-slate-600 transition hover:text-brand-700">
-                {dict.common.signIn}
+              <Link
+                href="/login"
+                title={t.nav.ownerSignInHint}
+                className="text-slate-600 transition hover:text-brand-700"
+              >
+                {t.nav.ownerSignIn}
               </Link>
             </div>
 

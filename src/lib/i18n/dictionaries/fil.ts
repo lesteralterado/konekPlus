@@ -10,6 +10,52 @@ export const fil = {
     langEnglish: "EN",
     langFilipino: "FIL",
   },
+  auth: {
+    title: "Mag-sign in",
+    subtitle: "Pamahalaan ang iyong Konek+ profile at mga card.",
+    noticeTitle: "Para sa mga may-ari ng Konek+ card",
+    noticeBody:
+      "Makakapag-sign in ka lamang kung mayroon ka nang Konek+ card. Nagagawa ang account mo kapag in-activate mo ito.",
+    noticeCompact: "Mga may-ari lamang ng Konek+ card ang may account.",
+    emailLabel: "Email",
+    emailPlaceholder: "ikaw@halimbawa.com",
+    passwordLabel: "Password",
+    passwordPlaceholder: "Iyong password",
+    showPassword: "Ipakita ang password",
+    hidePassword: "Itago ang password",
+    forgot: "Nakalimutan ang password?",
+    submit: "Mag-sign in",
+    submitting: "Nagsa-sign in…",
+    linkExpired:
+      "Nag-expire na o nagamit na ang link na iyon. Mag-sign in, o humiling ng bagong link para sa pag-reset ng password.",
+    noCardHeading: "Wala ka pang card?",
+    orderLink: "Mag-order ng Konek+ card",
+    activateLink: "I-activate ang natanggap mong card",
+    trackLink: "I-track ang order ko",
+    errors: {
+      required: "Ilagay ang iyong email at password.",
+      invalid:
+        "Hindi magkatugma ang email at password. Tandaan, para lang sa mga nakapag-activate na ng Konek+ card ang pag-sign in.",
+      unconfirmed: "Kumpirmahin muna ang iyong email — tingnan ang inbox mo para sa link.",
+      rate: "Sobrang dami ng subok — maghintay ng ilang minuto at subukan muli.",
+      unknown: "May nangyaring mali. Pakisubukang muli.",
+    },
+    reset: {
+      title: "I-reset ang iyong password",
+      subtitle:
+        "Ilagay ang email na ginagamit mo sa pag-sign in at magpapadala kami ng link para pumili ng bagong password.",
+      submit: "Ipadala ang reset link",
+      submitting: "Ipinapadala…",
+      sentTitle: "Tingnan ang iyong email",
+      sentBody:
+        "Kung may account para sa address na iyon, nagpadala kami ng link para i-reset ang password mo. Maaaring abutin ng isang minuto — tingnan din ang spam folder.",
+      backToSignIn: "← Bumalik sa pag-sign in",
+      errors: {
+        required: "Ilagay ang iyong email address.",
+        rate: "Sobrang daming request. Maghintay ng ilang minuto at subukan muli.",
+      },
+    },
+  },
   home: {
     nav: {
       howItWorks: "Paano Ito Gumagana",
@@ -17,6 +63,8 @@ export const fil = {
       product: "Produkto",
       faq: "Mga Tanong",
       order: "Mag-order",
+      ownerSignIn: "Sign in ng may-ari",
+      ownerSignInHint: "Mag-sign in — para sa mga may-ari ng Konek+ card",
     },
     hero: {
       badge: "NFC na digital business card",
@@ -171,6 +219,15 @@ export const fil = {
       statOneTap: "Isang tap.",
       statEveryCard: "Bawat card na pag-aari mo.",
     },
+    reel: {
+      kicker: "• Tingnan kung paano gumagana",
+      heading: "Panoorin ang Konek+ habang gumagana.",
+      body: "Maikling video ng Konek+ — pindutin ang play para panoorin.",
+      play: "I-play ang video",
+      note: "Magpe-play mula sa Facebook. Makokontak lang ang Facebook kapag pinindot mo ang play.",
+      openOnFacebook: "Panoorin sa Facebook",
+      iframeTitle: "Video ng Konek+ sa Facebook",
+    },
     gallery: {
       kicker: "• Ang Card Kit",
       heading: "Bawat detalye, ginawa para i-tap.",
@@ -232,6 +289,8 @@ export const fil = {
       successTitle: "Natanggap na ang order mo!",
       successBody:
         "Ang reference mo ay {reference}. Ime-message ka namin sa {phone} para kumpirmahin ang order at bayad.",
+      successNext:
+        "Pagdating ng card mo, i-tap ito at ilagay ang PIN sa sleeve. Pagkatapos, makakapag-sign in ka para pamahalaan ang iyong profile.",
       orderAnother: "Mag-order ulit",
       trackOrder: "I-track ang order ko",
       errors: {
