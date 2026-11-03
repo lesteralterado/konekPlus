@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "Oktubre 30, 2026";
+const UPDATED = "Nobyembre 2, 2026";
 
 // First-pass Filipino translation — see src/lib/i18n/dictionaries/fil.ts for
 // the same note. Legal/policy text especially deserves a native-speaker
@@ -104,6 +104,18 @@ export function PrivacyContentFil() {
           kanilang dashboard; ganoon din ang pagtrato namin dito, at sinusuri muna ito
           ng isang tao bago may gawin dito.
         </p>
+        <p>
+          <strong className="font-semibold text-brand-900">
+            Mga review na ipinapadala mo (opsyonal).
+          </strong>{" "}
+          Maaaring magpadala sa amin ng review ang mga may-ari ng card mula sa
+          kanilang dashboard: isang star rating, isang mensahe, at ang pangalang
+          ipapakita rito, kasama ang opsyonal na litrato. Pribado itong makakarating
+          sa aming mga admin, at lalabas lamang sa aming website kung ipa-publish ito
+          ng isang tao &mdash; at dahil lamang pumayag ka rito noong ipinadala mo.
+          Maaari mo itong alisin anumang oras mula sa iyong dashboard, na mag-aalis
+          nito sa website at magbubura nito.
+        </p>
       </LegalSection>
 
       <LegalSection heading="2. Paano namin ginagamit ang impormasyong ito">
@@ -114,6 +126,7 @@ export function PrivacyContentFil() {
             "Para ipakita sa iyo ang bilang ng view ng sarili mong card",
             "Para tuparin ang mga order ng physical card at keychain",
             "Para itago ang opsyonal na litrato mo kasama ang order mo bilang pribadong tala ng pag-abot ng order at, kung hiwalay kang papayag lamang, i-post ito sa aming mga social media page o ipakita sa aming website",
+            "Para ipakita sa aming website ang review na pinili mong ipadala, kapag na-publish na ito ng isang tao",
             "Para tumugon sa mga kahilingan ng suporta",
           ]}
         />
@@ -173,6 +186,7 @@ export function PrivacyContentFil() {
             "Supabase — database, authentication, at file storage",
             "Vercel — pag-host ng application",
             "Cloudinary — pag-host ng larawan para sa site at marketing assets",
+            "Facebook (Meta) — nagpe-play ng maikling video sa aming homepage, at kapag pinindot mo lang ang play",
           ]}
         />
       </LegalSection>
@@ -184,6 +198,7 @@ export function PrivacyContentFil() {
             "Ang pagbura ng iyong account ay nag-aalis ng iyong profile at mga portfolio item, at nag-aalis ng link sa anumang card mula rito (babalik ang mga ito sa unclaimed)",
             "Ang mga anonymous na rekord ng view count ay iniingatan sa aggregate at pana-panahong binubura; hindi kailanman maiuugnay ang mga ito pabalik sa pagkakakilanlan ng isang bisita dahil hindi kami kailanman nangolekta ng isa",
             "Ang mga larawan sa pag-abot ng order na pribadong iniingatan ay binubura pagkalipas ng 12 buwan. Ang larawang pinayagan mong ilagay sa aming website o social media ay mananatili hanggang bawiin mo ang pahintulot",
+            "Ang review na ipinadala mo ay mananatili hanggang alisin mo ito o hilingin mo sa amin; ang review na hindi namin ipa-publish ay binubura",
           ]}
         />
       </LegalSection>

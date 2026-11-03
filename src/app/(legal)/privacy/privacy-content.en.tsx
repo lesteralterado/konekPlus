@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/constants";
 import { LegalHeader, LegalList, LegalSection } from "../legal-content";
 
-const UPDATED = "October 30, 2026";
+const UPDATED = "November 2, 2026";
 
 export function PrivacyContentEn() {
   return (
@@ -89,6 +89,17 @@ export function PrivacyContentEn() {
           their dashboard; we treat it the same way, and a person checks it before
           anything is done with it.
         </p>
+        <p>
+          <strong className="font-semibold text-brand-900">
+            Reviews you send (optional).
+          </strong>{" "}
+          Card owners can send us a review from their dashboard: a star rating, a
+          message, and the name to show with it, optionally with a photo. It reaches
+          our admins privately, and appears on our website only if a person publishes
+          it &mdash; and only because you agreed to that when you sent it. You can
+          remove it any time from your dashboard, which takes it off the website and
+          deletes it.
+        </p>
       </LegalSection>
 
       <LegalSection heading="2. How we use this information">
@@ -99,6 +110,7 @@ export function PrivacyContentEn() {
             "To show you your own card’s view counts",
             "To fulfill physical card and keychain orders",
             "To keep an optional photo of you with your order as a private record of the handover and, only if you separately agree, to post it on our social media pages or show it on our website",
+            "To show a review you chose to send on our website, once a person has published it",
             "To respond to support requests",
           ]}
         />
@@ -156,6 +168,7 @@ export function PrivacyContentEn() {
             "Supabase — database, authentication, and file storage",
             "Vercel — application hosting",
             "Cloudinary — image hosting for site and marketing assets",
+            "Facebook (Meta) — plays the short video on our homepage, and only if you press play",
           ]}
         />
       </LegalSection>
@@ -167,6 +180,7 @@ export function PrivacyContentEn() {
             "Deleting your account removes your profile and portfolio items, and unlinks any cards from it (they revert to unclaimed)",
             "Anonymous view-count records are kept in aggregate and periodically pruned; they can never be tied back to a visitor’s identity because we never collected one",
             "Handover photos kept privately are deleted after 12 months. A photo you agreed to have on our website or social media stays until you withdraw consent",
+            "A review you send stays until you remove it or ask us to; a review we decide not to publish is deleted",
           ]}
         />
       </LegalSection>

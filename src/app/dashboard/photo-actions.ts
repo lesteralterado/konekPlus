@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { CONSENT_TEXT_VERSION } from "@/lib/photo-consent";
+import { storeMyPhoto } from "@/lib/customer-photo";
 import { PHOTO_FREEBIE } from "@/lib/photo-freebie";
 import { rateLimit, RATE_LIMITED_MESSAGE } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
@@ -13,8 +13,6 @@ import { createClient } from "@/lib/supabase/server";
 
 export type MyPhotoResult = { error: string | null };
 
-// The bucket limit is 1.5 MiB; the app sends ~250 KB.
-const MAX_BYTES = 1_500_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 function refresh() {
@@ -37,33 +35,14 @@ export async function submitMyPhoto(formData: FormData): Promise<MyPhotoResult> 
     return { error: "Please tick the two required boxes first." };
   }
   const file = formData.get("photo");
-  if (!(file instanceof File) || file.size === 0) return { error: "Choose a photo first." };
-  if (file.size > MAX_BYTES) return { error: "That photo is too big — try again." };
-  const head = new Uint8Array(await file.slice(0, 3).arrayBuffer());
-  if (head[0] !== 0xff || head[1] !== 0xd8 || head[2] !== 0xff) {
-    return { error: "The photo must be a JPEG image." };
-  }
+  if (!(file instanceof File)) return { error: "Choose a photo first." };
   if (!(await rateLimit("customerPhoto"))) return { error: RATE_LIMITED_MESSAGE };
 
-  // Own folder only: the storage policy lets owners write nowhere else.
-  const path = `${user.id}/${crypto.randomUUID()}.jpg`;
-  const { error: uploadError } = await supabase.storage
-    .from("customer-photos")
-    .upload(path, file, { contentType: "image/jpeg" });
-  if (uploadError) return { error: "We couldn't upload your photo. Please try again." };
-
-  const { data: id, error } = await supabase.rpc("submit_customer_photo", {
-    p_path: path,
-    p_consent_social: formData.get("consent_social") === "1",
-    p_consent_website: formData.get("consent_website") === "1",
-    p_text_version: CONSENT_TEXT_VERSION,
+  const stored = await storeMyPhoto(supabase, user.id, file, {
+    social: formData.get("consent_social") === "1",
+    website: formData.get("consent_website") === "1",
   });
-  if (error || !id) {
-    // Not eligible (e.g. a photo is already on file for this order): don't
-    // leave the file behind.
-    await supabase.storage.from("customer-photos").remove([path]);
-    return { error: "We couldn't save your photo. It may already be on file." };
-  }
+  if ("error" in stored) return { error: stored.error };
 
   refresh();
   return { error: null };

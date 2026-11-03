@@ -107,14 +107,16 @@ export async function approvePhoto(photoId: string): Promise<PhotoResult> {
   const supabase = await createClient();
   const { data: photo } = await supabase
     .from("customer_photos")
-    .select("status, card_order_id, keychain_order_id")
+    .select("status, source, card_order_id, keychain_order_id")
     .eq("id", photoId)
     .maybeSingle();
   if (!photo) return { error: "That photo no longer exists." };
   if (photo.status !== "pending_review") return { error: "That photo was already reviewed." };
 
+  // A freebie is only owed where one was promised: a customer-sent photo
+  // earns it only while the offer to customers is switched on.
   let freebieStatus: "pending" | "none" = "none";
-  if (PHOTO_FREEBIE.enabled) {
+  if (PHOTO_FREEBIE.enabled && (photo.source !== "card_selfie" || PHOTO_FREEBIE.offerToCustomers)) {
     const column = photo.card_order_id ? "card_order_id" : "keychain_order_id";
     const orderId = photo.card_order_id ?? photo.keychain_order_id;
     const { data: existing } = await supabase
@@ -225,12 +227,38 @@ export async function withdrawPhoto(photoId: string): Promise<PhotoResult> {
     .maybeSingle();
   if (!photo) return { error: "That photo no longer exists." };
 
-  // Off the website at once: unpublish any testimonial built on this photo.
-  const { error: unpublishError } = await supabase
+  // Off the website at once. A testimonial built only on this photo is
+  // unpublished; one that is also a customer's written review keeps its
+  // words and stays up — only the photo comes off it.
+  const { data: linked } = await supabase
     .from("landing_testimonials")
-    .update({ published: false, photo_url: null })
+    .select("id")
     .eq("customer_photo_id", photoId);
-  if (unpublishError) return { error: unpublishError.message };
+  const linkedIds = (linked ?? []).map((t) => t.id);
+  if (linkedIds.length) {
+    const { data: reviewed } = await supabase
+      .from("customer_reviews")
+      .select("testimonial_id")
+      .in("testimonial_id", linkedIds);
+    const reviewIds = new Set((reviewed ?? []).map((r) => r.testimonial_id));
+    const photoOnly = linkedIds.filter((id) => !reviewIds.has(id));
+    const withReview = linkedIds.filter((id) => reviewIds.has(id));
+
+    if (photoOnly.length) {
+      const { error: unpublishError } = await supabase
+        .from("landing_testimonials")
+        .update({ published: false, photo_url: null })
+        .in("id", photoOnly);
+      if (unpublishError) return { error: unpublishError.message };
+    }
+    if (withReview.length) {
+      const { error: detachError } = await supabase
+        .from("landing_testimonials")
+        .update({ photo_url: null, customer_photo_id: null })
+        .in("id", withReview);
+      if (detachError) return { error: detachError.message };
+    }
+  }
 
   if (photo.website_photo_path) {
     const { error: publicError } = await supabase.storage
@@ -302,6 +330,46 @@ export async function publishPhotoToWebsite(formData: FormData): Promise<PhotoRe
     return { error: "This customer didn't agree to website use." };
   }
   if (photo.website_photo_path) return { error: "This photo is already on the website." };
+
+  // The photo came with a review that's already a testimonial: put the photo
+  // on THAT one instead of creating a second testimonial for the same person.
+  const { data: review } = await supabase
+    .from("customer_reviews")
+    .select("testimonial_id")
+    .eq("photo_id", photoId)
+    .not("testimonial_id", "is", null)
+    .maybeSingle();
+  if (review?.testimonial_id) {
+    const reviewPath = `${photoId}.jpg`;
+    const { error: reviewUploadError } = await supabase.storage
+      .from("testimonial-photos")
+      .upload(reviewPath, crop, { contentType: "image/jpeg" });
+    if (reviewUploadError) return { error: "We couldn't upload the photo. Please try again." };
+    const reviewUrl = supabase.storage.from("testimonial-photos").getPublicUrl(reviewPath).data.publicUrl;
+
+    const { error: attachError } = await supabase
+      .from("landing_testimonials")
+      .update({ photo_url: reviewUrl, customer_photo_id: photoId })
+      .eq("id", review.testimonial_id);
+    const { error: pathError } = attachError
+      ? { error: attachError }
+      : await supabase.from("customer_photos").update({ website_photo_path: reviewPath }).eq("id", photoId);
+    if (attachError || pathError) {
+      await supabase.storage.from("testimonial-photos").remove([reviewPath]);
+      if (!attachError) {
+        await supabase
+          .from("landing_testimonials")
+          .update({ photo_url: null, customer_photo_id: null })
+          .eq("id", review.testimonial_id);
+      }
+      return { error: "We couldn't save the photo. Please try again." };
+    }
+
+    refresh();
+    revalidatePath("/admin/testimonials");
+    revalidatePath("/");
+    return { error: null };
+  }
 
   const path = `${photoId}.jpg`;
   const { error: uploadError } = await supabase.storage

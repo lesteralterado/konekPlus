@@ -7,6 +7,7 @@ import { CARD, EmptyState, PANEL } from "../ui/kit";
 import { StatusPill } from "../ui/status";
 import { deleteTestimonial, setTestimonialPublished } from "./actions";
 import { AddTestimonialForm } from "./add-form";
+import { CustomerReviews } from "./customer-reviews";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,8 @@ export default async function AdminTestimonialsPage() {
           {live ? `Live · ${publishedCount}` : `${publishedCount}/${MIN_TESTIMONIALS} to go live`}
         </span>
       </div>
+
+      <CustomerReviews />
 
       {/* Desktop: inline form. Phones: behind the + button. */}
       <section className="hidden rounded-3xl bg-white p-6 shadow-[0_2px_20px_-6px_rgba(15,23,42,0.10)] md:block">

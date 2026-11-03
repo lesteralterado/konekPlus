@@ -18,6 +18,10 @@ export const PHOTO_RETENTION_MONTHS = 12;
 export type ConsentLocale = "en" | "fil";
 
 export type ConsentText = {
+  // The review form (0030): what they're agreeing to by sending a review.
+  reviewIntro: string;
+  reviewShow: string;
+  reviewWithdraw: string;
   intro: string;
   // The same choices, worded for a customer sending their own photo.
   selfIntro: string;
@@ -30,6 +34,9 @@ export type ConsentText = {
 
 export const CONSENT_TEXT: Record<ConsentLocale, ConsentText> = {
   en: {
+    reviewIntro: "Tell us how your Konek+ is going. If you're happy for it to be shared, we may show your review on our website.",
+    reviewShow: "Konek+ may show my name, stars and message on its website.",
+    reviewWithdraw: `You can remove your review any time from your dashboard, or message us at ${LEGAL_CONTACT_EMAIL}.`,
     intro: "Konek+ would like to take a photo of you with your purchase. You choose what it may be used for.",
     selfIntro: "You're sending Konek+ a photo of you with your purchase. You choose what it may be used for.",
     record: `Keep this photo privately as our record of your handover. We delete it after ${PHOTO_RETENTION_MONTHS} months.`,
@@ -39,6 +46,9 @@ export const CONSENT_TEXT: Record<ConsentLocale, ConsentText> = {
     withdraw: `You can change your mind any time: message us at ${LEGAL_CONTACT_EMAIL}. We'll remove the photo from our website and storage, and take down any social media post on request.`,
   },
   fil: {
+    reviewIntro: "Sabihin sa amin kung kumusta ang iyong Konek+. Kung payag ka, maaari naming ipakita ang review mo sa aming website.",
+    reviewShow: "Maaaring ipakita ng Konek+ ang pangalan, mga bituin, at mensahe ko sa website nito.",
+    reviewWithdraw: `Maaari mong alisin ang review mo anumang oras mula sa iyong dashboard, o mag-message sa ${LEGAL_CONTACT_EMAIL}.`,
     intro: "Nais ng Konek+ na kumuha ng litrato mo kasama ang binili mo. Ikaw ang pipili kung saan ito maaaring gamitin.",
     selfIntro: "Magpapadala ka sa Konek+ ng litrato mo kasama ang binili mo. Ikaw ang pipili kung saan ito maaaring gamitin.",
     record: `Itatago nang pribado ang litratong ito bilang tala ng pagkaka-abot sa iyo. Buburahin namin ito pagkalipas ng ${PHOTO_RETENTION_MONTHS} buwan.`,

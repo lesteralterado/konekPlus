@@ -30,13 +30,21 @@ export type Profile = {
   founding: boolean;
   // Last "Pro is ending" email (0025); cleared when Pro is renewed.
   pro_reminder_sent_at: string | null;
+  // When the "how's your Konek+?" pop-up was first shown (0030), so it opens once.
+  review_prompt_seen_at: string | null;
 };
 
 // What anyone tapping a card may see — returned by get_public_profile()
 // (0022). No user_id; email/phone already blanked if the owner hid them.
 export type PublicProfile = Omit<
   Profile,
-  "user_id" | "show_email" | "show_phone" | "pro_until" | "founding" | "pro_reminder_sent_at"
+  | "user_id"
+  | "show_email"
+  | "show_phone"
+  | "pro_until"
+  | "founding"
+  | "pro_reminder_sent_at"
+  | "review_prompt_seen_at"
 >;
 
 // Optional photos with customers at handover (0026).
@@ -66,6 +74,23 @@ export type CustomerPhoto = {
   freebie_note: string | null;
   freebie_given_at: string | null;
   freebie_given_by: string | null;
+  created_at: string;
+};
+
+// A card owner's review of Konek+ (0030). Becomes a website testimonial only
+// when an admin publishes it.
+export type CustomerReview = {
+  id: string;
+  user_id: string;
+  card_order_id: string | null;
+  rating: number;
+  message: string;
+  display_name: string;
+  consent_text_version: number;
+  photo_id: string | null;
+  status: "new" | "approved";
+  testimonial_id: string | null;
+  reviewed_at: string | null;
   created_at: string;
 };
 
@@ -316,6 +341,16 @@ export type Database = {
         Update: Partial<FinanceExpense>;
         Relationships: [];
       };
+      customer_reviews: {
+        Row: CustomerReview;
+        Insert: Pick<
+          CustomerReview,
+          "rating" | "message" | "display_name" | "consent_text_version"
+        > &
+          Partial<CustomerReview>;
+        Update: Partial<CustomerReview>;
+        Relationships: [];
+      };
       customer_photos: {
         Row: CustomerPhoto;
         Insert: Pick<CustomerPhoto, "source" | "consent_text_version" | "consent_recorded_by"> &
@@ -502,6 +537,29 @@ export type Database = {
       confirm_plan_payment: {
         Args: { p_id: string; p_amount_received: number };
         Returns: string | null;
+      };
+      my_review_prompt: {
+        Args: Record<string, never>;
+        Returns: {
+          eligible: boolean;
+          review_id: string | null;
+          status: "new" | "approved" | null;
+          published: boolean | null;
+        }[];
+      };
+      submit_customer_review: {
+        Args: {
+          p_rating: number;
+          p_message: string;
+          p_display_name: string;
+          p_text_version: number;
+          p_photo_id?: string | null;
+        };
+        Returns: string | null;
+      };
+      withdraw_customer_review: {
+        Args: { p_id: string };
+        Returns: { photo_id: string | null }[];
       };
       my_photo_offer: {
         Args: Record<string, never>;
